@@ -53,8 +53,6 @@ taitung_station_dist = [169.7, 173.2, 182, 185, 186.8, 189.6, 195.8, 198, 202.2,
 east_all_station_list = [i for i in main_station_list if (int(i[0:4]) == 920)] + [i for i in main_station_list if (6000 <= int(i[0:4]) < 8000) and (int(i[0:4]) != 7120)][::-1]
 east_all_station_dist = yilan_station_dist[:-1] + north_link_station_dist[1:] + taitung_station_dist[1:]
 
-print(west_all_station_list, len(west_all_station_list))
-print(west_all_station_dist, len(west_all_station_dist))
 # ====================
 #       CONTROL
 # ====================
@@ -128,6 +126,17 @@ try:
     filename = sys.argv[2]
 except Exception:
     filename = filename + ".svg"
+try:
+    match len(sys.argv[3]):
+        case 10:
+            date = f"{sys.argv[3][:4]}/{sys.argv[3][5:7]}/{sys.argv[3][8:]}"
+        case 8:
+            date = f"{sys.argv[3][:4]}/{sys.argv[3][4:6]}/{sys.argv[3][6:]}"
+        case 4:
+            date = f"{str(datetime.today())[:4]}/{sys.argv[3][:2]}/{sys.argv[3][2:]}"
+except Exception:
+    date = str(datetime.today())[:10].replace("-", "/")
+print(date)
 
 # ====================
 #      TRAIN LIST
@@ -136,7 +145,7 @@ except Exception:
 train_list = set()
 
 def list_trains(station_name, direc):
-    url = f"https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybystationblank?rideDate=2026/01/03&station={station_name}"
+    url = f"https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybystationblank?rideDate={date}&station={station_name}"
     html = requests.get(url).text
     soup = BeautifulSoup(html, "html.parser")
     if direc == 2:
@@ -192,7 +201,7 @@ def plot_train(train_type, train_number):
     ypos = []
     global ymax, ymin
     
-    url = f"https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybytrainno?rideDate=2026/01/03&trainNo={train_number}"
+    url = f"https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybytrainno?rideDate={date}&trainNo={train_number}"
     html = requests.get(url).text
     soup = BeautifulSoup(html, "html.parser")
 
@@ -248,13 +257,6 @@ for i in tqdm(range(len(station_list))):
 print("fetching train data...")
 for (train_type, train) in tqdm(list(train_list)):
     plot_train(train_type, train)
-# with open("train_list.txt", "w") as f:
-#     f.write(str(train_list))
-# with open("train_data.txt", "w") as g:
-#     for (train_type, train) in list(train_list):
-#         g.write(str(plot_train(train_type, train)))
-#         g.write("\n")
-print("drawing...")
 xticks = range(240, 1680, 60)
 xtick_labels = [f"{t//60:02d}" for t in xticks]
 yticks = station_dist
