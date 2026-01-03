@@ -14,7 +14,7 @@ pip install requests beautifulsoup4 matplotlib tqdm
 ## Usage
 
 ```
-python train_fiagram.py [ROUTE] [OUTPUT_FILE]
+python train_fiagram.py [ROUTE] [OUTPUT_FILE] [DATE]
 ```
 
 ROUTE supports the following inputs:
@@ -32,8 +32,11 @@ ROUTE supports the following inputs:
 
 OUTPUT_FILE is optional.
 
+DATE is default today.
+
 Example:
 
 ```
-python plot_trains.py 縱貫線 west_all.svg
+python plot_trains.py 縱貫線 west_all.svg 2026/01/03
+python plot_trains.py 南迴線 south_link.svg 20260103
 ```
