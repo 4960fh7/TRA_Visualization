@@ -82,8 +82,8 @@
         </div>
         <div class="filter-controls">
             <strong>篩選車種：</strong>
-            <span class="filter-item action-pill" onclick="toggleAllFilters(true)">全選</span>
-            <span class="filter-item action-pill" onclick="toggleAllFilters(false)">取消全選</span>
+            <span id="btn-select-all" class="filter-item" onclick="toggleAllFilters(true)">全選</span>
+            <span id="btn-deselect-all" class="filter-item" onclick="toggleAllFilters(false)">取消全選</span>
         </div>
         <div id="checkbox-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
             </div>
@@ -179,9 +179,75 @@ function createFilterUI() {
         `;
         container.appendChild(label);
     });
+
+    updateActionBtnStyles();
 }
 
 // Function to handle the visual change of the "Pill"
+
+function toggleAllFilters(isSelected) {
+    const checkboxes = document.querySelectorAll('.filter-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = isSelected;
+        const type = cb.value;
+        const color = colorPalette[type];
+        
+        // Manual update of pill styles
+        const label = document.getElementById(`label-${type}`);
+        if (isSelected) {
+            label.classList.add('active');
+            label.style.backgroundColor = color;
+            label.style.color = 'white';
+        } else {
+            label.classList.remove('active');
+            label.style.backgroundColor = '#f0f0f0';
+            label.style.color = '#666';
+        }
+    });
+    
+    updateActionBtnStyles(); // <--- Add this line
+    applyFilters();
+}
+
+function updateActionBtnStyles() {
+    const checkboxes = document.querySelectorAll('.filter-checkbox');
+    const total = checkboxes.length;
+    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+    
+    const btnAll = document.getElementById('btn-select-all');
+    const btnNone = document.getElementById('btn-deselect-all');
+    
+    const activeBlue = "#007bff"; // Blue color
+    const inactiveGray = "#eee";  // Same gray as inactive train pills
+    const activeTextColor = "white";
+    const inactiveTextColor = "#666";
+
+    // Condition 1: All selected
+    if (checkedCount === total && total > 0) {
+        btnAll.style.backgroundColor = activeBlue;
+        btnAll.style.color = activeTextColor;
+        
+        btnNone.style.backgroundColor = inactiveGray;
+        btnNone.style.color = inactiveTextColor;
+    } 
+    // Condition 2: None selected
+    else if (checkedCount === 0) {
+        btnAll.style.backgroundColor = inactiveGray;
+        btnAll.style.color = inactiveTextColor;
+        
+        btnNone.style.backgroundColor = activeBlue;
+        btnNone.style.color = activeTextColor;
+    } 
+    // Condition 3: Mixed (Other conditions)
+    else {
+        btnAll.style.backgroundColor = inactiveGray;
+        btnAll.style.color = inactiveTextColor;
+        
+        btnNone.style.backgroundColor = inactiveGray;
+        btnNone.style.color = inactiveTextColor;
+    }
+}
+
 function updatePillStyle(checkbox, type, color) {
     const label = document.getElementById(`label-${type}`);
     if (checkbox.checked) {
@@ -193,20 +259,9 @@ function updatePillStyle(checkbox, type, color) {
         label.style.backgroundColor = '#f0f0f0';
         label.style.color = '#666';
     }
+    
+    updateActionBtnStyles(); // <--- Add this line
     applyFilters();
-}
-
-function toggleAllFilters(isSelected) {
-    const checkboxes = document.querySelectorAll('.filter-checkbox');
-    checkboxes.forEach(cb => {
-        if (cb.checked !== isSelected) {
-            cb.checked = isSelected;
-            const type = cb.value;
-            const color = colorPalette[type];
-            updatePillStyle(cb, type, color);
-        }
-    });
-    // The applyFilters() is called inside updatePillStyle, so the chart updates automatically!
 }
 
 function applyFilters() {
