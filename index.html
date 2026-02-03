@@ -17,6 +17,9 @@
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
         .success { background: #d4edda; color: #155724; }
+        #sidebar { width: 300px; height: 80vh; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; }
+        .stop-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; }
     </style>
 </head>
 <body>
@@ -26,10 +29,13 @@
 <div class="container">
     <div class="header">
         <h1>Train Diagram</h1>
-        <div id="status" class="status-box loading">正在載入 JSON 班表...</div>
+        <div id="status" class="status-box loading">正在載入 ...</div>
     </div>
     <div id="chart-container">
         <canvas id="trainChart"></canvas>
+    </div>
+    <div id="sidebar">
+        <div id="sidebar-content"></div>
     </div>
 </div>
 
@@ -77,28 +83,27 @@ async function loadData() {
 }
 
 function processJsonToDatasets(jsonData) {
-    const DISTANCE_THRESHOLD = 300; 
-
     return jsonData.map(train => {
         const dataPoints = [];
+        
         if (!train.data || !Array.isArray(train.data)) return null;
 
-        let lastDist = null;
-
         train.data.forEach(stop => {
+            // 關鍵修正：去除可能的空格
             const stationName = stop.station.trim();
             const dist = stationDistances[stationName];
-
+            
             if (dist !== undefined) {
-                // If we have a previous station and the jump is too big
-                if (lastDist !== null && Math.abs(dist - lastDist) > DISTANCE_THRESHOLD) {
-                    dataPoints.push(null); // Break the line
+                if (stop.arrtime === stop.deptime) {
+                    dataPoints.push({ x: stop.arrtime+0.5, y: dist });
+                    dataPoints.push({ x: stop.deptime-0.5, y: dist });
+                } else {
+                    dataPoints.push({ x: stop.arrtime, y: dist });
+                    dataPoints.push({ x: stop.deptime, y: dist });
                 }
-
-                dataPoints.push({ x: stop.arrtime, y: dist });
-                dataPoints.push({ x: stop.deptime, y: dist });
-                
-                lastDist = dist; // Store current distance for next comparison
+            } else {
+                // 如果找不到車站，會在控制台印出錯誤，幫助你檢查是否字打錯
+                console.warn(`車站名稱不匹配: "${stationName}" (車次: ${train.number})`);
             }
         });
 
@@ -109,22 +114,27 @@ function processJsonToDatasets(jsonData) {
             data: dataPoints,
             borderColor: colorPalette[train.train] || "#ccc",
             borderWidth: 1.5,
+            originalData: train,
             showLine: true,
-            spanGaps: false, // Critical: keeps the gap as a break
+            fill: false,
             pointRadius: 0,
+            spanGaps: true,
             tension: 0 
         };
     }).filter(d => d !== null);
 }
 
+let selectedTrainId = null;
+
 function renderChart(datasets) {
     const ctx = document.getElementById('trainChart').getContext('2d');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarContent = document.getElementById('sidebar-content');
     
-    // Filter out nulls so p.x and p.y don't crash
-    const allX = datasets.flatMap(d => d.data.filter(p => p !== null).map(p => p.x));
-    const allY = datasets.flatMap(d => d.data.filter(p => p !== null).map(p => p.y));
+    // 計算顯示範圍
+    const allX = datasets.flatMap(d => d.data.map(p => p.x));
+    const allY = datasets.flatMap(d => d.data.map(p => p.y));
 
-    // ... rest of your chart code
     new Chart(ctx, {
         type: 'scatter',
         data: { datasets: datasets },
@@ -214,6 +224,17 @@ function renderChart(datasets) {
                     }
                 }
             },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const index = elements[0].datasetIndex;
+                    const train = chart.data.datasets[index].originalData;
+                    
+                    highlightTrain(chart, index);
+                    showSidebar(train);
+                } else {
+                    resetHighlight(chart);
+                }
+            },
             plugins: {
                 legend: { display: false },
                 zoom: {
@@ -266,6 +287,53 @@ function renderChart(datasets) {
             chart.pan({y: -e.deltaY * speed}, undefined, 'default');
         }
     }, { passive: false });
+
+    function showSidebar(train) {
+        sidebar.style.display = 'block';
+        const stopsHtml = train.data.map(stop => `
+            <div class="stop-row">
+                <span>${stop.station}</span>
+                <span>${formatTime(stop.arrtime)} / ${formatTime(stop.deptime)}</span>
+            </div>
+        `).join('');
+
+        sidebarContent.innerHTML = `
+            <div class="highlight-train">${train.train} ${train.number}</div>
+            <p><strong>起訖站:</strong> ${train.data[0].station} → ${train.data[train.data.length-1].station}</p>
+            <hr>
+            <div>${stopsHtml}</div>
+        `;
+    }
+
+    function highlightTrain(chart, datasetIndex) {
+        chart.data.datasets.forEach((dataset, i) => {
+            if (i === datasetIndex) {
+                dataset.borderWidth = 4;
+                dataset.borderColor = dataset.borderColor; // Keep original color
+            } else {
+                dataset.borderWidth = 1;
+                dataset.borderColor = 'rgba(200, 200, 200, 0.1)'; // Fade out others
+            }
+        });
+        chart.update('none'); // Update without animation for performance
+    }
+
+    function resetHighlight(chart) {
+        sidebar.style.display = 'none';
+        chart.data.datasets.forEach((dataset) => {
+            dataset.borderWidth = 1.5;
+            // Restore original colors based on palette
+            const trainType = dataset.label.split(' ')[0];
+            dataset.borderColor = colorPalette[trainType] || "#ccc";
+        });
+        chart.update('none');
+    }
+}
+
+function formatTime(minutes) {
+    const h = Math.floor(minutes / 60).toString().padStart(2, '0');
+    const m = (minutes % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
 }
 
 const chartCanvas = document.getElementById('trainChart');
