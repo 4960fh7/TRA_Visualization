@@ -18,7 +18,7 @@
         canvas { display: block; width: 100%; height: 100%; }
 
         /* Sidebar */
-        #sidebar { width: 320px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+        #sidebar { width: 280px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
         .stop-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
         .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; margin-bottom: 10px; }
         .sidebar-header { border-bottom: 2px solid #d9534f; margin-bottom: 10px; padding-bottom: 5px; }
@@ -381,8 +381,9 @@ function renderChart(datasets) {
                         // 設定垂直線顏色
                         color: (context) => {
                             const v = context.tick.value;
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.3)'; // 整點：較深的灰色
-                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.05)'; // 每10分：極淺的灰色
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.3)';
+                            if (v % 30 === 0) return 'rgba(0, 0, 0, 0.2)';
+                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.1)';
                             return 'transparent';
                         },
                         // 設定垂直線粗細
