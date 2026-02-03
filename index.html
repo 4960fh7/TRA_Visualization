@@ -204,7 +204,7 @@ function processJsonToDatasets(jsonData) {
                 const startStation = ctx.p0.raw.s;
                 const endStation = ctx.p1.raw.s;
 
-                if (abs(stationDistances[startStation] - stationDistances[endStation]) > 6000) {
+                if (Math.abs(stationDistances[startStation] - stationDistances[endStation]) > 6000) {
                     return 0; // Bold segments connected to Taipei
                 }
                 return 1.5; // Default width
