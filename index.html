@@ -205,7 +205,7 @@ function processJsonToDatasets(jsonData) {
                 const endStation = ctx.p1.raw.s;
 
                 if (Math.abs(stationDistances[startStation] - stationDistances[endStation]) > 4000) {
-                    return 0;
+                    return 0.1;
                 }
                 return 1.5;
             },
