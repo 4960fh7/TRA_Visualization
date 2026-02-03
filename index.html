@@ -39,38 +39,47 @@ const colorPalette = {
 async function loadData() {
     const statusEl = document.getElementById('status');
     try {
-        // 確保路徑與你的 JSON 檔案名稱一致
-        const response = await fetch('data/20260204.json'); 
-        if (!response.ok) throw new Error(`找不到 JSON 檔案 (狀態碼: ${response.status})`);
+        // 加上時間戳防止快取舊檔案
+        const response = await fetch('data/schedule.json?t=' + Date.now()); 
+        if (!response.ok) throw new Error(`找不到檔案 (Status: ${response.status})`);
         
         const jsonData = await response.json();
+        console.log("原始 JSON 數據:", jsonData); // 偵錯用
+        
         const datasets = processJsonToDatasets(jsonData);
         
         if (datasets.length === 0) {
-            statusEl.innerText = "JSON 解析成功，但沒有可繪製的數據。";
+            statusEl.innerText = "JSON 解析成功，但車站名稱不匹配或資料為空。";
             statusEl.className = "status-box error";
             return;
         }
 
         renderChart(datasets);
-        statusEl.innerText = `成功載入 ${datasets.length} 個班次。`;
+        statusEl.innerText = `成功繪製 ${datasets.length} 個班次`;
         statusEl.className = "status-box success";
     } catch (err) {
-        statusEl.innerText = `錯誤: ${err.message}`;
+        statusEl.innerText = `讀取失敗: ${err.message}`;
         statusEl.className = "status-box error";
-        console.error(err);
     }
 }
 
 function processJsonToDatasets(jsonData) {
     return jsonData.map(train => {
         const dataPoints = [];
+        
+        if (!train.data || !Array.isArray(train.data)) return null;
+
         train.data.forEach(stop => {
-            const dist = stationDistances[stop.station];
+            // 關鍵修正：去除可能的空格
+            const stationName = stop.station.trim();
+            const dist = stationDistances[stationName];
+            
             if (dist !== undefined) {
-                // 每個車站畫兩點：到站與離站 (顯示停靠時長)
                 dataPoints.push({ x: stop.arrtime, y: dist });
                 dataPoints.push({ x: stop.deptime, y: dist });
+            } else {
+                // 如果找不到車站，會在控制台印出錯誤，幫助你檢查是否字打錯
+                console.warn(`車站名稱不匹配: "${stationName}" (車次: ${train.number})`);
             }
         });
 
