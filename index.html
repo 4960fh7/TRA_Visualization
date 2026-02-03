@@ -8,18 +8,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <style>
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
-        .container { max-width: 1200px; margin: auto; }
+        .container { max-width: 1400px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { width: 100%; height: 80vh; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab;}
+        
+        /* The Flex Wrapper */
+        .main-layout { display: flex; gap: 15px; width: 100%; height: 80vh; }
+        
+        /* Chart Container takes remaining space */
+        #chart-container { flex: 1; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab; }
         #chart-container:active { cursor: grabbing; }
-        canvas { display: block; width: 100%; height: 100%;}
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* Sidebar Styling */
+        #sidebar { width: 320px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
         .success { background: #d4edda; color: #155724; }
-        #sidebar { width: 300px; height: 80vh; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; }
-        .stop-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
-        .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; }
+        
+        .stop-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
+        .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; margin-bottom: 10px; }
+        .sidebar-header { border-bottom: 2px solid #d9534f; margin-bottom: 10px; padding-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -31,11 +40,14 @@
         <h1>Train Diagram</h1>
         <div id="status" class="status-box loading">正在載入 ...</div>
     </div>
-    <div id="chart-container">
-        <canvas id="trainChart"></canvas>
-    </div>
-    <div id="sidebar">
-        <div id="sidebar-content"></div>
+    
+    <div class="main-layout">
+        <div id="chart-container">
+            <canvas id="trainChart"></canvas>
+        </div>
+        <div id="sidebar">
+            <div id="sidebar-content"></div>
+        </div>
     </div>
 </div>
 
@@ -95,8 +107,8 @@ function processJsonToDatasets(jsonData) {
             
             if (dist !== undefined) {
                 if (stop.arrtime === stop.deptime) {
-                    dataPoints.push({ x: stop.arrtime+0.5, y: dist });
-                    dataPoints.push({ x: stop.deptime-0.5, y: dist });
+                    dataPoints.push({ x: stop.arrtime-0.5, y: dist });
+                    dataPoints.push({ x: stop.deptime+0.5, y: dist });
                 } else {
                     dataPoints.push({ x: stop.arrtime, y: dist });
                     dataPoints.push({ x: stop.deptime, y: dist });
@@ -135,7 +147,7 @@ function renderChart(datasets) {
     const allX = datasets.flatMap(d => d.data.map(p => p.x));
     const allY = datasets.flatMap(d => d.data.map(p => p.y));
 
-    new Chart(ctx, {
+    const chartInstance = new Chart(ctx, {
         type: 'scatter',
         data: { datasets: datasets },
         options: {
@@ -145,6 +157,11 @@ function renderChart(datasets) {
             maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
+            interaction: {
+                mode: 'nearest',
+                intersect: false, // Set to false so you don't have to click EXACTLY on a pixel
+                axis: 'xy'
+            },
             scales: {
                 x: {
                     type: 'linear',
