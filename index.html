@@ -123,6 +123,7 @@ function renderChart(datasets) {
             responsive: true,
             maintainAspectRatio: false,
             devicePixelRatio: 2,
+            layout: { padding: 10 },
             scales: {
                 x: {
                     type: 'linear',
@@ -199,14 +200,14 @@ function renderChart(datasets) {
                         mode: 'xy', // Allows dragging in all directions
                         // Optional: require a key to pan, or leave as null to pan with just a mouse click
                         modifierKey: null, 
-                        threshold: 5, // Minimum pixels to move before panning starts
+                        threshold: 0, // Minimum pixels to move before panning starts
                     },
                     zoom: {
                         wheel: {
                             enabled: true,
                             // 【KEY CHANGE】: Zoom only triggers when Ctrl is held
                             modifierKey: 'ctrl', 
-                            speed: 0.05, 
+                            speed: 0.1, 
                         },
                         // pinch: {
                         //     enabled: true
@@ -216,13 +217,9 @@ function renderChart(datasets) {
                     }
                 },
                 tooltip: {
-                    callbacks: {
-                        label: (ctx) => {
-                            const h = Math.floor(ctx.parsed.x / 60);
-                            const m = (ctx.parsed.x % 60).toString().padStart(2, '0');
-                            return `${ctx.dataset.label}: ${h}:${m}`;
-                        }
-                    }
+                    enabled: true,
+                    intersect: false, // Makes it easier to see train info
+                    mode: 'nearest'
                 }
             }
         }
@@ -232,24 +229,24 @@ function renderChart(datasets) {
 const chartCanvas = document.getElementById('trainChart');
 
 chartCanvas.addEventListener('wheel', (e) => {
-    // 如果按下 Ctrl，交給插件處理縮放，這裡跳過
-    if (e.ctrlKey) return;
-
     const chart = Chart.getChart("trainChart");
-    if (!chart) return;
+    if (!chart || e.ctrlKey) return; // Let the plugin handle Ctrl+Zoom
 
-    e.preventDefault(); // 阻止網頁捲動
+    e.preventDefault();
 
-    const panAmount = 20; // 移動速度
-
+    const scrollSpeed = 1.2; // Adjust for sensitivity
     if (e.shiftKey) {
-        // Shift + 滾動 = 水平移動 (X軸)
-        chart.pan({x: -e.deltaY}); 
+        // Move Left/Right
+        chart.pan({ x: -e.deltaY * scrollSpeed });
     } else {
-        // 純滾動 = 垂直移動 (Y軸)
-        chart.pan({y: -e.deltaY});
+        // Move Up/Down
+        chart.pan({ y: -e.deltaY * scrollSpeed });
     }
 }, { passive: false });
+
+chartCanvas.addEventListener('mousedown', () => chartCanvas.style.cursor = 'grabbing');
+chartCanvas.addEventListener('mouseup', () => chartCanvas.style.cursor = 'grab');
+chartCanvas.addEventListener('mouseover', () => chartCanvas.style.cursor = 'grab');
 
 function resetChartZoom() {
     // 'trainChart' is the ID of your canvas; Chart.getChart gets the instance
