@@ -39,17 +39,20 @@ const colorPalette = {
 async function loadData() {
     const statusEl = document.getElementById('status');
     try {
-        // 加上時間戳防止快取舊檔案
-        const response = await fetch('data/20260204.json?t=' + Date.now()); 
+        const response = await fetch('data/20260204.json');
         if (!response.ok) throw new Error(`找不到檔案 (Status: ${response.status})`);
         
-        const jsonData = await response.json();
-        console.log("原始 JSON 數據:", jsonData); // 偵錯用
+        // 嘗試以 UTF-8 文字方式讀取，確認內容
+        const text = await response.text();
+        console.log("檔案開頭內容確認:", text.substring(0, 100)); 
+        
+        // 如果上面印出來的還是亂碼，代表 JSON 檔案本身存檔時編碼就錯了
+        const jsonData = JSON.parse(text);
         
         const datasets = processJsonToDatasets(jsonData);
         
         if (datasets.length === 0) {
-            statusEl.innerText = "JSON 解析成功，但車站名稱不匹配或資料為空。";
+            statusEl.innerText = "JSON 解析成功，但車站名稱不匹配。請檢查 Console 報錯。";
             statusEl.className = "status-box error";
             return;
         }
@@ -60,6 +63,7 @@ async function loadData() {
     } catch (err) {
         statusEl.innerText = `讀取失敗: ${err.message}`;
         statusEl.className = "status-box error";
+        console.error("詳細錯誤:", err);
     }
 }
 
