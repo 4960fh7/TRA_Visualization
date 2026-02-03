@@ -123,6 +123,7 @@ function renderChart(datasets) {
         type: 'scatter',
         data: { datasets: datasets },
         options: {
+            clip: 0,
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
@@ -133,6 +134,7 @@ function renderChart(datasets) {
                     type: 'linear',
                     min: Math.min(...allX) - 20, // 根據數據自動調整起始時間
                     max: Math.max(...allX) + 20,
+                    zIndex: 10,
                     ticks: {
                         // 強制每 10 分鐘產生一個刻度，以便畫線
                         stepSize: 10, 
@@ -173,6 +175,7 @@ function renderChart(datasets) {
                     reverse: true,
                     min: Math.min(...allY) - 5,
                     max: Math.max(...allY) + 5,
+                    zIndex: 1,
                     afterBuildTicks: (axis) => {
                         // 【關鍵】強制將所有定義過的車站距離加入刻度中
                         const allDistances = Object.values(stationDistances);
