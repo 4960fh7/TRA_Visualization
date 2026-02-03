@@ -9,7 +9,8 @@
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
         .container { max-width: 1200px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { width: 2000px; height: 2000px; background: white; border: 1px solid #ddd; padding: 10px; overflow: auto; position: relative; }
+        #chart-container { height: 90vh; background: white; border: 1px solid #ddd; padding: 10px; overflow: hidden; position: relative; cursor: grab;}
+        #chart-container:active { cursor: grabbing; }
         canvas {min-width: 1500px; min-height: 2000px;}
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
@@ -18,6 +19,8 @@
     </style>
 </head>
 <body>
+    
+<button onclick="resetChartZoom()" style="position:fixed; top:20px; right:20px; z-index:100;">Reset View</button>
 
 <div class="container">
     <div class="header">
@@ -191,7 +194,11 @@ function renderChart(datasets) {
                 legend: { display: false },
                 zoom: {
                     pan: {
-                        enabled: false,
+                        enabled: true,
+                        mode: 'xy', // Allows dragging in all directions
+                        // Optional: require a key to pan, or leave as null to pan with just a mouse click
+                        modifierKey: null, 
+                        // threshold: 5, // Minimum pixels to move before panning starts
                     },
                     zoom: {
                         wheel: {
@@ -219,6 +226,36 @@ function renderChart(datasets) {
             }
         }
     });
+}
+
+const chartCanvas = document.getElementById('trainChart');
+
+chartCanvas.addEventListener('wheel', (e) => {
+    // 如果按下 Ctrl，交給插件處理縮放，這裡跳過
+    if (e.ctrlKey) return;
+
+    const chart = Chart.getChart("trainChart");
+    if (!chart) return;
+
+    e.preventDefault(); // 阻止網頁捲動
+
+    const panAmount = 20; // 移動速度
+
+    if (e.shiftKey) {
+        // Shift + 滾動 = 水平移動 (X軸)
+        chart.pan({x: -e.deltaY}); 
+    } else {
+        // 純滾動 = 垂直移動 (Y軸)
+        chart.pan({y: -e.deltaY});
+    }
+}, { passive: false });
+
+function resetChartZoom() {
+    // 'trainChart' is the ID of your canvas; Chart.getChart gets the instance
+    const chart = Chart.getChart("trainChart");
+    if (chart) {
+        chart.resetZoom();
+    }
 }
 
 // 執行載入
