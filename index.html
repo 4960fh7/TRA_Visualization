@@ -99,6 +99,7 @@ function processJsonToDatasets(jsonData) {
             showLine: true,
             fill: false,
             pointRadius: 0,
+            spanGaps: true,
             tension: 0 
         };
     }).filter(d => d !== null);
@@ -115,6 +116,7 @@ function renderChart(datasets) {
         type: 'scatter',
         data: { datasets: datasets },
         options: {
+            animation: false,
             responsive: true,
             maintainAspectRatio: false,
             scales: {
@@ -196,6 +198,7 @@ function renderChart(datasets) {
                             enabled: true,
                             // 【KEY CHANGE】: Zoom only triggers when Ctrl is held
                             modifierKey: 'ctrl', 
+                            speed: 0.05, 
                         },
                         pinch: {
                             enabled: true
