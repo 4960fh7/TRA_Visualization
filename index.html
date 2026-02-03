@@ -130,13 +130,24 @@ function renderChart(datasets) {
                     min: Math.min(...allY) - 5,
                     max: Math.max(...allY) + 5,
                     ticks: {
+                        // 強制 Y 軸在每個車站的距離都產生一個刻度
+                        stepSize: 0.1, 
                         callback: (v) => {
-                            // 找出最接近此座標的車站名
                             const entry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - v) < 0.1);
                             return entry ? entry[0] : "";
                         }
                     },
-                    grid: { color: '#f9f9f9' }
+                    grid: {
+                        // 關鍵設定：只有當該座標對應到車站時，才顯示深色的水平線
+                        display: true,
+                        drawOnChartArea: true,
+                        color: (context) => {
+                            const v = context.tick.value;
+                            const isStation = Object.values(stationDistances).some(dist => Math.abs(dist - v) < 0.1);
+                            return isStation ? 'rgba(0, 0, 0, 0.15)' : 'transparent'; // 車站線用淺灰色，其餘透明
+                        },
+                        lineWidth: 1
+                    }
                 }
             },
             plugins: {
