@@ -185,11 +185,11 @@ function processJsonToDatasets(jsonData) {
             
             if (dist !== undefined) {
                 if (stop.arrtime === stop.deptime) {
-                    dataPoints.push({ x: stop.arrtime-0.5, y: dist });
-                    dataPoints.push({ x: stop.deptime+0.5, y: dist });
+                    dataPoints.push({ x: stop.arrtime-0.5, y: dist , s: stationName });
+                    dataPoints.push({ x: stop.deptime+0.5, y: dist , s: stationName });
                 } else {
-                    dataPoints.push({ x: stop.arrtime, y: dist });
-                    dataPoints.push({ x: stop.deptime, y: dist });
+                    dataPoints.push({ x: stop.arrtime, y: dist , s: stationName });
+                    dataPoints.push({ x: stop.deptime, y: dist , s: stationName });
                 }
             } else {
                 console.warn(`車站名稱不匹配: "${stationName}" (車次: ${train.number})`);
@@ -198,7 +198,19 @@ function processJsonToDatasets(jsonData) {
 
         if (dataPoints.length === 0) return null;
 
-        return {label: `${train.train} ${train.number}`, data: dataPoints, borderColor: colorPalette[train.train] || "#ccc", borderWidth: 1.5, hoverBorderWidth: 3, originalData: train, showLine: true, fill: false, pointRadius: 0, hitRadius: 10, hoverRadius: 5, spanGaps: true, tension: 0 };
+        return {label: `${train.train} ${train.number}`, data: dataPoints, borderColor: colorPalette[train.train] || "#ccc", borderWidth: 1.5, hoverBorderWidth: 4, originalData: train, showLine: true, fill: false, pointRadius: 0, hitRadius: 15, hoverRadius: 5, spanGaps: true, tension: 0, 
+        segment: {
+            borderWidth: (ctx) => {
+                const startStation = ctx.p0.raw.s;
+                const endStation = ctx.p1.raw.s;
+
+                if (abs(stationDistances[startStation] - stationDistances[endStation]) > 6000) {
+                    return 0; // Bold segments connected to Taipei
+                }
+                return 1.5; // Default width
+            },
+        } 
+    };
 
     }).filter(d => d !== null);
 }
@@ -322,14 +334,15 @@ function renderChart(datasets) {
                 }
             },
             onClick: (event, elements) => {
+                // Note: 'chartInstance' is what you defined at the top of renderChart
                 if (elements.length > 0) {
                     const index = elements[0].datasetIndex;
-                    const train = chart.data.datasets[index].originalData;
+                    const train = chartInstance.data.datasets[index].originalData;
                     
-                    highlightTrain(chart, index);
+                    highlightTrain(chartInstance, index);
                     showSidebar(train);
                 } else {
-                    resetHighlight(chart);
+                    resetHighlight(chartInstance);
                 }
             },
             plugins: {
