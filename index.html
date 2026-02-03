@@ -139,7 +139,7 @@ function renderChart(datasets) {
                         autoSkip: false,
                         callback: function(value) {
                             // 只在整點時顯示文字標籤（例如 08:00）
-                            if (value % 60 === 0) {
+                            if (value % 30 === 0) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:00`;
                             }
@@ -167,11 +167,11 @@ function renderChart(datasets) {
                     reverse: true,
                     min: Math.min(...allY) - 5,
                     max: Math.max(...allY) + 5,
-                    afterBuildTicks: (axis) => {
-                        // 【關鍵】強制將所有定義過的車站距離加入刻度中
-                        const allDistances = Object.values(stationDistances);
-                        axis.ticks = allDistances.map(v => ({ value: v }));
-                    },
+                    // afterBuildTicks: (axis) => {
+                    //     // 【關鍵】強制將所有定義過的車站距離加入刻度中
+                    //     const allDistances = Object.values(stationDistances);
+                    //     axis.ticks = allDistances.map(v => ({ value: v }));
+                    // },
                     ticks: {
                         autoSkip: false, // 【重要】不要自動跳過標籤
                         font: {
@@ -232,7 +232,7 @@ function renderChart(datasets) {
             }
         }
     });
-    
+
     ctx.canvas.addEventListener('wheel', (e) => {
         if (e.ctrlKey) return; // Allow the plugin to handle CTRL + Zoom
         
