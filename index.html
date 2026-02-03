@@ -52,7 +52,6 @@ async function loadTrainData() {
 }
 
 function parsePythonTxt(text) {
-    // Split lines and filter out any empty lines
     const lines = text.trim().split('\n').filter(line => line.includes('|'));
     
     return lines.map(line => {
@@ -61,16 +60,13 @@ function parsePythonTxt(text) {
 
         const type = parts[0];
         const num = parts[1];
-        const stationStr = parts[2];
-        const timeStr = parts[3];
         
-        // Robust cleaning of the station list
-        const stations = stationStr.replace(/[\[\]']/g, '').split(',').map(s => s.trim());
+        // FIX 1: Clean station names correctly (removes [ ] ' and spaces)
+        const stations = parts[2].replace(/[\[\]']/g, '').split(',').map(s => s.trim());
         
-        // Improved Regex: matches any numbers inside parentheses (e.g., 1050, 1050)
-        const timeMatches = timeStr.match(/\(\d+,\s*\d+\)/g);
-        
-        if (!timeMatches) return null; // Skip line if no times found
+        // FIX 2: Correctly extract time pairs (arrival, departure)
+        const timeMatches = parts[3].match(/\(\d+,\s*\d+\)/g);
+        if (!stations || !timeMatches) return null;
 
         const timePairs = timeMatches.map(tuple => {
             return tuple.replace(/[\(\)]/g, '').split(',').map(Number);
@@ -79,7 +75,7 @@ function parsePythonTxt(text) {
         const dataPoints = [];
         stations.forEach((name, i) => {
             const dist = stationDistances[name];
-            // Only plot if we have both distance data and time data for this index
+            // Only plot if we have both distance and a matching time pair
             if (dist !== undefined && timePairs[i]) {
                 dataPoints.push({ x: timePairs[i][0], y: dist });
                 dataPoints.push({ x: timePairs[i][1], y: dist });
@@ -127,7 +123,11 @@ function renderChart(datasets) {
                     min: minY,
                     max: maxY,
                     ticks: {
-                        callback: (v) => Object.keys(stationDistances).find(k => Math.abs(stationDistances[k] - v) < 0.1) || ""
+                        callback: (v) => {
+                            // Find the station whose distance is closest to the grid value
+                            const entry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - v) < 0.1);
+                            return entry ? entry[0] : "";
+                        }
                     },
                     grid: { color: (c) => c.tick.value % 10 === 0 ? '#ddd' : '#f9f9f9' }
                 }
