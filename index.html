@@ -208,12 +208,12 @@ function processJsonToDatasets(jsonData) {
                     return 0.1;
                 }
                 return 1.5;
-            },
-            borderDash: (ctx) => {
-                const startStation = ctx.p0.raw.s;
-                const endStation = ctx.p1.raw.s;
-                return (startStation === "臺北" || endStation === "臺北") ? [] : [2, 2];
             }
+            // borderDash: (ctx) => {
+            //     const startStation = ctx.p0.raw.s;
+            //     const endStation = ctx.p1.raw.s;
+            //     return (startStation === "臺北" || endStation === "臺北") ? [] : [2, 2];
+            // }
         } 
     };
 
@@ -446,7 +446,7 @@ function renderChart(datasets) {
                 dataset.borderColor = dataset.borderColor; // Keep original color
             } else {
                 dataset.borderWidth = 1;
-                dataset.borderColor = 'rgba(200, 200, 200, 0.1)'; // Fade out others
+                // dataset.borderColor = 'rgba(200, 200, 200, 0.1)'; // Fade out others
             }
         });
         chart.update('none'); // Update without animation for performance
