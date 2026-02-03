@@ -204,11 +204,16 @@ function processJsonToDatasets(jsonData) {
                 const startStation = ctx.p0.raw.s;
                 const endStation = ctx.p1.raw.s;
 
-                if (Math.abs(stationDistances[startStation] - stationDistances[endStation]) > 6000) {
-                    return 0; // Bold segments connected to Taipei
+                if (Math.abs(stationDistances[startStation] - stationDistances[endStation]) > 4000) {
+                    return 0;
                 }
-                return 1.5; // Default width
+                return 1.5;
             },
+            borderDash: (ctx) => {
+                const startStation = ctx.p0.raw.s;
+                const endStation = ctx.p1.raw.s;
+                return (startStation === "臺北" || endStation === "臺北") ? [] : [2, 2];
+            }
         } 
     };
 
