@@ -339,6 +339,13 @@ function renderChart(datasets) {
             plugins: {
                 legend: { display: false },
                 zoom: {
+                    limits: {
+                        y: {
+                            min: Math.min(...allY) - 50, // Slightly more buffer than the scale min
+                            max: Math.max(...allY) + 50,
+                            minRange: 10 // Prevents zooming in so far that the chart disappears
+                        }
+                    },
                     pan: {
                         enabled: true,
                         mode: 'xy', // Allows dragging in all directions
