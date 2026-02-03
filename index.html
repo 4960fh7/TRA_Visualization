@@ -198,7 +198,7 @@ function processJsonToDatasets(jsonData) {
 
         if (dataPoints.length === 0) return null;
 
-        return {label: `${train.train} ${train.number}`, data: dataPoints, borderColor: colorPalette[train.train] || "#ccc", borderWidth: 1.5, originalData: train, showLine: true, fill: false, pointRadius: 0, spanGaps: true, tension: 0 };
+        return {label: `${train.train} ${train.number}`, data: dataPoints, borderColor: colorPalette[train.train] || "#ccc", borderWidth: 1.5, hoverBorderWidth: 3, originalData: train, showLine: true, fill: false, pointRadius: 0, hitRadius: 10, hoverRadius: 5, spanGaps: true, tension: 0 };
 
     }).filter(d => d !== null);
 }
@@ -224,11 +224,7 @@ function renderChart(datasets) {
             maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
-            interaction: {
-                mode: 'nearest',
-                intersect: false, // Set to false so you don't have to click EXACTLY on a pixel
-                axis: 'xy'
-            },
+            interaction: { mode: 'nearest', intersect: true, axis: 'xy' },
             scales: {
                 x: {
                     type: 'linear',
@@ -251,7 +247,7 @@ function renderChart(datasets) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:30`;
                             }
-                            return ""; // 非整點不顯示文字，避免擁擠
+                            return "";
                         }
                     },
                     grid: {
@@ -340,6 +336,11 @@ function renderChart(datasets) {
                 legend: { display: false },
                 zoom: {
                     limits: {
+                        x: {
+                            min: Math.min(...allX) - 30, // 30 mins buffer before first train
+                            max: Math.max(...allX) + 30, // 30 mins buffer after last train
+                            minRange: 60                 // Minimum 1 hour visible
+                        },
                         y: {
                             min: Math.min(...allY) - 50, // Slightly more buffer than the scale min
                             max: Math.max(...allY) + 50,
