@@ -77,34 +77,31 @@ async function loadData() {
 }
 
 function processJsonToDatasets(jsonData) {
-    const DISTANCE_THRESHOLD = 300; // If distance jump is > 300km, it's a loop-cross
+    const DISTANCE_THRESHOLD = 300; 
 
     return jsonData.map(train => {
         const dataPoints = [];
         if (!train.data || !Array.isArray(train.data)) return null;
 
-        for (let i = 0; i < train.data.length; i++) {
-            const stop = train.data[i];
+        train.data.forEach(stop => {
             const stationName = stop.station.trim();
             const dist = stationDistances[stationName];
 
             if (dist !== undefined) {
-                // Check for the "Loop Gap"
                 if (dataPoints.length > 0) {
-                    const lastPoint = dataPoints[dataPoints.length - 1];
-                    // If the distance jump is massive, insert a null to break the line
-                    if (Math.abs(dist - lastPoint.y) > DISTANCE_THRESHOLD) {
+                    // Find the last actual data point (skip nulls)
+                    const lastValidPoint = [...dataPoints].reverse().find(p => p !== null);
+                    
+                    // Only compare if we found a previous point and it's a "big jump"
+                    if (lastValidPoint && Math.abs(dist - lastValidPoint.y) > DISTANCE_THRESHOLD) {
                         dataPoints.push(null); 
                     }
                 }
 
-                // Add arrival and departure points to create the "horizontal" stop at stations
                 dataPoints.push({ x: stop.arrtime, y: dist });
                 dataPoints.push({ x: stop.deptime, y: dist });
-            } else {
-                console.warn(`車站名稱不匹配: "${stationName}" (車次: ${train.number})`);
             }
-        }
+        });
 
         if (dataPoints.length === 0) return null;
 
@@ -116,7 +113,7 @@ function processJsonToDatasets(jsonData) {
             showLine: true,
             fill: false,
             pointRadius: 0,
-            spanGaps: false, // CRITICAL: This must be false so 'null' breaks the line
+            spanGaps: false, // Ensure the line actually breaks
             tension: 0 
         };
     }).filter(d => d !== null);
