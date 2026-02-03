@@ -8,7 +8,7 @@
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
         .container { max-width: 1200px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { height: 85vh; background: white; border: 1px solid #ddd; padding: 10px; }
+        #chart-container { width: 2000px; height: 1200px; background: white; border: 1px solid #ddd; padding: 10px; }
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
@@ -129,22 +129,30 @@ function renderChart(datasets) {
                     reverse: true,
                     min: Math.min(...allY) - 5,
                     max: Math.max(...allY) + 5,
+                    afterBuildTicks: (axis) => {
+                        // 【關鍵】強制將所有定義過的車站距離加入刻度中
+                        const allDistances = Object.values(stationDistances);
+                        axis.ticks = allDistances.map(v => ({ value: v }));
+                    },
                     ticks: {
-                        // 強制 Y 軸在每個車站的距離都產生一個刻度
-                        stepSize: 0.1, 
+                        autoSkip: false, // 【重要】不要自動跳過標籤
+                        font: {
+                            size: 10 // 如果車站太擠，可以縮小字體
+                        },
                         callback: (v) => {
+                            // 找出對應座標的車站名稱
                             const entry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - v) < 0.1);
                             return entry ? entry[0] : "";
                         }
                     },
                     grid: {
-                        // 關鍵設定：只有當該座標對應到車站時，才顯示深色的水平線
                         display: true,
                         drawOnChartArea: true,
                         color: (context) => {
+                            // 檢查目前的刻度值是否為我們定義的車站
                             const v = context.tick.value;
                             const isStation = Object.values(stationDistances).some(dist => Math.abs(dist - v) < 0.1);
-                            return isStation ? 'rgba(0, 0, 0, 0.15)' : 'transparent'; // 車站線用淺灰色，其餘透明
+                            return isStation ? 'rgba(0, 0, 0, 0.15)' : 'transparent';
                         },
                         lineWidth: 1
                     }
