@@ -29,6 +29,10 @@
         .stop-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
         .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; margin-bottom: 10px; }
         .sidebar-header { border-bottom: 2px solid #d9534f; margin-bottom: 10px; padding-bottom: 5px; }
+
+        .filter-bar { background: white; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        .filter-item { display: flex; align-items: center; gap: 5px; font-size: 0.9em; cursor: pointer; }
+        .filter-item input { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,11 +40,15 @@
 <button onclick="resetChartZoom()" style="position:fixed; top:20px; right:20px; z-index:100;">Reset View</button>
 
 <div class="container">
-    <div class="header">
+<div class="header">
         <h1>Train Diagram</h1>
         <div id="status" class="status-box loading">正在載入 ...</div>
     </div>
-    
+
+    <div id="filters" class="filter-bar">
+        <strong>篩選車種：</strong>
+    </div>
+
     <div class="main-layout">
         <div id="chart-container">
             <canvas id="trainChart"></canvas>
@@ -63,35 +71,65 @@ const colorPalette = {
     "普悠瑪": "red", "太魯閣": "orange", "新自強": "purple", "莒光": "gold"
 };
 
+let allDatasets = []; // Store all data globally to filter against
+
 async function loadData() {
     const statusEl = document.getElementById('status');
     try {
         const response = await fetch('data/20260204.json');
-        if (!response.ok) throw new Error(`找不到檔案 (Status: ${response.status})`);
+        if (!response.ok) throw new Error(`找不到檔案`);
         
-        // 嘗試以 UTF-8 文字方式讀取，確認內容
-        const text = await response.text();
-        console.log("檔案開頭內容確認:", text.substring(0, 100)); 
+        const jsonData = await response.json();
+        allDatasets = processJsonToDatasets(jsonData); // Save to global variable
         
-        // 如果上面印出來的還是亂碼，代表 JSON 檔案本身存檔時編碼就錯了
-        const jsonData = JSON.parse(text);
-        
-        const datasets = processJsonToDatasets(jsonData);
-        
-        if (datasets.length === 0) {
-            statusEl.innerText = "JSON 解析成功，但車站名稱不匹配。請檢查 Console 報錯。";
-            statusEl.className = "status-box error";
+        if (allDatasets.length === 0) {
+            statusEl.innerText = "沒有可繪製的數據";
             return;
         }
 
-        renderChart(datasets);
-        statusEl.innerText = `成功繪製 ${datasets.length} 個班次`;
+        createFilterUI();
+        renderChart(allDatasets); // Initial render
+        
+        statusEl.innerText = `成功繪製 ${allDatasets.length} 個班次`;
         statusEl.className = "status-box success";
     } catch (err) {
         statusEl.innerText = `讀取失敗: ${err.message}`;
         statusEl.className = "status-box error";
-        console.error("詳細錯誤:", err);
     }
+}
+
+function createFilterUI() {
+    const filterContainer = document.getElementById('filters');
+    // Get unique train types from our palette
+    const trainTypes = Object.keys(colorPalette);
+
+    trainTypes.forEach(type => {
+        const label = document.createElement('label');
+        label.className = 'filter-item';
+        label.innerHTML = `
+            <input type="checkbox" checked value="${type}" onchange="applyFilters()">
+            <span style="color: ${colorPalette[type]}; font-weight: bold;">■</span> ${type}
+        `;
+        filterContainer.appendChild(label);
+    });
+}
+
+function applyFilters() {
+    const chart = Chart.getChart("trainChart");
+    if (!chart) return;
+
+    // Get all checked values
+    const checkedTypes = Array.from(document.querySelectorAll('#filters input:checked'))
+                              .map(cb => cb.value);
+
+    // Update dataset visibility
+    chart.data.datasets.forEach(dataset => {
+        const trainType = dataset.label.split(' ')[0];
+        // If the train type is in the checked list, show it
+        dataset.hidden = !checkedTypes.includes(trainType);
+    });
+
+    chart.update('none'); // Update without animation for speed
 }
 
 function processJsonToDatasets(jsonData) {
