@@ -212,12 +212,14 @@ function processJsonToDatasets(jsonData) {
             const dist = stationDistances[stationName];
             
             if (dist !== undefined) {
-                if (stop.arrtime === stop.deptime) {
-                    dataPoints.push({ x: stop.arrtime-0.5, y: dist , s: stationName });
-                    dataPoints.push({ x: stop.deptime+0.5, y: dist , s: stationName });
-                } else {
-                    dataPoints.push({ x: stop.arrtime, y: dist , s: stationName });
-                    dataPoints.push({ x: stop.deptime, y: dist , s: stationName });
+                if (westSeaList.includes(stationName)) {
+                    if (stop.arrtime === stop.deptime) {
+                        dataPoints.push({ x: stop.arrtime-0.5, y: dist , s: stationName });
+                        dataPoints.push({ x: stop.deptime+0.5, y: dist , s: stationName });
+                    } else {
+                        dataPoints.push({ x: stop.arrtime, y: dist , s: stationName });
+                        dataPoints.push({ x: stop.deptime, y: dist , s: stationName });
+                    }
                 }
             } else {
                 console.warn(`車站名稱不匹配: "${stationName}" (車次: ${train.number})`);
