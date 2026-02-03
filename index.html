@@ -9,7 +9,8 @@
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
         .container { max-width: 1200px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { width: 2000px; height: 2000px; background: white; border: 1px solid #ddd; padding: 10px; }
+        #chart-container { width: 2000px; height: 2000px; background: white; border: 1px solid #ddd; padding: 10px; overflow: auto; position: relative; }
+        canvas {min-width: 1500px; min-height: 2000px;}
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
@@ -188,18 +189,19 @@ function renderChart(datasets) {
                 legend: { display: false },
                 zoom: {
                     pan: {
-                        enabled: true,
-                        mode: 'xy', // Allow panning both directions
-                        threshold: 10
+                        enabled: false,
                     },
                     zoom: {
                         wheel: {
-                            enabled: true, // Zoom with mouse wheel
+                            enabled: true,
+                            // 【KEY CHANGE】: Zoom only triggers when Ctrl is held
+                            modifierKey: 'ctrl', 
                         },
                         pinch: {
-                            enabled: true // Zoom with touch gestures
+                            enabled: true
                         },
-                        mode: 'x', // Usually best to only zoom the time axis
+                        // 【KEY CHANGE】: Zoom both axes when Ctrl is held
+                        mode: 'xy', 
                     }
                 },
                 tooltip: {
