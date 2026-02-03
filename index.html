@@ -52,39 +52,53 @@ async function loadTrainData() {
 }
 
 function parsePythonTxt(text) {
-    const lines = text.trim().split('\n');
+    // Split lines and filter out any empty lines
+    const lines = text.trim().split('\n').filter(line => line.includes('|'));
+    
     return lines.map(line => {
-        const [type, num, stationStr, timeStr] = line.split('|');
+        const parts = line.split('|');
+        if (parts.length < 4) return null;
+
+        const type = parts[0];
+        const num = parts[1];
+        const stationStr = parts[2];
+        const timeStr = parts[3];
         
-        // Convert Python-style list "['A', 'B']" to JS Array
-        const stations = stationStr.replace(/[\[\]']/g, '').split(', ');
+        // Robust cleaning of the station list
+        const stations = stationStr.replace(/[\[\]']/g, '').split(',').map(s => s.trim());
         
-        // Convert Python-style tuples "[(a, b), (c, d)]" to JS Array of pairs
-        const timePairs = timeStr.match(/\d+,\s*\d+/g).map(pair => pair.split(',').map(Number));
+        // Improved Regex: matches any numbers inside parentheses (e.g., 1050, 1050)
+        const timeMatches = timeStr.match(/\(\d+,\s*\d+\)/g);
+        
+        if (!timeMatches) return null; // Skip line if no times found
+
+        const timePairs = timeMatches.map(tuple => {
+            return tuple.replace(/[\(\)]/g, '').split(',').map(Number);
+        });
 
         const dataPoints = [];
         stations.forEach((name, i) => {
             const dist = stationDistances[name];
-            if (dist !== undefined) {
-                // To show the stop duration, we push two points for the same station
-                // (Arrival Time, Distance) and (Departure Time, Distance)
+            // Only plot if we have both distance data and time data for this index
+            if (dist !== undefined && timePairs[i]) {
                 dataPoints.push({ x: timePairs[i][0], y: dist });
                 dataPoints.push({ x: timePairs[i][1], y: dist });
             }
         });
 
+        if (dataPoints.length === 0) return null;
+
         return {
             label: `${type} ${num}`,
             data: dataPoints,
             borderColor: colorPalette[type] || "#ccc",
-            borderWidth: 1.2,
+            borderWidth: 1.5,
             showLine: true,
             fill: false,
             pointRadius: 0,
-            hoverRadius: 5,
-            tension: 0 // Straight lines only
+            tension: 0 
         };
-    }).filter(ds => ds.data.length > 0);
+    }).filter(ds => ds !== null);
 }
 
 function renderChart(datasets) {
