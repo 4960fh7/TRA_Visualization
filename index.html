@@ -11,31 +11,56 @@
         .container { max-width: 1400px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
         
-        /* The Flex Wrapper */
+        /* Layout */
         .main-layout { display: flex; gap: 15px; width: 100%; height: 80vh; }
-        
-        /* Chart Container takes remaining space */
         #chart-container { flex: 1; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab; }
         #chart-container:active { cursor: grabbing; }
         canvas { display: block; width: 100%; height: 100%; }
 
-        /* Sidebar Styling */
+        /* Sidebar */
         #sidebar { width: 320px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
-        .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
-        .loading { background: #e2e3e5; color: #383d41; }
-        .error { background: #f8d7da; color: #721c24; }
-        .success { background: #d4edda; color: #155724; }
-        
         .stop-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
         .highlight-train { font-weight: bold; color: #d9534f; font-size: 1.2em; margin-bottom: 10px; }
         .sidebar-header { border-bottom: 2px solid #d9534f; margin-bottom: 10px; padding-bottom: 5px; }
 
-        .filter-controls { border-right: 2px solid #eee; padding-right: 15px; margin-right: 5px; display: flex; gap: 8px; align-items: center; }
-        .filter-bar button { padding: 4px 8px; cursor: pointer; border: 1px solid #ccc; background: #f8f8f8; border-radius: 3px; font-size: 0.85em; }
-        .filter-bar button:hover { background: #e0e0e0; }
+        /* Filter Bar Base */
         .filter-bar { background: white; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
-        .filter-item { display: flex; align-items: center; gap: 5px; font-size: 0.9em; cursor: pointer; }
-        .filter-item input { cursor: pointer; }
+        .filter-controls { border-right: 2px solid #eee; padding-right: 15px; display: flex; gap: 8px; align-items: center; }
+        .filter-bar button { padding: 5px 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 0.85em; transition: 0.2s; }
+        .filter-bar button:hover { background: #f0f0f0; }
+
+        /* New Pill Checkbox Styles */
+        .filter-item { 
+            display: inline-flex; 
+            align-items: center; 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 0.9em; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            user-select: none;
+            background-color: #eee; /* Default inactive color */
+            color: #666;
+            border: 2px solid transparent;
+        }
+
+        /* Keep the actual checkbox hidden */
+        .filter-checkbox { display: none; }
+
+        /* Active State (controlled via JavaScript by adding/removing 'active' class) */
+        .filter-item.active {
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .filter-item:hover { transform: translateY(-1px); opacity: 0.9; }
+
+        /* Status Messages */
+        .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
+        .loading { background: #e2e3e5; color: #383d41; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
     </style>
 </head>
 <body>
@@ -108,43 +133,64 @@ async function loadData() {
 }
 
 function createFilterUI() {
-    // Target the specific container for checkboxes
     const container = document.getElementById('checkbox-container');
     const trainTypes = Object.keys(colorPalette);
 
-    container.innerHTML = ''; // Clear existing
+    container.innerHTML = ''; 
 
     trainTypes.forEach(type => {
+        const color = colorPalette[type];
         const label = document.createElement('label');
-        label.className = 'filter-item';
+        label.className = 'filter-item active'; // Start active
+        label.style.backgroundColor = color; // Set initial background
+        label.id = `label-${type}`;
+        
         label.innerHTML = `
-            <input type="checkbox" checked value="${type}" class="filter-checkbox" onchange="applyFilters()">
-            <span style="color: ${colorPalette[type]}; font-weight: bold;">■</span> ${type}
+            <input type="checkbox" checked value="${type}" class="filter-checkbox" 
+                   onchange="updatePillStyle(this, '${type}', '${color}')">
+            ${type}
         `;
         container.appendChild(label);
     });
 }
 
+// Function to handle the visual change of the "Pill"
+function updatePillStyle(checkbox, type, color) {
+    const label = document.getElementById(`label-${type}`);
+    if (checkbox.checked) {
+        label.classList.add('active');
+        label.style.backgroundColor = color;
+        label.style.color = 'white';
+    } else {
+        label.classList.remove('active');
+        label.style.backgroundColor = '#f0f0f0';
+        label.style.color = '#666';
+    }
+    applyFilters();
+}
+
 function toggleAllFilters(isSelected) {
     const checkboxes = document.querySelectorAll('.filter-checkbox');
     checkboxes.forEach(cb => {
-        cb.checked = isSelected;
+        if (cb.checked !== isSelected) {
+            cb.checked = isSelected;
+            // Get the type and color for each pill to update its style
+            const type = cb.value;
+            const color = colorPalette[type];
+            updatePillStyle(cb, type, color);
+        }
     });
-    // Trigger the chart update
-    applyFilters();
 }
 
 function applyFilters() {
     const chart = Chart.getChart("trainChart");
     if (!chart) return;
 
-    // Get values of all currently checked boxes
     const checkedTypes = Array.from(document.querySelectorAll('.filter-checkbox:checked'))
                               .map(cb => cb.value);
 
     chart.data.datasets.forEach(dataset => {
         const trainType = dataset.label.split(' ')[0];
-        // If the train type is in the checked list, show it (hidden = false)
         dataset.hidden = !checkedTypes.includes(trainType);
     });
 
