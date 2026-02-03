@@ -40,6 +40,29 @@
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
         .success { background: #d4edda; color: #155724; }
+
+        /* Style for the Action Pills */
+        .action-pill {
+            background-color: #5bc0de; /* A nice blue for actions */
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .action-pill:hover {
+            background-color: #31b0d5;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Ensure the filter-controls doesn't have a rigid border if you want a cleaner look */
+        .filter-controls {
+            border-right: 2px solid #eee;
+            padding-right: 15px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -59,8 +82,8 @@
         </div>
         <div class="filter-controls">
             <strong>篩選車種：</strong>
-            <button onclick="toggleAllFilters(true)">全選</button>
-            <button onclick="toggleAllFilters(false)">取消全選</button>
+            <span class="filter-item action-pill" onclick="toggleAllFilters(true)">全選</span>
+            <span class="filter-item action-pill" onclick="toggleAllFilters(false)">取消全選</span>
         </div>
         <div id="checkbox-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
             </div>
@@ -178,12 +201,12 @@ function toggleAllFilters(isSelected) {
     checkboxes.forEach(cb => {
         if (cb.checked !== isSelected) {
             cb.checked = isSelected;
-            // Get the type and color for each pill to update its style
             const type = cb.value;
             const color = colorPalette[type];
             updatePillStyle(cb, type, color);
         }
     });
+    // The applyFilters() is called inside updatePillStyle, so the chart updates automatically!
 }
 
 function applyFilters() {
