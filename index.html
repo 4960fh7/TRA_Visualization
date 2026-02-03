@@ -40,7 +40,7 @@ async function loadData() {
     const statusEl = document.getElementById('status');
     try {
         // 確保路徑與你的 JSON 檔案名稱一致
-        const response = await fetch('data/202602024.json'); 
+        const response = await fetch('data/20260204.json'); 
         if (!response.ok) throw new Error(`找不到 JSON 檔案 (狀態碼: ${response.status})`);
         
         const jsonData = await response.json();
