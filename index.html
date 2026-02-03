@@ -284,14 +284,28 @@ function renderChart(datasets) {
                     ticks: {
                         autoSkip: false, // 【重要】不要自動跳過標籤
                         zIndex: 1,
-                        font: {
-                            size: 10 // 如果車站太擠，可以縮小字體
-                        },
-                        callback: (v) => {
-                            // 找出對應座標的車站名稱
-                            const entry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - v) < 0.1);
-                            return entry ? entry[0] : "";
+                        font: { size: 10 },
+                        callback: function(value) {
+                            // Get the current visible range of the Y axis
+                            const min = this.chart.scales.y.min;
+                            const max = this.chart.scales.y.max;
+                            
+                            // Only return a label if the value is within the current visible window
+                            if (value >= min && value <= max) {
+                                const entry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - value) < 0.1);
+                                return entry ? entry[0] : "";
+                            }
+                            return "";
                         }
+                    },
+                    afterTickToLabelConversion: (axis) => {
+                        // This ensures that only ticks currently inside the viewport are kept
+                        // preventing the scale from being cluttered by off-screen data
+                        const min = axis.min;
+                        const max = axis.max;
+                        
+                        // Filter out any ticks that are outside the current view
+                        axis.ticks = axis.ticks.filter(tick => tick.value >= min && tick.value <= max);
                     },
                     grid: {
                         display: true,
@@ -299,8 +313,11 @@ function renderChart(datasets) {
                         drawTicks: false,      // Prevents little "stubs" from poking into the label area
                         drawBorder: false,     // Removes the outer border line if it's overlapping
                         color: (context) => {
-                            // 檢查目前的刻度值是否為我們定義的車站
                             const v = context.tick.value;
+                            const axis = context.chart.scales.y;
+                            // Only draw the grid line if it's within the visible range
+                            if (v < axis.min || v > axis.max) return 'transparent';
+                            
                             const isStation = Object.values(stationDistances).some(dist => Math.abs(dist - v) < 0.1);
                             return isStation ? 'rgba(0, 0, 0, 0.15)' : 'transparent';
                         },
@@ -328,6 +345,10 @@ function renderChart(datasets) {
                         // Optional: require a key to pan, or leave as null to pan with just a mouse click
                         modifierKey: null, 
                         threshold: 0, // Minimum pixels to move before panning starts
+                        onPan: ({chart}) => {
+                            // Manually trigger a tick recalculation
+                            chart.scales.y.buildTicks(); 
+                        }
                     },
                     zoom: {
                         wheel: {
@@ -341,6 +362,9 @@ function renderChart(datasets) {
                         // },
                         // 【KEY CHANGE】: Zoom both axes when Ctrl is held
                         mode: 'xy', 
+                        onZoom: ({chart}) => {
+                            chart.scales.y.buildTicks();
+                        }
                     }
                 },
                 tooltip: {
