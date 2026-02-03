@@ -103,6 +103,9 @@ function parsePythonTxt(text) {
 
 function renderChart(datasets) {
     const ctx = document.getElementById('trainChart').getContext('2d');
+    const allY = datasets.flatMap(d => d.data.map(p => p.y));
+    const minY = Math.min(...allY) - 5;
+    const maxY = Math.max(...allY) + 5;
     new Chart(ctx, {
         type: 'scatter',
         data: { datasets: datasets },
@@ -121,8 +124,10 @@ function renderChart(datasets) {
                 },
                 y: {
                     reverse: true, // Matches ax.invert_yaxis()
+                    min: minY,
+                    max: maxY,
                     ticks: {
-                        callback: (v) => Object.keys(stationDistances).find(k => stationDistances[k] === v) || ""
+                        callback: (v) => Object.keys(stationDistances).find(k => Math.abs(stationDistances[k] - v) < 0.1) || ""
                     },
                     grid: { color: (c) => c.tick.value % 10 === 0 ? '#ddd' : '#f9f9f9' }
                 }
