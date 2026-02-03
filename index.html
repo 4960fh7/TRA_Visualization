@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <title>Taiwan Railway Diagram</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <style>
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
         .container { max-width: 1200px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { width: 2000px; height: 1200px; background: white; border: 1px solid #ddd; padding: 10px; }
+        #chart-container { width: 2000px; height: 2000px; background: white; border: 1px solid #ddd; padding: 10px; }
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
@@ -118,12 +119,37 @@ function renderChart(datasets) {
             scales: {
                 x: {
                     type: 'linear',
-                    min: Math.min(...allX) - 20,
+                    min: Math.min(...allX) - 20, // 根據數據自動調整起始時間
                     max: Math.max(...allX) + 20,
                     ticks: {
-                        callback: (v) => `${Math.floor(v/60).toString().padStart(2, '0')}:${(v%60).toString().padStart(2, '0')}`
+                        // 強制每 10 分鐘產生一個刻度，以便畫線
+                        stepSize: 10, 
+                        autoSkip: false,
+                        callback: function(value) {
+                            // 只在整點時顯示文字標籤（例如 08:00）
+                            if (value % 60 === 0) {
+                                const h = Math.floor(value / 60).toString().padStart(2, '0');
+                                return `${h}:00`;
+                            }
+                            return ""; // 非整點不顯示文字，避免擁擠
+                        }
                     },
-                    grid: { color: '#eee' }
+                    grid: {
+                        display: true,
+                        drawOnChartArea: true,
+                        // 設定垂直線顏色
+                        color: (context) => {
+                            const v = context.tick.value;
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.3)'; // 整點：較深的灰色
+                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.05)'; // 每10分：極淺的灰色
+                            return 'transparent';
+                        },
+                        // 設定垂直線粗細
+                        lineWidth: (context) => {
+                            const v = context.tick.value;
+                            return (v % 60 === 0) ? 2 : 1; // 整點用 2px，10分用 1px
+                        }
+                    }
                 },
                 y: {
                     reverse: true,
@@ -160,6 +186,22 @@ function renderChart(datasets) {
             },
             plugins: {
                 legend: { display: false },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'xy', // Allow panning both directions
+                        threshold: 10
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true, // Zoom with mouse wheel
+                        },
+                        pinch: {
+                            enabled: true // Zoom with touch gestures
+                        },
+                        mode: 'x', // Usually best to only zoom the time axis
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: (ctx) => {
