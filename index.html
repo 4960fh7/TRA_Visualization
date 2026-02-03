@@ -232,6 +232,21 @@ function renderChart(datasets) {
             }
         }
     });
+    ctx.canvas.addEventListener('wheel', (e) => {
+        if (e.ctrlKey) return; // Allow the plugin to handle CTRL + Zoom
+        
+        e.preventDefault(); // Prevent page scroll
+        
+        const speed = 0.5; // Adjust scroll sensitivity
+        
+        if (e.shiftKey) {
+            // Horizontal scroll (X-axis)
+            chart.pan({x: -e.deltaY * speed}, undefined, 'default');
+        } else {
+            // Vertical scroll (Y-axis)
+            chart.pan({y: -e.deltaY * speed}, undefined, 'default');
+        }
+    }, { passive: false });
 }
 
 const chartCanvas = document.getElementById('trainChart');
