@@ -40,7 +40,7 @@ async function loadData() {
     const statusEl = document.getElementById('status');
     try {
         // 加上時間戳防止快取舊檔案
-        const response = await fetch('data/schedule.json?t=' + Date.now()); 
+        const response = await fetch('data/20260204.json?t=' + Date.now()); 
         if (!response.ok) throw new Error(`找不到檔案 (Status: ${response.status})`);
         
         const jsonData = await response.json();
