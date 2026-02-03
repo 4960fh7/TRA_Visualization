@@ -9,9 +9,9 @@
         body { font-family: 'Microsoft JhengHei', sans-serif; margin: 0; padding: 20px; background-color: #fcfcfc; }
         .container { max-width: 1200px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; }
-        #chart-container { height: 90vh; background: white; border: 1px solid #ddd; padding: 10px; overflow: hidden; position: relative; cursor: grab;}
+        #chart-container { width: 100%; height: 90vh; background: white; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab;}
         #chart-container:active { cursor: grabbing; }
-        canvas {min-width: 1500px; min-height: 2000px;}
+        canvas { display: block; width: 100%; height: 100%;}
         .status-box { padding: 10px; margin-bottom: 10px; border-radius: 4px; font-weight: bold; }
         .loading { background: #e2e3e5; color: #383d41; }
         .error { background: #f8d7da; color: #721c24; }
@@ -122,6 +122,7 @@ function renderChart(datasets) {
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
+            devicePixelRatio: 2,
             scales: {
                 x: {
                     type: 'linear',
@@ -198,7 +199,7 @@ function renderChart(datasets) {
                         mode: 'xy', // Allows dragging in all directions
                         // Optional: require a key to pan, or leave as null to pan with just a mouse click
                         modifierKey: null, 
-                        // threshold: 5, // Minimum pixels to move before panning starts
+                        threshold: 5, // Minimum pixels to move before panning starts
                     },
                     zoom: {
                         wheel: {
@@ -207,9 +208,9 @@ function renderChart(datasets) {
                             modifierKey: 'ctrl', 
                             speed: 0.05, 
                         },
-                        pinch: {
-                            enabled: true
-                        },
+                        // pinch: {
+                        //     enabled: true
+                        // },
                         // 【KEY CHANGE】: Zoom both axes when Ctrl is held
                         mode: 'xy', 
                     }
