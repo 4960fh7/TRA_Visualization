@@ -131,37 +131,37 @@ const colorPalette = {"普悠瑪": "#ff0000", "太魯閣": "#ffa500", "新自強
 const lightenColor = {"普悠瑪": "#ff000033", "太魯閣": "#ffa50033", "新自強": "#80008033", "自強": "#00800033", "莒光": "#ffd70033", "區間快": "#0000ff33", "區間": "#00000033"};
 
 let allDatasets = []; // Store all data globally to filter against
+let rawJsonData = [];
 
 // Default route
 let routeStationList = westMountList; 
 let routeStationDistances = westMountDistances; 
 
 function changeRoute(listName, distanceName, element) {
-    // 1. Update the global list reference
     const lists = { westMountList, westSeaList, eastList, northList, southList };
     routeStationList = lists[listName];
     const distances = { westMountDistances, westSeaDistances, eastDistances, northDistances, southDistances };
     routeStationDistances = distances[distanceName];
 
-    // 2. Update UI classes
     document.querySelectorAll('.route-pill').forEach(p => p.classList.remove('active'));
     element.classList.add('active');
 
-    // 3. Re-process and Re-render
-    // We must re-process the JSON data because the distance filtering happens in processJsonToDatasets
-    const currentData = allDatasets[0]?.originalData ? allDatasets.map(d => d.originalData) : [];
-    
-    // If we have data, re-run the whole pipeline
-    if (allDatasets.length > 0) {
-        // We use the raw data saved in the first load to re-filter
+    if (rawJsonData.length > 0) {
         const chart = Chart.getChart("trainChart");
-        if (chart) chart.destroy();
-        
-        // Re-process the original JSON structure
-        const rawJson = allDatasets.map(d => d.originalData);
-        allDatasets = processJsonToDatasets(rawJson);
-        renderChart(allDatasets);
-        applyFilters(); // Ensure train type filters still apply
+        if (chart) {
+            // 1. Process new datasets based on the NEW routeStationList
+            allDatasets = processJsonToDatasets(rawJsonData);
+            chart.data.datasets = allDatasets;
+
+            // 2. Update the Y-axis range for the new route
+            const newYValues = routeStationList.map(s => routeStationDistances[s]);
+            chart.options.scales.y.min = Math.min(...newYValues) - 10;
+            chart.options.scales.y.max = Math.max(...newYValues) + 10;
+
+            // 3. Update the chart
+            chart.update();
+            applyFilters(); // Re-apply train type filters
+        }
     }
 }
 
@@ -194,6 +194,7 @@ async function loadData(dateStr = "20260204") {
         if (!response.ok) throw new Error(`找不到檔案: data/${dateStr}.json`);
         
         const jsonData = await response.json();
+        rawJsonData = jsonData; // SAVE THE RAW DATA HERE
         allDatasets = processJsonToDatasets(jsonData);
         
         if (allDatasets.length === 0) {
@@ -362,8 +363,11 @@ function processJsonToDatasets(jsonData) {
                 const startStation = ctx.p0.raw.s;
                 const endStation = ctx.p1.raw.s;
 
-                if (Math.abs(routeStationDistances[startStation] - routeStationDistances[endStation]) > 4000) {
-                    return 0.01;
+                const d1 = routeStationDistances[startStation];
+                const d2 = routeStationDistances[endStation];
+
+                if (d1 === undefined || d2 === undefined || Math.abs(d1 - d2) > 4000) {
+                    return 0.01; // Effectively hide the line
                 }
                 return 1.5;
             }
