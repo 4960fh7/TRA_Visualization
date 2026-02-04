@@ -457,9 +457,9 @@ function renderChart(datasets) {
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
             interaction: {
-                mode: 'index',      // Faster than 'nearest' for large datasets
-                intersect: false,
-                axis: 'x'
+                mode: 'nearest',      // Faster than 'nearest' for large datasets
+                intersect: true,
+                axis: 'xy'
             },
             plugins: {
                 decimation: {
@@ -468,10 +468,18 @@ function renderChart(datasets) {
                     samples: 500       // Limits the number of points processed
                 }
             },
+            datasets: {
+                line: {
+                    pointRadius: 0,       // No dots by default
+                    borderWidth: 1.5,
+                    stepped: false,
+                    borderCapStyle: 'butt' 
+                }
+            },
             parsing: false, // Huge performance boost: tells Chart.js data is already formatted
             normalized: true, // Tells Chart.js data is already sorted by X
             spanGaps: false, // Turned off because we split datasets manually
-            hover: { mode: 'nearest', intersect: false }, // Disable hover effects on mobile to save CPU
+            hover: { mode: 'nearest', intersect: true }, // Disable hover effects on mobile to save CPU
             scales: {
                 x: {
                     type: 'linear',
@@ -714,34 +722,29 @@ const verticalTimeLinesPlugin = {
         const { ctx, chartArea, scales: { x } } = chart;
         if (!x || !chartArea) return;
 
+        // OPTIMIZATION: If we are zooming/panning, draw simpler lines
+        const isInteracting = chart.isZoomingOrPanning; 
+        
         ctx.save();
-        // Ensure we only draw inside the plot area
+        ctx.beginPath();
         ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
         ctx.clip();
 
         const xRange = x.max - x.min;
-        // Determine granularity based on zoom level
-        const step = xRange < 400 ? 10 : (xRange < 800 ? 30 : 60);
-        
-        // Find the first multiple of 10 within view
-        const startValue = Math.floor(x.min / 10) * 10;
-        const endValue = Math.ceil(x.max / 10) * 10;
+        const step = xRange > 600 ? 60 : 30; // Reduce lines if zoomed out
 
-        for (let v = startValue; v <= endValue; v += 10) {
-            let color = 'transparent';
-            if (v % 60 === 0) color = 'rgba(0, 0, 0, 0.2)'; // Hourly (Solid)
-            else if (v % 30 === 0 && xRange < 1000) color = 'rgba(0, 0, 0, 0.1)'; // 30m
-            else if (v % 10 === 0 && xRange < 400) color = 'rgba(0, 0, 0, 0.05)'; // 10m
+        const startValue = Math.floor(x.min / 60) * 60;
+        const endValue = Math.ceil(x.max / 60) * 60;
 
-            if (color !== 'transparent') {
-                const px = x.getPixelForValue(v);
-                ctx.beginPath();
-                ctx.strokeStyle = color;
-                ctx.lineWidth = (v % 60 === 0) ? 1.5 : 1;
-                ctx.moveTo(px, chartArea.top);
-                ctx.lineTo(px, chartArea.bottom);
-                ctx.stroke();
-            }
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.lineWidth = 1;
+
+        for (let v = startValue; v <= endValue; v += step) {
+            const px = x.getPixelForValue(v);
+            ctx.beginPath();
+            ctx.moveTo(px, chartArea.top);
+            ctx.lineTo(px, chartArea.bottom);
+            ctx.stroke();
         }
         ctx.restore();
     }
