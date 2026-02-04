@@ -140,7 +140,7 @@ function changeRoute(listName, element) {
     // 1. Update the global list reference
     const lists = { westMountList, westSeaList, eastList, northList, southList };
     routeStationList = lists[listName];
-    const distances = { westMountList, westSeaList, eastList, northList, southList };
+    const distances = { westMountDistances, westSeaDistances, eastDistances, northDistances, southDistances };
     routeStationDistances = distances[listName];
 
     // 2. Update UI classes
@@ -149,20 +149,20 @@ function changeRoute(listName, element) {
 
     // 3. Re-process and Re-render
     // We must re-process the JSON data because the distance filtering happens in processJsonToDatasets
-    const currentData = allDatasets[0]?.originalData ? allDatasets.map(d => d.originalData) : [];
+    // const currentData = allDatasets[0]?.originalData ? allDatasets.map(d => d.originalData) : [];
     
-    // If we have data, re-run the whole pipeline
-    if (allDatasets.length > 0) {
-        // We use the raw data saved in the first load to re-filter
-        const chart = Chart.getChart("trainChart");
-        if (chart) chart.destroy();
+    // // If we have data, re-run the whole pipeline
+    // if (allDatasets.length > 0) {
+    //     // We use the raw data saved in the first load to re-filter
+    //     const chart = Chart.getChart("trainChart");
+    //     if (chart) chart.destroy();
         
-        // Re-process the original JSON structure
-        const rawJson = allDatasets.map(d => d.originalData);
-        allDatasets = processJsonToDatasets(rawJson);
-        renderChart(allDatasets);
-        applyFilters(); // Ensure train type filters still apply
-    }
+    //     // Re-process the original JSON structure
+    //     const rawJson = allDatasets.map(d => d.originalData);
+    //     allDatasets = processJsonToDatasets(rawJson);
+    //     renderChart(allDatasets);
+    //     applyFilters(); // Ensure train type filters still apply
+    // }
 }
 
 // 1. New function to handle date changes
