@@ -63,6 +63,8 @@
             gap: 8px;
             align-items: center;
         }
+        .route-pill.active { background-color: #28a745; color: white ;
+}
     </style>
 </head>
 <body>
@@ -70,7 +72,7 @@
 <button onclick="resetChartZoom()" style="position:fixed; top:20px; right:20px; z-index:100;">Reset View</button>
 
 <div class="container">
-<div class="header">
+    <div class="header">
         <h1>Train Diagram</h1>
         <div id="status" class="status-box loading">正在載入 ...</div>
     </div>
@@ -81,12 +83,22 @@
             <input type="date" id="date-picker" value="2026-02-04" onchange="handleDateChange()">
         </div>
         <div class="filter-controls">
+            <strong>運行線別：</strong>
+            <span id="route-west-mount" class="filter-item route-pill active" onclick="changeRoute('westMountList', this)">西部幹線(山線)</span>
+            <span id="route-west-sea" class="filter-item route-pill" onclick="changeRoute('westSeaList', this)">西部幹線(海線)</span>
+            <span id="route-north" class="filter-item route-pill" onclick="changeRoute('northList', this)">北迴/宜蘭線</span>
+            <span id="route-south" class="filter-item route-pill" onclick="changeRoute('southList', this)">屏東/南迴線</span>
+            <span id="route-east" class="filter-item route-pill" onclick="changeRoute('eastList', this)">東部幹線</span>
+        </div>
+    </div>
+
+    <div id="filters" class="filter-bar">
+        <div class="filter-controls">
             <strong>篩選車種：</strong>
             <span id="btn-select-all" class="filter-item" onclick="toggleAllFilters(true)">全選</span>
             <span id="btn-deselect-all" class="filter-item" onclick="toggleAllFilters(false)">取消全選</span>
         </div>
-        <div id="checkbox-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
-            </div>
+        <div id="checkbox-container" style="display: flex; gap: 15px; flex-wrap: wrap;"></div>
     </div>
 
     <div class="main-layout">
@@ -105,11 +117,48 @@ Chart.register(ChartZoom);
 
 // 車站距離定義
 const stationDistances = {"基隆": 0, "三坑": 15, "八堵": 39, "七堵": 62, "百福": 89, "五堵": 119, "汐止": 133, "汐科": 146, "南港": 193, "松山": 221, "臺北": 285, "萬華": 313, "板橋": 357, "浮洲": 381, "樹林": 411, "南樹林": 431, "山佳": 450, "鶯歌": 494, "鳳鳴": 544, "桃園": 576, "內壢": 635, "中壢": 675, "埔心": 733, "楊梅": 773, "富岡": 841, "新富": 858, "北湖": 873, "湖口": 898, "新豐": 960, "竹北": 1008, "北新竹": 1052, "千甲": 1030, "新莊": 1000, "竹中": 987, "六家": 956, "上員": 960, "榮華": 916, "竹東": 900, "橫山": 865, "九讚頭": 845, "合興": 823, "富貴": 809, "內灣": 787, "新竹": 1066, "三姓橋": 1114, "香山": 1146, "崎頂": 1208, "竹南": 1253, "談文": 1298, "大山": 1366, "後龍": 1403, "龍港": 1439, "白沙屯": 1520, "新埔": 1551, "通霄": 1609, "苑裡": 1670, "日南": 1747, "大甲": 1794, "臺中港": 1846, "清水": 1906, "沙鹿": 1938, "龍井": 1984, "大肚": 2034, "追分": 2084, "造橋": 1307, "豐富": 1366, "苗栗": 1406, "南勢": 1472, "銅鑼": 1514, "三義": 1588, "泰安": 1697, "后里": 1723, "豐原": 1790, "栗林": 1816, "潭子": 1841, "頭家厝": 1860, "松竹": 1877, "太原": 1895, "精武": 1912, "臺中": 1931, "五權": 1953, "大慶": 1974, "烏日": 2005, "新烏日": 2014, "成功": 2038, "彰化": 2109, "花壇": 2175, "大村": 2221, "員林": 2256, "永靖": 2291, "社頭": 2328, "田中": 2371, "二水": 2429, "源泉": 2459, "濁水": 2537, "龍泉": 2586, "集集": 2629, "水里": 2703, "車埕": 2725, "林內": 2510, "石榴": 2558, "斗六": 2606, "斗南": 2682, "石龜": 2721, "大林": 2767, "民雄": 2825, "嘉北": 2892, "嘉義": 2918, "水上": 2984, "南靖": 3010, "後壁": 3070, "新營": 3147, "柳營": 3180, "林鳳營": 3219, "隆田": 3274, "拔林": 3296, "善化": 3342, "南科": 3371, "新市": 3418, "永康": 3468, "大橋": 3505, "臺南": 3532, "保安": 3608, "仁德": 3622, "中洲": 3647, "長榮大學": 3673, "沙崙": 3704, "大湖": 3676, "路竹": 3706, "岡山": 3784, "橋頭": 3820, "楠梓": 3862, "新左營": 3913, "左營": 3933, "內惟": 3944, "美術館": 3961, "鼓山": 3973, "三塊厝": 3990, "高雄": 3999, "民族": 4012, "科工館": 4023, "正義": 4041, "鳳山": 4054, "後庄": 4093, "九曲堂": 4135, "六塊厝": 4185, "屏東": 4208, "歸來": 4234, "麟洛": 4257, "西勢": 4281, "竹田": 4318, "潮州": 4358, "崁頂": 4407, "南州": 4431, "鎮安": 4469, "林邊": 4500, "佳冬": 4539, "東海": 4570, "枋寮": 4611, "加祿": 4664, "內獅": 4699, "枋山": 4747, "大武": 5049, "瀧溪": 5166, "金崙": 5250, "太麻里": 5359, "知本": 5476, "康樂": 5547, "臺東": 5592, "山里": 5674, "鹿野": 5735, "瑞源": 5790, "瑞和": 5817, "關山": 5892, "海端": 5957, "池上": 6014, "富里": 6082, "東竹": 6143, "東里": 6203, "玉里": 6271, "三民": 6379, "瑞穗": 6473, "富源": 6564, "大富": 6596, "光復": 6671, "萬榮": 6727, "鳳林": 6776, "南平": 6818, "林榮新光": 6840, "豐田": 6902, "壽豐": 6930, "平和": 6948, "志學": 6978, "吉安": 7066, "花蓮": 7101, "北埔": 7147, "景美": 7212, "新城": 7265, "崇德": 7318, "和仁": 7418, "和平": 7497, "漢本": 7541, "武塔": 7670, "南澳": 7707, "東澳": 7787, "永樂": 7844, "蘇澳": 7863, "蘇澳新": 7896, "冬山": 7947, "羅東": 7997, "中里": 8015, "二結": 8027, "宜蘭": 8085, "四城": 8122, "礁溪": 8169, "頂埔": 8210, "頭城": 8232, "外澳": 8269, "龜山": 8304, "大溪": 8350, "大里": 8397, "石城": 8424, "福隆": 8478, "貢寮": 8516, "雙溪": 8569, "牡丹": 8603, "三貂嶺": 8638, "大華": 8602, "十分": 8574, "望古": 8557, "嶺腳": 8536, "平溪": 8526, "菁桐": 8509, "猴硐": 8663, "瑞芳": 8709, "海科館": 8752, "八斗子": 8756, "四腳亭": 8759, "暖暖": 8782};
+const westMountList = ['基隆', '三坑', '八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', '萬華', '板橋', '浮洲', '樹林', '南樹林', '山佳', '鶯歌', '鳳鳴', '桃園', '內壢', '中壢', '埔心', '楊梅', '富岡', '新富', '北湖', '湖口', '新豐', '竹北', '北新竹', '新竹', '三姓橋', '香山', '崎頂', '竹南', '造橋', '豐富', '苗栗', '南勢', '銅鑼', '三義', '泰安', '后里', '豐原', '栗林', '潭子', '頭家厝', '松竹', '太原', '精武', '臺中', '五權', '大慶', '烏日', '新烏日', '成功', '彰化', '花壇', '大村', '員林', '永靖', '社頭', '田中', '二水', '林內', '石榴', '斗六', '斗南', '石龜', '大林', '民雄', '嘉北', '嘉義', '水上', '南靖', '後壁', '新營', '柳營', '林鳳營', '隆田', '拔林', '善化', '南科', '新市', '永康', '大橋', '臺南', '保安', '仁德', '中洲', '大湖', '路竹', '岡山', '橋頭', '楠梓', '新左營', '左營', '內惟', '美術館', '鼓山', '三塊厝', '高雄', '民族', '科工館', '正義', '鳳山', '後庄', '九曲堂', '六塊厝', '屏東', '歸來', '麟洛', '西勢', '竹田', '潮州', '崁頂', '南州', '鎮安', '林邊', '佳冬', '東海', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東'];
 const westSeaList = ['基隆', '三坑', '八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', '萬華', '板橋', '浮洲', '樹林', '南樹林', '山佳', '鶯歌', '鳳鳴', '桃園', '內壢', '中壢', '埔心', '楊梅', '富岡', '新富', '北湖', '湖口', '新豐', '竹北', '北新竹', '新竹', '三姓橋', '香山', '崎頂', '竹南', '談文', '大山', '後龍', '龍港', '白沙屯', '新埔', '通霄', '苑裡', '日南', '大甲', '臺中港', '清水', '沙鹿', '龍井', '大肚', '追分', '彰化', '花壇', '大村', '員林', '永靖', '社頭', '田中', '二水', '林內', '石榴', '斗六', '斗南', '石龜', '大林', '民雄', '嘉北', '嘉義', '水上', '南靖', '後壁', '新營', '柳營', '林鳳營', '隆田', '拔林', '善化', '南科', '新市', '永康', '大橋', '臺南', '保安', '仁德', '中洲', '大湖', '路竹', '岡山', '橋頭', '楠梓', '新左營', '左營', '內惟', '美術館', '鼓山', '三塊厝', '高雄', '民族', '科工館', '正義', '鳳山', '後庄', '九曲堂', '六塊厝', '屏東', '歸來', '麟洛', '西勢', '竹田', '潮州', '崁頂', '南州', '鎮安', '林邊', '佳冬', '東海', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東'];
+const eastList = ['八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', '萬華', '板橋', '浮洲', '樹林', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東', '山里', '鹿野', '瑞源', '瑞和', '關山', '海端', '池上', '富里', '東竹', '東里', '玉里', '三民', '瑞穗', '富源', '大富', '光復', '萬榮', '鳳林', '南平', '林榮新光', '豐田', '壽豐', '平和', '志學', '吉安', '花蓮', '北埔', '景美', '新城', '崇德', '和仁', '和平', '漢本', '武塔', '南澳', '東澳', '永樂', '蘇澳新', '冬山', '羅東', '中里', '二結', '宜蘭', '四城', '礁溪', '頂埔', '頭城', '外澳', '龜山', '大溪', '大里', '石城', '福隆', '貢寮', '雙溪', '牡丹', '三貂嶺', '猴硐', '瑞芳', '四腳亭', '暖暖'];
+const northList = ['八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', '萬華', '板橋', '浮洲', '樹林', '南樹林', '山佳', '鶯歌', '鳳鳴', '桃園', '內壢', '中壢', '埔心', '楊梅', '富岡', '新富', '北湖', '湖口', '新豐', '竹北', '北新竹', '新竹', '三姓橋', '香山', '崎頂', '竹南', '蘇澳', '蘇澳新', '冬山', '羅東', '中里', '二結', '宜蘭', '四城', '礁溪', '頂埔', '頭城', '外澳', '龜山', '大溪', '大里', '石城', '福隆', '貢寮', '雙溪', '牡丹', '三貂嶺', '猴硐', '瑞芳', '四腳亭', '暖暖'];
+const southList = ['彰化', '花壇', '大村', '員林', '永靖', '社頭', '田中', '二水', '林內', '石榴', '斗六', '斗南', '石龜', '大林', '民雄', '嘉北', '嘉義', '水上', '南靖', '後壁', '新營', '柳營', '林鳳營', '隆田', '拔林', '善化', '南科', '新市', '永康', '大橋', '臺南', '保安', '仁德', '中洲', '大湖', '路竹', '岡山', '橋頭', '楠梓', '新左營', '左營', '內惟', '美術館', '鼓山', '三塊厝', '高雄', '民族', '科工館', '正義', '鳳山', '後庄', '九曲堂', '六塊厝', '屏東', '歸來', '麟洛', '西勢', '竹田', '潮州', '崁頂', '南州', '鎮安', '林邊', '佳冬', '東海', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東', '山里', '鹿野', '瑞源', '瑞和', '關山', '海端', '池上', '富里', '東竹', '東里', '玉里', '三民', '瑞穗', '富源', '大富', '光復', '萬榮', '鳳林', '南平', '林榮新光', '豐田', '壽豐', '平和', '志學', '吉安', '花蓮'];
+
 const colorPalette = {"普悠瑪": "#ff0000", "太魯閣": "#ffa500", "新自強": "#800080", "自強": "#008000", "莒光": "#ffd700", "區間快": "#0000ff", "區間": "#000000"};
 const lightenColor = {"普悠瑪": "#ff000033", "太魯閣": "#ffa50033", "新自強": "#80008033", "自強": "#00800033", "莒光": "#ffd70033", "區間快": "#0000ff33", "區間": "#00000033"};
 
 let allDatasets = []; // Store all data globally to filter against
+
+// Default route
+let routeStationList = westMountList; 
+
+function changeRoute(listName, element) {
+    // 1. Update the global list reference
+    const lists = {
+        westMountList, westSeaList, eastList, northList, southList
+    };
+    routeStationList = lists[listName];
+
+    // 2. Update UI classes
+    document.querySelectorAll('.route-pill').forEach(p => p.classList.remove('active'));
+    element.classList.add('active');
+
+    // 3. Re-process and Re-render
+    // We must re-process the JSON data because the distance filtering happens in processJsonToDatasets
+    const currentData = allDatasets[0]?.originalData ? allDatasets.map(d => d.originalData) : [];
+    
+    // If we have data, re-run the whole pipeline
+    if (allDatasets.length > 0) {
+        // We use the raw data saved in the first load to re-filter
+        const chart = Chart.getChart("trainChart");
+        if (chart) chart.destroy();
+        
+        // Re-process the original JSON structure
+        const rawJson = allDatasets.map(d => d.originalData);
+        allDatasets = processJsonToDatasets(rawJson);
+        renderChart(allDatasets);
+        applyFilters(); // Ensure train type filters still apply
+    }
+}
 
 // 1. New function to handle date changes
 async function handleDateChange() {
@@ -290,7 +339,7 @@ function processJsonToDatasets(jsonData) {
             const dist = stationDistances[stationName];
             
             if (dist !== undefined) {
-                if (westSeaList.includes(stationName)) {
+                if (routeStationList.includes(stationName)) {
                     if (stop.arrtime === stop.deptime) {
                         dataPoints.push({ x: stop.arrtime-0.5, y: dist , s: stationName });
                         dataPoints.push({ x: stop.deptime+0.5, y: dist , s: stationName });
@@ -395,13 +444,12 @@ function renderChart(datasets) {
                 },
                 y: {
                     reverse: true,
-                    min: Math.min(...allY) - 5,
-                    max: Math.max(...allY) + 5,
+                    min: Math.min(...routeStationList.map(s => stationDistances[s])) - 10,
+                    max: Math.max(...routeStationList.map(s => stationDistances[s])) + 10,
                     zIndex: 1,
                     afterBuildTicks: (axis) => {
-                        // ONLY include distances for stations in the westSeaList
                         const filteredDistances = Object.entries(stationDistances)
-                            .filter(([name, dist]) => westSeaList.includes(name))
+                            .filter(([name, dist]) => routeStationList.includes(name))
                             .map(([name, dist]) => ({ value: dist }));
                             
                         axis.ticks = filteredDistances;
@@ -445,7 +493,7 @@ function renderChart(datasets) {
                             
                         const stationNameEntry = Object.entries(stationDistances).find(([name, dist]) => Math.abs(dist - v) < 0.1);
                         
-                        if (stationNameEntry && westSeaList.includes(stationNameEntry[0])) {
+                        if (stationNameEntry && routeStationList.includes(stationNameEntry[0])) {
                             return 'rgba(0, 0, 0, 0.15)';
                         }
                         return 'transparent';
