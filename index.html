@@ -438,7 +438,7 @@ function renderChart(datasets) {
                 x: {
                     type: 'linear',
                     min: 240,
-                    max: 1680,
+                    max: 1500,
                     ticks: {
                         stepSize: 60, // Only generate a tick object every hour for the label
                         autoSkip: false,
@@ -605,10 +605,10 @@ function renderChart(datasets) {
         
         if (e.shiftKey) {
             // Horizontal scroll (X-axis)
-            chart.pan({x: -e.deltaY * speed}, undefined, 'default');
+            chartInstance.pan({x: -e.deltaY * speed}, undefined, 'default');
         } else {
             // Vertical scroll (Y-axis)
-            chart.pan({y: -e.deltaY * speed}, undefined, 'default');
+            chartInstance.pan({y: -e.deltaY * speed}, undefined, 'default');
         }
     }, { passive: false });
 
@@ -688,6 +688,7 @@ const verticalTimeLinesPlugin = {
 
         ctx.save();
         // Clip the drawing to the chart area so lines don't bleed into labels
+        ctx.beginPath();
         ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
         ctx.clip();
         
