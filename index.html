@@ -713,23 +713,31 @@ const stationLabelPlugin = {
         const { ctx, scales: { x, y } } = chart;
         const xRange = x.max - x.min;
 
-        // Only draw labels if zoomed in (showing less than 2.5 hours)
+        // Only show labels when zoomed in (less than 180 minutes visible)
         if (xRange > 90) return;
 
         ctx.save();
-        ctx.font = '10px sans-serif';
-        ctx.fillStyle = '#666';
+        ctx.font = '10px "Microsoft JhengHei"';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.textAlign = 'left';
 
         chart.data.datasets.forEach((dataset, i) => {
-            // Only label the "highlighted" train or visible ones
-            if (chart.isDatasetVisible(i) && (dataset.borderWidth > 1)) {
-                dataset.data.forEach(point => {
-                    // Check if point is within visible bounds
-                    if (point.x >= x.min && point.x <= x.max && point.s) {
+            // Only draw for visible datasets and highlight the selected one
+            if (chart.isDatasetVisible(i)) {
+                const isHighlighted = dataset.borderWidth > 2;
+                ctx.globalAlpha = isHighlighted ? 1.0 : 0.4;
+
+                dataset.data.forEach((point, index) => {
+                    // 1. Only draw on even indices (Arrival is 0, Departure is 1, etc.)
+                    // This ensures only one label per station visit.
+                    if (index % 2 !== 0 && point.x >= x.min && point.x <= x.max && point.s) {
                         const px = x.getPixelForValue(point.x);
                         const py = y.getPixelForValue(point.y);
-                        ctx.fillText(point.s, px + 4, py - 4);
+                        
+                        // Only draw if the point is within the vertical view
+                        if (point.y >= y.min && point.y <= y.max) {
+                            ctx.fillText(point.s, px + 6, py + 3);
+                        }
                     }
                 });
             }
