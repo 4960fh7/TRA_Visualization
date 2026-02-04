@@ -466,10 +466,11 @@ function renderChart(datasets) {
                         // 設定垂直線顏色
                         color: (context) => {
                             const v = context.tick.value;
+                            
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
+                            
                             const chart = context.chart;
                             const xRange = chart.scales.x.max - chart.scales.x.min;
-
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
                             
                             // 2. 30-Minute Lines: Visible unless zoomed way out
                             if (v % 30 === 0) {
@@ -721,7 +722,7 @@ const stationLabelPlugin = {
 
         ctx.save();
         ctx.font = '10px "Microsoft JhengHei"';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.textAlign = 'left';
 
         chart.data.datasets.forEach((dataset, i) => {
