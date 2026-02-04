@@ -514,13 +514,16 @@ function renderChart(datasets) {
                 }
             },
             onClick: (event, elements) => {
-                // Note: 'chartInstance' is what you defined at the top of renderChart
+                // elements is an array of objects found at the click location
                 if (elements.length > 0) {
                     const index = elements[0].datasetIndex;
-                    const train = chartInstance.data.datasets[index].originalData;
+                    // Access the dataset using the chartInstance variable
+                    const dataset = chartInstance.data.datasets[index];
                     
-                    highlightTrain(chartInstance, index);
-                    showSidebar(train);
+                    if (dataset && dataset.originalData) {
+                        highlightTrain(chartInstance, index);
+                        showSidebar(dataset.originalData);
+                    }
                 } else {
                     resetHighlight(chartInstance);
                 }
