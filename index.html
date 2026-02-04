@@ -453,7 +453,7 @@ function renderChart(datasets) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:00`;
                             }
-                            if (value % 60 === 30) {
+                            if (value % 60 === 30 && (this.chart.scales.x.max - this.chart.scales.x.min) < 720) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:30`;
                             }
@@ -471,12 +471,16 @@ function renderChart(datasets) {
 
                             if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
                             
-                            // 2. Show 30-min lines if zoomed in reasonably (Medium grid)
-                            if (xRange < 800 && v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
+                            // 2. 30-Minute Lines: Visible unless zoomed way out
+                            if (v % 30 === 0) {
+                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.1)' : 'transparent';
+                            }
                             
-                            // 3. Show 10-min lines only when zoomed in close (Minor grid)
-                            if (xRange < 180 && v % 10 === 0) return 'rgba(0, 0, 0, 0.05)';
-                            
+                            // 3. 10-Minute Lines (The Jitters): Only show when zoomed in
+                            if (v % 10 === 0) {
+                                return xRange < 300 ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
+                            } 
+
                             return 'transparent';
                         },
                         // 設定垂直線粗細
