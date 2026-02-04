@@ -410,11 +410,28 @@ function renderChart(datasets) {
         options: {
             clip: 0,
             animation: false,
+            transitions: {
+                active: { animation: { duration: 0 } },
+                resize: { animation: { duration: 0 } }
+            },
+            elements: {
+                line: {
+                    tension: 0, // Disable bezier curves
+                    borderWidth: 1.5,
+                    capBezierPoints: false // Speeds up drawing
+                },
+                point: {
+                    radius: 0, // Already doing this, keep it!
+                    hitRadius: 10 // Reduce this if clicking feels slow
+                }
+            },
             responsive: true,
             maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
             interaction: { mode: 'nearest', intersect: true, axis: 'xy' },
+            parsing: false, // Huge performance boost: tells Chart.js data is already formatted
+            normalized: true, // Tells Chart.js data is already sorted by X
             scales: {
                 x: {
                     type: 'linear',
@@ -531,6 +548,10 @@ function renderChart(datasets) {
             },
             plugins: {
                 legend: { display: false },
+                decimation: {
+                    enabled: true,
+                    algorithm: 'min-max', // Best for line-based diagrams
+                },
                 zoom: {
                     limits: {
                         x: {
@@ -549,7 +570,7 @@ function renderChart(datasets) {
                         mode: 'xy', // Allows dragging in all directions
                         // Optional: require a key to pan, or leave as null to pan with just a mouse click
                         modifierKey: null, 
-                        threshold: 0, // Minimum pixels to move before panning starts
+                        threshold: 10, // Minimum pixels to move before panning starts
                         onPan: ({chart}) => {
                             // Manually trigger a tick recalculation
                             chart.scales.y.buildTicks(); 
