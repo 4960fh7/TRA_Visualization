@@ -456,7 +456,18 @@ function renderChart(datasets) {
             maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
-            interaction: { mode: 'nearest', intersect: false, axis: 'xy' },
+            interaction: {
+                mode: 'index',      // Faster than 'nearest' for large datasets
+                intersect: false,
+                axis: 'x'
+            },
+            plugins: {
+                decimation: {
+                    enabled: true,
+                    algorithm: 'lttb', // 'lttb' preserves visual shape better than min-max
+                    samples: 500       // Limits the number of points processed
+                }
+            },
             parsing: false, // Huge performance boost: tells Chart.js data is already formatted
             normalized: true, // Tells Chart.js data is already sorted by X
             spanGaps: false, // Turned off because we split datasets manually
@@ -744,34 +755,33 @@ const stationLabelPlugin = {
     afterDatasetsDraw(chart) {
         const { ctx, scales: { x, y } } = chart;
         const xRange = x.max - x.min;
-
-        // Only show labels when zoomed in (less than 180 minutes visible)
         if (xRange > 90) return;
 
         ctx.save();
         ctx.font = '10px "Microsoft JhengHei"';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.textAlign = 'left';
-
+        
         chart.data.datasets.forEach((dataset, i) => {
-            // Only draw for visible datasets and highlight the selected one
-            if (chart.isDatasetVisible(i)) {
-                const isHighlighted = dataset.borderWidth > 2;
-                ctx.globalAlpha = isHighlighted ? 1.0 : 0.4;
+            if (!chart.isDatasetVisible(i)) return;
 
-                dataset.data.forEach((point, index) => {
-                    // 1. Only draw on even indices (Arrival is 0, Departure is 1, etc.)
-                    // This ensures only one label per station visit.
-                    if (index % 2 !== 0 && point.x >= x.min && point.x <= x.max && point.s) {
-                        const px = x.getPixelForValue(point.x);
-                        const py = y.getPixelForValue(point.y);
-                        
-                        // Only draw if the point is within the vertical view
-                        if (point.y >= y.min && point.y <= y.max) {
-                            ctx.fillText(point.s, px + 6, py + 3);
-                        }
+            const isHighlighted = dataset.borderWidth > 2;
+            ctx.globalAlpha = isHighlighted ? 1.0 : 0.4;
+
+            // OPTIMIZATION: Only loop through points that could possibly be on screen
+            for (let j = 0; j < dataset.data.length; j++) {
+                const point = dataset.data[j];
+                
+                // Skip points far to the left
+                if (point.x < x.min - 5) continue; 
+                // Stop loop if we passed the right edge
+                if (point.x > x.max + 5) break; 
+
+                if (j % 2 !== 0 && point.s) {
+                    const px = x.getPixelForValue(point.x);
+                    const py = y.getPixelForValue(point.y);
+                    if (point.y >= y.min && point.y <= y.max) {
+                        ctx.fillText(point.s, px + 6, py + 3);
                     }
-                });
+                }
             }
         });
         ctx.restore();
