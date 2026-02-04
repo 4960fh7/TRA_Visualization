@@ -84,11 +84,11 @@
         </div>
         <div class="filter-controls">
             <strong>運行線別：</strong>
-            <span id="route-west-mount" class="filter-item route-pill active" onclick="changeRoute('westMountList', this)">西部幹線(山線)</span>
-            <span id="route-west-sea" class="filter-item route-pill" onclick="changeRoute('westSeaList', this)">西部幹線(海線)</span>
-            <span id="route-north" class="filter-item route-pill" onclick="changeRoute('northList', this)">北迴/宜蘭線</span>
-            <span id="route-south" class="filter-item route-pill" onclick="changeRoute('southList', this)">屏東/南迴線</span>
-            <span id="route-east" class="filter-item route-pill" onclick="changeRoute('eastList', this)">東部幹線</span>
+            <span id="route-west-mount" class="filter-item route-pill active" onclick="changeRoute('westMountList', 'westMountDistances', this)">西部幹線(山線)</span>
+            <span id="route-west-sea" class="filter-item route-pill" onclick="changeRoute('westSeaList', 'westSeaDistances', this)">西部幹線(海線)</span>
+            <span id="route-north" class="filter-item route-pill" onclick="changeRoute('northList', 'northDistances', this)">北迴/宜蘭線</span>
+            <span id="route-south" class="filter-item route-pill" onclick="changeRoute('southList', 'southDistances', this)">屏東/南迴線</span>
+            <span id="route-east" class="filter-item route-pill" onclick="changeRoute('eastList', 'eastDistances', this)">東部幹線</span>
         </div>
     </div>
 
@@ -136,12 +136,12 @@ let allDatasets = []; // Store all data globally to filter against
 let routeStationList = westMountList; 
 let routeStationDistances = westMountDistances; 
 
-function changeRoute(listName, element) {
+function changeRoute(listName, distanceName, element) {
     // 1. Update the global list reference
     const lists = { westMountList, westSeaList, eastList, northList, southList };
     routeStationList = lists[listName];
     const distances = { westMountDistances, westSeaDistances, eastDistances, northDistances, southDistances };
-    routeStationDistances = distances[listName];
+    routeStationDistances = distances[distanceName];
 
     // 2. Update UI classes
     document.querySelectorAll('.route-pill').forEach(p => p.classList.remove('active'));
