@@ -469,15 +469,14 @@ function renderChart(datasets) {
                             const chart = context.chart;
                             const xRange = chart.scales.x.max - chart.scales.x.min;
 
-                            if (xRange > 200) {
-                                if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
-                                if (v % 30 === 0) return 'rgba(0, 0, 0, 0.2)';
-                                return 'transparent';
-                            }
-                            // Micro View: Show 10-min jitters
                             if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
-                            if (v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
-                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.05)';
+                            
+                            // 2. Show 30-min lines if zoomed in reasonably (Medium grid)
+                            if (xRange < 800 && v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
+                            
+                            // 3. Show 10-min lines only when zoomed in close (Minor grid)
+                            if (xRange < 180 && v % 10 === 0) return 'rgba(0, 0, 0, 0.05)';
+                            
                             return 'transparent';
                         },
                         // 設定垂直線粗細
@@ -718,7 +717,7 @@ const stationLabelPlugin = {
 
         ctx.save();
         ctx.font = '10px "Microsoft JhengHei"';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.textAlign = 'left';
 
         chart.data.datasets.forEach((dataset, i) => {
