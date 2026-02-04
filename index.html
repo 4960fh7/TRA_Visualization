@@ -13,9 +13,9 @@
         
         /* Layout */
         .main-layout { display: flex; gap: 10px; width: 100%; height: 80vh; }
-        #chart-container { flex: 1; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab; }
+        #chart-container { flex: 1; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab; touch-action: none; }
         #chart-container:active { cursor: grabbing; }
-        canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; }
 
         /* Sidebar */
         #sidebar { width: 280px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
@@ -432,6 +432,8 @@ function renderChart(datasets) {
             interaction: { mode: 'nearest', intersect: true, axis: 'xy' },
             parsing: false, // Huge performance boost: tells Chart.js data is already formatted
             normalized: true, // Tells Chart.js data is already sorted by X
+            spanGaps: false, // Turned off because we split datasets manually
+            hover: { mode: null }, // Disable hover effects on mobile to save CPU
             scales: {
                 x: {
                     type: 'linear',
@@ -570,7 +572,7 @@ function renderChart(datasets) {
                         mode: 'xy', // Allows dragging in all directions
                         // Optional: require a key to pan, or leave as null to pan with just a mouse click
                         modifierKey: null, 
-                        threshold: 10, // Minimum pixels to move before panning starts
+                        threshold: 5, // Minimum pixels to move before panning starts
                         onPan: ({chart}) => {
                             // Manually trigger a tick recalculation
                             chart.scales.y.buildTicks(); 
@@ -594,6 +596,15 @@ function renderChart(datasets) {
                     }
                 },
                 tooltip: {
+                    enabled: true,
+                    position: 'nearest',
+                    // Disable tooltips while zooming/panning to prevent lag
+                    external: (context) => {
+                        const chart = context.chart;
+                        if (chart.isZoomingOrPanning) { // Custom flag we'll set
+                            context.tooltip.opacity = 0;
+                        }
+                    },
                     callbacks: {
                         label: (ctx) => {
                             const h = Math.floor(ctx.parsed.x / 60);
@@ -674,7 +685,7 @@ function resetChartZoom() {
     if (chart) {
         // Optional: Force re-sync of scales before resetting
         chart.update('none'); 
-        chart.resetZoom();
+        chart.resetZoom('none');
     }
 }
 
@@ -689,14 +700,6 @@ const chartCanvas = document.getElementById('trainChart');
 chartCanvas.addEventListener('mousedown', () => chartCanvas.style.cursor = 'grabbing');
 chartCanvas.addEventListener('mouseup', () => chartCanvas.style.cursor = 'grab');
 chartCanvas.addEventListener('mouseover', () => chartCanvas.style.cursor = 'grab');
-
-function resetChartZoom() {
-    // 'trainChart' is the ID of your canvas; Chart.getChart gets the instance
-    const chart = Chart.getChart("trainChart");
-    if (chart) {
-        chart.resetZoom();
-    }
-}
 
 const initialDate = document.getElementById('date-picker').value.replace(/-/g, '');
 loadData(initialDate);
