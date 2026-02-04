@@ -459,21 +459,22 @@ function renderChart(datasets) {
                     grid: {
                         display: true,
                         drawOnChartArea: true,
+                        drawTicks: true,
                         color: (context) => {
                             const v = context.tick.value;
                             const xRange = context.chart.scales.x.max - context.chart.scales.x.min;
 
                             // 1. Hour Lines: Always visible (darker)
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.15)';
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
                             
                             // 2. 30-Minute Lines: Visible at most zoom levels
                             if (v % 30 === 0) {
-                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
+                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.15)' : 'transparent';
                             }
                             
                             // 3. 10-Minute Lines: Only show when zoomed in close
                             if (v % 10 === 0) {
-                                return xRange < 400 ? 'rgba(0, 0, 0, 0.03)' : 'transparent';
+                                return xRange < 400 ? 'rgba(0, 0, 0, 0.1)' : 'transparent';
                             }
                             return 'transparent';
                         },
