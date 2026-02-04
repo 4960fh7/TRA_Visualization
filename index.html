@@ -433,7 +433,7 @@ function renderChart(datasets) {
             parsing: false, // Huge performance boost: tells Chart.js data is already formatted
             normalized: true, // Tells Chart.js data is already sorted by X
             spanGaps: false, // Turned off because we split datasets manually
-            hover: { mode: null }, // Disable hover effects on mobile to save CPU
+            hover: { mode: 'nearest', intersect: false }, // Disable hover effects on mobile to save CPU
             scales: {
                 x: {
                     type: 'linear',
