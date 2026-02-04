@@ -397,12 +397,37 @@ let selectedTrainId = null;
 
 function renderChart(datasets) {
     const ctx = document.getElementById('trainChart').getContext('2d');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarContent = document.getElementById('sidebar-content');
     
-    // 計算顯示範圍
-    const allX = datasets.flatMap(d => d.data.map(p => p.x));
-    const allY = datasets.flatMap(d => d.data.map(p => p.y));
+    // 1. Determine Window Size based on device
+    const isMobile = window.innerWidth <= 768;
+    const windowSize = isMobile ? 6 * 60 : 10 * 60; // 6hrs vs 10hrs in minutes
+
+    // 2. Calculate Centered X (Time)
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Limits based on your data (240 to 1500)
+    const absMinX = 240; 
+    const absMaxX = 1500;
+
+    let initialMinX = currentMinutes - (windowSize / 2);
+    let initialMaxX = currentMinutes + (windowSize / 2);
+
+    // Ensure we don't exceed absolute limits
+    if (initialMinX < absMinX) {
+        initialMinX = absMinX;
+        initialMaxX = absMinX + windowSize;
+    } else if (initialMaxX > absMaxX) {
+        initialMaxX = absMaxX;
+        initialMinX = absMaxX - windowSize;
+    }
+
+    // 3. Calculate Centered Y (Stations)
+    const stationValues = routeStationList.map(s => routeStationDistances[s]);
+    const minY = Math.min(...stationValues);
+    const maxY = Math.max(...stationValues);
+    const centerLineY = (minY + maxY) / 2;
+    const yRange = (maxY - minY) + 20; // 10px buffer on each side
 
     const chartInstance = new Chart(ctx, {
         type: 'scatter',
@@ -437,8 +462,8 @@ function renderChart(datasets) {
             scales: {
                 x: {
                     type: 'linear',
-                    min: 240,
-                    max: 1500,
+                    min: initialMinX,
+                    max: initialMaxX,
                     ticks: {
                         stepSize: 60, // Only generate a tick object every hour for the label
                         autoSkip: false,
@@ -456,8 +481,8 @@ function renderChart(datasets) {
                 },
                 y: {
                     reverse: true,
-                    min: Math.min(...routeStationList.map(s => routeStationDistances[s])) - 10,
-                    max: Math.max(...routeStationList.map(s => routeStationDistances[s])) + 10,
+                    min: minY - 10,
+                    max: maxY + 10,
                     zIndex: 1,
                     afterBuildTicks: (axis) => {
                         const filtered = Object.entries(routeStationDistances)
@@ -536,16 +561,8 @@ function renderChart(datasets) {
                 },
                 zoom: {
                     limits: {
-                        x: {
-                            min: Math.min(...allX) - 30, // 30 mins buffer before first train
-                            max: Math.max(...allX) + 30, // 30 mins buffer after last train
-                            minRange: 60                 // Minimum 1 hour visible
-                        },
-                        y: {
-                            min: Math.min(...allY) - 50, // Slightly more buffer than the scale min
-                            max: Math.max(...allY) + 50,
-                            minRange: 10 // Prevents zooming in so far that the chart disappears
-                        }
+                        x: { min: absMinX, max: absMaxX, minRange: 60 },
+                        y: { min: minY - 50, max: maxY + 50, minRange: 10 }
                     },
                     pan: {
                         enabled: true,
@@ -767,6 +784,37 @@ const stationLabelPlugin = {
 
 // Don't forget to register it!
 Chart.register(stationLabelPlugin);
+
+const currentTimePlugin = {
+    id: 'currentTimePlugin',
+    afterDatasetsDraw(chart) {
+        const { ctx, chartArea, scales: { x } } = chart;
+        if (!chartArea || !x) return;
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        if (currentMinutes >= x.min && currentMinutes <= x.max) {
+            const px = x.getPixelForValue(currentMinutes);
+            
+            ctx.save();
+            ctx.strokeStyle = '#d9534f';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(px, chartArea.top);
+            ctx.lineTo(px, chartArea.bottom);
+            ctx.stroke();
+
+            // Label "現在"
+            ctx.fillStyle = '#d9534f';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('現在', px + 5, chartArea.top + 15);
+            ctx.restore();
+        }
+    }
+};
+Chart.register(currentTimePlugin);
 
 const chartCanvas = document.getElementById('trainChart');
 
