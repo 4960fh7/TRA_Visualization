@@ -15,7 +15,7 @@
         .main-layout { display: flex; gap: 10px; width: 100%; height: 80vh; }
         #chart-container { flex: 1; background: white; padding: 10px; border: 1px solid #ddd; overflow: hidden; position: relative; cursor: grab; }
         #chart-container:active { cursor: grabbing; }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
         /* Sidebar */
         #sidebar { width: 280px; background: white; border: 1px solid #ddd; padding: 15px; overflow-y: auto; display: none; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
@@ -562,9 +562,9 @@ function renderChart(datasets) {
                             modifierKey: 'ctrl', 
                             speed: 0.2, 
                         },
-                        // pinch: {
-                        //     enabled: true
-                        // },
+                        pinch: {
+                            enabled: true
+                        },
                         // 【KEY CHANGE】: Zoom both axes when Ctrl is held
                         mode: 'xy', 
                         onZoom: ({chart}) => {
