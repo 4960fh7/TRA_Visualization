@@ -469,14 +469,9 @@ function renderChart(datasets) {
                             const chart = context.chart;
                             const xRange = chart.scales.x.max - chart.scales.x.min;
 
-                            // Macro View: Only O'clock lines
-                            if (xRange > 500) {
-                                return (v % 60 === 0) ? 'rgba(0, 0, 0, 0.2)' : 'transparent';
-                            }
-                            // Mid View: O'clock and 30-min
                             if (xRange > 200) {
                                 if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
-                                if (v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
+                                if (v % 30 === 0) return 'rgba(0, 0, 0, 0.2)';
                                 return 'transparent';
                             }
                             // Micro View: Show 10-min jitters
@@ -719,7 +714,7 @@ const stationLabelPlugin = {
         const xRange = x.max - x.min;
 
         // Only draw labels if zoomed in (showing less than 2.5 hours)
-        if (xRange > 150) return;
+        if (xRange > 90) return;
 
         ctx.save();
         ctx.font = '10px sans-serif';
