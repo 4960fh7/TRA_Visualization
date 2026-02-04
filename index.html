@@ -438,48 +438,8 @@ function renderChart(datasets) {
                 x: {
                     type: 'linear',
                     // Set a fixed stepSize so the grid lines are generated even when zoomed out
-                    ticks: {
-                        stepSize: 10, 
-                        autoSkip: false,
-                        maxTicksLimit: 300,
-                        callback: function(value) {
-                            // Label every hour
-                            if (value % 60 === 0) {
-                                const h = Math.floor(value / 60).toString().padStart(2, '0');
-                                return `${h}:00`;
-                            }
-                            // Label half-hours ONLY if we are zoomed in enough to see them clearly
-                            const xRange = this.chart.scales.x.max - this.chart.scales.x.min;
-                            if (value % 30 === 0 && xRange < 600) {
-                                const h = Math.floor(value / 60).toString().padStart(2, '0');
-                                return `${h}:30`;
-                            }
-                            return "";
-                        }
-                    },
                     grid: {
-                        display: true,
-                        drawOnChartArea: true,
-                        drawTicks: true,
-                        color: (context) => {
-                            const v = context.tick.value;
-                            const xRange = context.chart.scales.x.max - context.chart.scales.x.min;
-
-                            // 1. Hour Lines: Always visible (darker)
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
-                            
-                            // 2. 30-Minute Lines: Visible at most zoom levels
-                            if (v % 30 === 0) {
-                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.15)' : 'transparent';
-                            }
-                            
-                            // 3. 10-Minute Lines: Only show when zoomed in close
-                            if (v % 10 === 0) {
-                                return xRange < 400 ? 'rgba(0, 0, 0, 0.1)' : 'transparent';
-                            }
-                            return 'transparent';
-                        },
-                        lineWidth: (context) => (context.tick.value % 60 === 0 ? 1.5 : 1)
+                        display: false
                     }
                 },
                 y: {
@@ -701,6 +661,49 @@ function formatTime(minutes) {
     const m = (minutes % 60).toString().padStart(2, '0');
     return `${h}:${m}`;
 }
+
+const verticalTimeLinesPlugin = {
+    id: 'verticalTimeLinesPlugin',
+    beforeDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+        const xMin = Math.floor(x.min / 10) * 10;
+        const xMax = Math.ceil(x.max / 10) * 10;
+        const xRange = x.max - x.min;
+
+        ctx.save();
+        
+        for (let v = xMin; v <= xMax; v += 10) {
+            let color = 'transparent';
+            let lineWidth = 1;
+
+            if (v % 60 === 0) {
+                // Hour lines: Always visible
+                color = 'rgba(0, 0, 0, 0.2)';
+                lineWidth = 1.5;
+            } else if (v % 30 === 0) {
+                // 30-min lines: Hide only if zoomed way out
+                color = xRange < 1500 ? 'rgba(0, 0, 0, 0.1)' : 'transparent';
+            } else if (v % 10 === 0) {
+                // 10-min lines: Show only when zoomed in
+                color = xRange < 400 ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
+            }
+
+            if (color !== 'transparent') {
+                const px = x.getPixelForValue(v);
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                ctx.moveTo(px, y.top);
+                ctx.lineTo(px, y.bottom);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+};
+
+// Register the new plugin
+Chart.register(verticalTimeLinesPlugin);
 
 const stationLabelPlugin = {
     id: 'stationLabelPlugin',
