@@ -443,7 +443,7 @@ function renderChart(datasets) {
                     ticks: {
                         // 強制每 10 分鐘產生一個刻度，以便畫線
                         stepSize: 10, 
-                        autoSkip: true,
+                        autoSkip: false,
                         autoSkipPadding: 10,
                         backgroundColor: 'white', // This can help "hide" lines that pass behind it
                         ticks: { zIndex: 2, },
@@ -469,15 +469,20 @@ function renderChart(datasets) {
                             const chart = context.chart;
                             const xRange = chart.scales.x.max - chart.scales.x.min;
 
-                            // When zoomed out (range > 300 minutes), only draw o'clock lines
-                            if (xRange > 300) {
-                                return (v % 60 === 0) ? 'rgba(0, 0, 0, 0.3)' : 'transparent';
+                            // Macro View: Only O'clock lines
+                            if (xRange > 500) {
+                                return (v % 60 === 0) ? 'rgba(0, 0, 0, 0.2)' : 'transparent';
                             }
-                            
-                            // When zoomed in, draw all levels of detail
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.3)';
-                            if (v % 30 === 0) return 'rgba(0, 0, 0, 0.2)';
-                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.1)';
+                            // Mid View: O'clock and 30-min
+                            if (xRange > 200) {
+                                if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
+                                if (v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
+                                return 'transparent';
+                            }
+                            // Micro View: Show 10-min jitters
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
+                            if (v % 30 === 0) return 'rgba(0, 0, 0, 0.1)';
+                            if (v % 10 === 0) return 'rgba(0, 0, 0, 0.05)';
                             return 'transparent';
                         },
                         // 設定垂直線粗細
@@ -706,6 +711,40 @@ function formatTime(minutes) {
     const m = (minutes % 60).toString().padStart(2, '0');
     return `${h}:${m}`;
 }
+
+const stationLabelPlugin = {
+    id: 'stationLabelPlugin',
+    afterDatasetsDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+        const xRange = x.max - x.min;
+
+        // Only draw labels if zoomed in (showing less than 2.5 hours)
+        if (xRange > 150) return;
+
+        ctx.save();
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'left';
+
+        chart.data.datasets.forEach((dataset, i) => {
+            // Only label the "highlighted" train or visible ones
+            if (chart.isDatasetVisible(i) && (dataset.borderWidth > 1)) {
+                dataset.data.forEach(point => {
+                    // Check if point is within visible bounds
+                    if (point.x >= x.min && point.x <= x.max && point.s) {
+                        const px = x.getPixelForValue(point.x);
+                        const py = y.getPixelForValue(point.y);
+                        ctx.fillText(point.s, px + 4, py - 4);
+                    }
+                });
+            }
+        });
+        ctx.restore();
+    }
+};
+
+// Don't forget to register it!
+Chart.register(stationLabelPlugin);
 
 const chartCanvas = document.getElementById('trainChart');
 
