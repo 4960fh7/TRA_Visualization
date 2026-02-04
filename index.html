@@ -149,18 +149,29 @@ function changeRoute(listName, distanceName, element) {
     if (rawJsonData.length > 0) {
         const chart = Chart.getChart("trainChart");
         if (chart) {
-            // 1. Process new datasets based on the NEW routeStationList
+            // 1. Process new datasets
             allDatasets = processJsonToDatasets(rawJsonData);
             chart.data.datasets = allDatasets;
 
-            // 2. Update the Y-axis range for the new route
+            // 2. Calculate new Y bounds
             const newYValues = routeStationList.map(s => routeStationDistances[s]);
-            chart.options.scales.y.min = Math.min(...newYValues) - 10;
-            chart.options.scales.y.max = Math.max(...newYValues) + 10;
+            const minY = Math.min(...newYValues);
+            const maxY = Math.max(...newYValues);
 
-            // 3. Update the chart
+            // 3. Update Scale AND Zoom Limits
+            chart.options.scales.y.min = minY - 10;
+            chart.options.scales.y.max = maxY + 10;
+
+            if (chart.options.plugins.zoom && chart.options.plugins.zoom.limits) {
+                chart.options.plugins.zoom.limits.y.min = minY - 50;
+                chart.options.plugins.zoom.limits.y.max = maxY + 50;
+            }
+
+            // 4. Reset View (This handles your requirement to reset zoom on route change)
             chart.update();
-            applyFilters(); // Re-apply train type filters
+            chart.resetZoom(); 
+            
+            applyFilters(); 
         }
     }
 }
@@ -453,11 +464,10 @@ function renderChart(datasets) {
                     max: Math.max(...routeStationList.map(s => routeStationDistances[s])) + 10,
                     zIndex: 1,
                     afterBuildTicks: (axis) => {
-                        const filteredDistances = Object.entries(routeStationDistances)
+                        const filtered = Object.entries(routeStationDistances)
                             .filter(([name, dist]) => routeStationList.includes(name))
                             .map(([name, dist]) => ({ value: dist }));
-                            
-                        axis.ticks = filteredDistances;
+                        axis.ticks = filtered;
                     },
                     ticks: {
                         autoSkip: false,
@@ -635,6 +645,15 @@ function renderChart(datasets) {
             dataset.borderColor = colorPalette[trainType] || "#ccc";
         });
         chart.update('none');
+    }
+}
+
+function resetChartZoom() {
+    const chart = Chart.getChart("trainChart");
+    if (chart) {
+        // Optional: Force re-sync of scales before resetting
+        chart.update('none'); 
+        chart.resetZoom();
     }
 }
 
