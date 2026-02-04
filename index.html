@@ -437,23 +437,19 @@ function renderChart(datasets) {
             scales: {
                 x: {
                     type: 'linear',
-                    min: Math.min(...allX) - 20, // 根據數據自動調整起始時間
-                    max: Math.max(...allX) + 20,
-                    zIndex: 10,
+                    // Set a fixed stepSize so the grid lines are generated even when zoomed out
                     ticks: {
-                        // 強制每 10 分鐘產生一個刻度，以便畫線
                         stepSize: 10, 
                         autoSkip: false,
-                        autoSkipPadding: 10,
-                        backgroundColor: 'white', // This can help "hide" lines that pass behind it
-                        ticks: { zIndex: 2, },
                         callback: function(value) {
-                            // 只在整點時顯示文字標籤（例如 08:00）
+                            // Label every hour
                             if (value % 60 === 0) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:00`;
                             }
-                            if (value % 60 === 30 && (this.chart.scales.x.max - this.chart.scales.x.min) < 720) {
+                            // Label half-hours ONLY if we are zoomed in enough to see them clearly
+                            const xRange = this.chart.scales.x.max - this.chart.scales.x.min;
+                            if (value % 30 === 0 && xRange < 600) {
                                 const h = Math.floor(value / 60).toString().padStart(2, '0');
                                 return `${h}:30`;
                             }
@@ -463,32 +459,25 @@ function renderChart(datasets) {
                     grid: {
                         display: true,
                         drawOnChartArea: true,
-                        // 設定垂直線顏色
                         color: (context) => {
                             const v = context.tick.value;
+                            const xRange = context.chart.scales.x.max - context.chart.scales.x.min;
+
+                            // 1. Hour Lines: Always visible (darker)
+                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.15)';
                             
-                            if (v % 60 === 0) return 'rgba(0, 0, 0, 0.2)';
-                            
-                            const chart = context.chart;
-                            const xRange = chart.scales.x.max - chart.scales.x.min;
-                            
-                            // 2. 30-Minute Lines: Visible unless zoomed way out
+                            // 2. 30-Minute Lines: Visible at most zoom levels
                             if (v % 30 === 0) {
-                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.1)' : 'transparent';
+                                return xRange < 2000 ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
                             }
                             
-                            // 3. 10-Minute Lines (The Jitters): Only show when zoomed in
+                            // 3. 10-Minute Lines: Only show when zoomed in close
                             if (v % 10 === 0) {
-                                return xRange < 300 ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
-                            } 
-
+                                return xRange < 400 ? 'rgba(0, 0, 0, 0.03)' : 'transparent';
+                            }
                             return 'transparent';
                         },
-                        // 設定垂直線粗細
-                        lineWidth: (context) => {
-                            const v = context.tick.value;
-                            return (v % 60 === 0) ? 2 : 1; // 整點用 2px，10分用 1px
-                        }
+                        lineWidth: (context) => (context.tick.value % 60 === 0 ? 1.5 : 1)
                     }
                 },
                 y: {
