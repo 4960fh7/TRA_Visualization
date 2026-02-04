@@ -429,7 +429,7 @@ function renderChart(datasets) {
             maintainAspectRatio: false,
             devicePixelRatio: 2,
             layout: { padding: { bottom: 10 } },
-            interaction: { mode: 'nearest', intersect: true, axis: 'xy' },
+            interaction: { mode: 'nearest', intersect: false, axis: 'xy' },
             parsing: false, // Huge performance boost: tells Chart.js data is already formatted
             normalized: true, // Tells Chart.js data is already sorted by X
             spanGaps: false, // Turned off because we split datasets manually
