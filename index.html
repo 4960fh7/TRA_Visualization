@@ -437,7 +437,17 @@ function renderChart(datasets) {
             scales: {
                 x: {
                     type: 'linear',
-                    // Set a fixed stepSize so the grid lines are generated even when zoomed out
+                    ticks: {
+                        stepSize: 60, // Only generate a tick object every hour for the label
+                        autoSkip: false,
+                        callback: function(value) {
+                            // Force labels to be HH:00 format based on minutes
+                            const h = Math.floor(value / 60);
+                            const m = Math.floor(value % 60);
+                            if (m === 0) return h.toString().padStart(2, '0') + ':00';
+                            return ""; 
+                        }
+                    },
                     grid: {
                         display: false
                     }
