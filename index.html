@@ -43,9 +43,9 @@
               coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
               getPath: d => d.data.map(p => [p.x, p.y]), // Map the nested points to [x, y] arrays
               getColor: d => d.type === 'A' ? [255, 0, 100] : [0, 200, 255],
-              getWidth: 0.2,
-              widthMinPixels: 0.1,
-              widthMaxPixels: 0.3,
+              getWidth: 0.4,
+              widthMinPixels: 0.2,
+              widthMaxPixels: 0.6,
               capRounded: true,
               jointRounded: true
             }),
@@ -56,12 +56,12 @@
               data: flattenedData,
               coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
               pickable: true,
-              opacity: 0.8,
+              opacity: 1,
               getPosition: d => [d.x, d.y], 
               getFillColor: d => d.parentType === 'A' ? [255, 0, 100] : [0, 200, 255],
-              getRadius: 5,
-              radiusMinPixels: 2,
-              radiusMaxPixels: 8
+              getRadius: 0.001,
+              radiusMinPixels: 0.00001,
+              radiusMaxPixels: 0.1
             })
           ],
           getTooltip: ({object}) => object && `Type: ${object.parentType || object.type}\nID: ${object.parentNumber || object.number}`
