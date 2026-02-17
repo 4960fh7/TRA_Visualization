@@ -77,7 +77,9 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPath: d => [[-200, d[1]], [2000, d[1]]],
                             getColor: [80, 80, 80],
-                            getWidth: 1
+                            getWidth: 1,
+                            widthMaxPixels: 4,
+                            widthMinPixels: 1
                         }),
 
                         new deck.TextLayer({
@@ -86,7 +88,9 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => d.position,
                             getText: d => d.text,
-                            getSize: 20,
+                            getSize: 15,
+                            sizeMaxPixels: 4,
+                            sizeMinPixels: 1,
                             getColor: [80, 80, 80],
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
@@ -104,7 +108,9 @@
                             highlightColor: [255, 255, 255, 150],
                             getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
                             getColor: d => colorPalette[d.train],
-                            getWidth: 1.5
+                            getWidth: 1.5,
+                            widthMaxPixels: 4,
+                            widthMinPixels: 1
                         }),
 
                         new deck.PathLayer({
@@ -115,7 +121,9 @@
                             pickable: false,
                             getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
                             getColor: [255, 255, 0], // Yellow highlight
-                            getWidth: 2.5
+                            getWidth: 2.5,
+                            widthMaxPixels: 5,
+                            widthMinPixels: 2
                         }),
 
                         new deck.ScatterplotLayer({
