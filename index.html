@@ -5,23 +5,11 @@
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
         <style>
             body { margin: 0; padding: 0; display: flex; background-color: #111; font-family: sans-serif; }
-            
-            /* Map container takes up 3/4 of the screen */
             #container { width: 75vw; height: 100vh; }
-
-            /* Sidebar takes up 1/4 of the screen */
             #sidebar { 
-                width: 25vw; 
-                height: 100vh; 
-                background-color: #222; 
-                color: white; 
-                padding: 20px; 
-                box-sizing: border-box;
-                border-left: 1px solid #444;
-                display: flex;
-                flex-direction: column;
+                width: 25vw; height: 100vh; background-color: #222; color: white; 
+                padding: 20px; box-sizing: border-box; border-left: 1px solid #444;
             }
-
             .placeholder { color: #666; font-style: italic; }
             h2 { border-bottom: 1px solid #444; padding-bottom: 10px; }
         </style>
@@ -41,31 +29,23 @@
             async function initMap() {
                 const response = await fetch('data/test_data.json'); 
                 const rawData = await response.json();
-                
                 const infoBox = document.getElementById('info-content');
 
                 const deckInstance = new deck.DeckGL({
                     container: 'container',
                     views: [new deck.OrthographicView({id: 'ortho'})],
-                    initialViewState: {
-                        target: [0, 0, 0], 
-                        zoom: 6
-                    },
+                    initialViewState: { target: [0, 0, 0], zoom: 6 },
                     controller: true,
+                    pickingRadius: 10,
                     
-                    onViewStateChange: ({viewState}) => {
-                        deckInstance.setProps({viewState});
-                    },
+                    onViewStateChange: ({viewState}) => { deckInstance.setProps({viewState}); },
 
                     onClick: (info) => {
-                        // 1. SET SELECTION
-                        if (info.object && info.layer.id === 'path-layer') {
+                        if (info.object && info.layer.id === 'main-path-layer') {
                             selectedLine = info.object;
-                            // Update HTML Sidebar
                             infoBox.innerHTML = `
                                 <p><strong>Type:</strong> ${selectedLine.type}</p>
                                 <p><strong>Number:</strong> ${selectedLine.number}</p>
-                                <p><strong>Points:</strong> ${selectedLine.data.length}</p>
                             `;
                         } else {
                             // Reset if clicking background
@@ -79,30 +59,30 @@
                 function renderLayers() {
                     const layers = [
                         new deck.PathLayer({
-                            id: 'path-layer',
+                            id: 'main-path-layer',
                             data: rawData,
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: true,
+                            autoHighlight: true,
+                            highlightColor: [255, 255, 255, 150],
                             getPath: d => d.data.map(p => [p.x, p.y]),
-                            
-                            // 2. MAINTAIN HIGHLIGHT LOGIC
-                            getColor: d => {
-                                // If this line is the selected one, turn it white/bright
-                                if (selectedLine && d === selectedLine) {
-                                    return [255, 255, 255]; 
-                                }
-                                // Otherwise, use original logic
-                                return d.type === 'A' ? [200, 0, 80] : [0, 160, 200];
-                            },
-                            
-                            // Make selected line slightly thicker
-                            getWidth: d => (selectedLine && d === selectedLine) ? 2.5 : 1.5,
-                            widthMaxPixels: 2.5,
-                            widthMinPixels: 1,
-                            updateTriggers: {
-                                getColor: [selectedLine], // Forces redraw when selectedLine changes
-                                getWidth: [selectedLine]
-                            }
+                            getColor: d => d.type === 'A' ? [200, 0, 80] : [0, 160, 200],
+                            getWidth: 1.5,
+                            widthMaxPixels: 2,
+                            widthMinPixels: 1
+                        }),
+
+                        new deck.PathLayer({
+                            id: 'selection-layer',
+                            // This array is either empty or contains exactly one item
+                            data: selectedLine ? [selectedLine] : [], 
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            pickable: false,
+                            getPath: d => d.data.map(p => [p.x, p.y]),
+                            getColor: [255, 255, 0], // Yellow highlight
+                            getWidth: 2.5,
+                            widthMaxPixels: 3,
+                            widthMinPixels: 2
                         }),
 
                         new deck.ScatterplotLayer({
