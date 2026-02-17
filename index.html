@@ -13,11 +13,12 @@
     <div id="container"></div>
     <script type="text/javascript">
     
+
       async function initMap() {
         const response = await fetch('data/test_data.json'); 
         const rawData = await response.json();
-
-        // 2. Flatten the nested data so deck.gl can iterate over every point
+      
+        // Keep this for the dots/tooltips
         const flattenedData = rawData.flatMap(group => 
           group.data.map(point => ({
             ...point,
@@ -25,36 +26,48 @@
             parentNumber: group.number
           }))
         );
-
+      
         new deck.DeckGL({
           container: 'container',
           initialViewState: {
-            longitude: 0, // Adjust these based on your X/Y scale
+            longitude: 0, 
             latitude: 0,
             zoom: 2,
             pitch: 0
           },
           controller: true,
           layers: [
+            // 1. THE PATH LAYER (Lines connecting the dots)
+            new deck.PathLayer({
+              coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+              id: 'path-layer',
+              data: rawData, // Use the un-flattened original list
+              getPath: d => d.data.map(p => [p.x, p.y]), // Map the nested points to [x, y] arrays
+              getColor: d => d.type === 'A' ? [255, 0, 100] : [0, 200, 255],
+              getWidth: 2,
+              widthMinPixels: 1,
+              capRounded: true,
+              jointRounded: true
+            }),
+      
+            // 2. THE SCATTERPLOT LAYER (The dots on top)
             new deck.ScatterplotLayer({
+              coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
               id: 'json-layer',
               data: flattenedData,
               pickable: true,
               opacity: 0.8,
-              // Use the x and y from your nested objects
               getPosition: d => [d.x, d.y], 
-              // Example: color based on the "type" string in your JSON
               getFillColor: d => d.parentType === 'A' ? [255, 0, 100] : [0, 200, 255],
-              getRadius: d => 100,
+              getRadius: 100,
               radiusMinPixels: 3,
               radiusMaxPixels: 15
             })
           ],
-          // Add a basic tooltip to see your "number" and "type" fields
-          getTooltip: ({object}) => object && `Type: ${object.parentType}\nID: ${object.parentNumber}`
+          getTooltip: ({object}) => object && `Type: ${object.parentType || object.type}\nID: ${object.parentNumber || object.number}`
         });
       }
-
+      
       initMap();
 
     </script>
