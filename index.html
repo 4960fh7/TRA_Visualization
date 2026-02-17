@@ -44,8 +44,7 @@
                         if (info.object && info.layer.id === 'main-path-layer') {
                             selectedLine = info.object;
                             infoBox.innerHTML = `
-                                <p><strong>Type:</strong> ${selectedLine.type}</p>
-                                <p><strong>Number:</strong> ${selectedLine.number}</p>
+                                <p><strong>${selectedLine.train} ${selectedLine.number}</p>
                             `;
                         } else {
                             // Reset if clicking background
@@ -66,7 +65,7 @@
                             autoHighlight: true,
                             highlightColor: [255, 255, 255, 150],
                             getPath: d => d.data.map(p => [p.x, p.y]),
-                            getColor: d => d.type === 'A' ? [200, 0, 80] : [0, 160, 200],
+                            getColor: d => d.train === 'A' ? [200, 0, 80] : [0, 160, 200],
                             getWidth: 1.5,
                             widthMaxPixels: 2,
                             widthMinPixels: 1
@@ -87,7 +86,7 @@
 
                         new deck.ScatterplotLayer({
                             id: 'json-layer',
-                            data: rawData.flatMap(g => g.data.map(p => ({...p, type: g.type}))),
+                            data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => [d.x, d.y], 
                             getFillColor: [200, 200, 200],
