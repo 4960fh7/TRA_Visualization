@@ -43,8 +43,9 @@
               coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
               getPath: d => d.data.map(p => [p.x, p.y]), // Map the nested points to [x, y] arrays
               getColor: d => d.type === 'A' ? [255, 0, 100] : [0, 200, 255],
-              getWidth: 2,
-              widthMinPixels: 1,
+              getWidth: 0.2,
+              widthMinPixels: 0.1,
+              widthMaxPixels: 0.3,
               capRounded: true,
               jointRounded: true
             }),
