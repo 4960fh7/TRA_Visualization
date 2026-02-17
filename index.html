@@ -78,8 +78,8 @@
                             getPath: d => [[-200, d[1]], [2000, d[1]]],
                             getColor: [80, 80, 80],
                             getWidth: 1,
-                            widthMaxPixels: 4,
-                            widthMinPixels: 1
+                            widthMaxPixels: 2.5,
+                            widthMinPixels: 0.2
                         }),
 
                         new deck.TextLayer({
@@ -89,8 +89,7 @@
                             getPosition: d => d.position,
                             getText: d => d.text,
                             getSize: 15,
-                            sizeMaxPixels: 4,
-                            sizeMinPixels: 1,
+                            sizeMaxPixels: 8,
                             getColor: [80, 80, 80],
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
@@ -122,8 +121,8 @@
                             getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
                             getColor: [255, 255, 0], // Yellow highlight
                             getWidth: 2.5,
-                            widthMaxPixels: 5,
-                            widthMinPixels: 2
+                            widthMaxPixels: 6,
+                            widthMinPixels: 3
                         }),
 
                         new deck.ScatterplotLayer({
