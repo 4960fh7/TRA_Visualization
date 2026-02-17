@@ -1,44 +1,76 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Deck.gl Plain Background</title>
+        <title>Deck.gl Map with Sidebar</title>
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
-
         <style>
-            body { margin: 0; padding: 0; }
-            #container { width: 100vw; height: 100vh; background-color: #111111; }
+            body { margin: 0; padding: 0; display: flex; background-color: #111; font-family: sans-serif; }
+            
+            /* Map container takes up 3/4 of the screen */
+            #container { width: 75vw; height: 100vh; }
+
+            /* Sidebar takes up 1/4 of the screen */
+            #sidebar { 
+                width: 25vw; 
+                height: 100vh; 
+                background-color: #222; 
+                color: white; 
+                padding: 20px; 
+                box-sizing: border-box;
+                border-left: 1px solid #444;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .placeholder { color: #666; font-style: italic; }
+            h2 { border-bottom: 1px solid #444; padding-bottom: 10px; }
         </style>
     </head>
     <body>
         <div id="container"></div>
-        <script type="text/javascript">
+        <div id="sidebar">
+            <h2>Line Details</h2>
+            <div id="info-content">
+                <p class="placeholder">Click a line to see details</p>
+            </div>
+        </div>
 
-            let selectedLine = null; // Track the clicked line
+        <script type="text/javascript">
+            let selectedLine = null;
 
             async function initMap() {
                 const response = await fetch('data/test_data.json'); 
                 const rawData = await response.json();
-            
+                
+                const infoBox = document.getElementById('info-content');
+
                 const deckInstance = new deck.DeckGL({
                     container: 'container',
                     views: [new deck.OrthographicView({id: 'ortho'})],
                     initialViewState: {
                         target: [0, 0, 0], 
-                        zoom: 6 // 1. INCREASE THIS TO ZOOM IN
+                        zoom: 6
                     },
                     controller: true,
                     
-                    // Function to re-render layers when state changes
                     onViewStateChange: ({viewState}) => {
                         deckInstance.setProps({viewState});
                     },
 
                     onClick: (info) => {
-                        // 2. LOGIC FOR CLICKING
+                        // 1. SET SELECTION
                         if (info.object && info.layer.id === 'path-layer') {
                             selectedLine = info.object;
+                            // Update HTML Sidebar
+                            infoBox.innerHTML = `
+                                <p><strong>Type:</strong> ${selectedLine.type}</p>
+                                <p><strong>Number:</strong> ${selectedLine.number}</p>
+                                <p><strong>Points:</strong> ${selectedLine.data.length}</p>
+                            `;
                         } else {
+                            // Reset if clicking background
                             selectedLine = null;
+                            infoBox.innerHTML = `<p class="placeholder">Click a line to see details</p>`;
                         }
                         renderLayers();
                     }
@@ -46,58 +78,50 @@
 
                 function renderLayers() {
                     const layers = [
-                        // THE PATH LAYER
                         new deck.PathLayer({
                             id: 'path-layer',
                             data: rawData,
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            pickable: true, // MUST BE TRUE
-                            autoHighlight: true, // Highlights the line on hover
-                            highlightColor: [255, 255, 255, 100],
+                            pickable: true,
                             getPath: d => d.data.map(p => [p.x, p.y]),
-                            getColor: d => d.type === 'A' ? [255, 0, 100] : [0, 200, 255],
-                            getWidth: 2,
+                            
+                            // 2. MAINTAIN HIGHLIGHT LOGIC
+                            getColor: d => {
+                                // If this line is the selected one, turn it white/bright
+                                if (selectedLine && d === selectedLine) {
+                                    return [255, 255, 255]; 
+                                }
+                                // Otherwise, use original logic
+                                return d.type === 'A' ? [200, 0, 80] : [0, 160, 200];
+                            },
+                            
+                            // Make selected line slightly thicker
+                            getWidth: d => (selectedLine && d === selectedLine) ? 4 : 2,
                             widthMinPixels: 1.5,
-                            widthMaxPixels: 2.5
+                            updateTriggers: {
+                                getColor: [selectedLine], // Forces redraw when selectedLine changes
+                                getWidth: [selectedLine]
+                            }
                         }),
 
-                        // THE SCATTERPLOT LAYER
                         new deck.ScatterplotLayer({
                             id: 'json-layer',
-                            data: rawData.flatMap(g => g.data.map(p => ({...p, type: g.type, num: g.number}))),
+                            data: rawData.flatMap(g => g.data.map(p => ({...p, type: g.type}))),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => [d.x, d.y], 
                             getFillColor: [200, 200, 200],
-                            getRadius: 0.001,
-                            radiusMinPixels: 0.0001,
-                            radiusMaxPixels: 0.01
-                        }),
-
-                        // 3. THE TEXT LAYER (Shows info next to the clicked line)
-                        new deck.TextLayer({
-                            id: 'text-layer',
-                            data: selectedLine ? [selectedLine] : [], // Only show if a line is selected
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            // Position the text at the first point of the line
-                            getPosition: d => [d.data[0].x, d.data[0].y],
-                            getText: d => `Type: ${d.type}, Num: ${d.number}`,
-                            getSize: 8,
-                            getFillColor: [80, 80, 80],
-                            getColor: [255, 255, 255],
-                            getAlignmentBaseline: 'bottom',
-                            getTextAnchor: 'start',
-                            pixelOffset: [10, -10] // Move text slightly away from the point
+                            getRadius: 0.1,
+                            radiusMinPixels: 1
                         })
                     ];
 
                     deckInstance.setProps({layers});
                 }
 
-                renderLayers(); // Initial call
+                renderLayers();
             }
-      
+            
             initMap();
-
         </script>
     </body>
 </html>
