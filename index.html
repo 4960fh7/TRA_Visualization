@@ -24,6 +24,10 @@
         </div>
         <div id="sidebar">
             <h2>篩選器</h2>
+            <div class="action-bar">
+                <button id="btn-select-all" class="action-pill">全選</button>
+                <button id="btn-deselect-all" class="action-pill">全部不選</button>
+            </div>
             <div id="pill-container">
                 <button class="pill active" data-type="普悠瑪" checked> 普悠瑪</button>
                 <button class="pill active" data-type="太魯閣" checked> 太魯閣</button>
@@ -51,6 +55,9 @@
             .pill { border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s ease; background-color: #333; color: #888; border: 1px solid #444; }
             .pill.active { color: black; border-color: transparent; }
             .pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
+            .action-bar { display: flex; gap: 10px; margin-bottom: 10px; }
+            .action-pill { background: transparent; border: 1px solid #666; color: #ccc; padding: 4px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+            .action-pill:hover { background: #444; color: white; border-color: #888; }
         </style>
 
         <script type="text/javascript">
@@ -85,39 +92,67 @@
                 });
 
                 const pillContainer = document.getElementById('pill-container');
+                const allTypes = Object.keys(colorPalette);
                 const pills = document.querySelectorAll('.pill');
-                pills.forEach(pill => {
-                    const type = pill.getAttribute('data-type');
-                    const color = colorPalette[type];
-                    
-                    // Initial color setup
-                    if (pill.classList.contains('active')) {
-                        pill.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-                    }
 
-                    pill.addEventListener('click', () => {
-                        // 1. Toggle the Set
+                // 1. Create a single function to handle the UI looks
+                function syncPillStyles() {
+                    pills.forEach(pill => {
+                        const type = pill.getAttribute('data-type');
+                        const color = colorPalette[type];
+                        
                         if (enabledTypes.has(type)) {
-                            enabledTypes.delete(type);
-                            pill.classList.remove('active');
-                            pill.style.backgroundColor = '#333'; // "Off" color
-                            pill.style.color = '#888';
-                        } else {
-                            enabledTypes.add(type);
                             pill.classList.add('active');
                             pill.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
                             pill.style.color = 'black';
+                        } else {
+                            pill.classList.remove('active');
+                            pill.style.backgroundColor = '#333';
+                            pill.style.color = '#888';
+                        }
+                    });
+                }
+
+                // 2. Individual Pill Clicks
+                pills.forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        const type = pill.getAttribute('data-type');
+                        
+                        // Toggle the data
+                        if (enabledTypes.has(type)) {
+                            enabledTypes.delete(type);
+                            // Clear info box if the hidden train was selected
+                            if (selectedLine && selectedLine.train === type) {
+                                selectedLine = null;
+                                document.getElementById('info-content').innerHTML = `<p class="placeholder">點選列車以顯示資訊</p>`;
+                            }
+                        } else {
+                            enabledTypes.add(type);
                         }
 
-                        // 2. Clear info box if the deselected type was selected
-                        if (selectedLine && selectedLine.train === type && !enabledTypes.has(type)) {
-                            selectedLine = null;
-                            document.getElementById('info-content').innerHTML = `<p class="placeholder">點選列車以顯示資訊</p>`;
-                        }
-
-                        renderLayers();
+                        syncPillStyles(); // Update the buttons
+                        renderLayers();   // Update the map
                     });
                 });
+
+                // 3. Select All
+                document.getElementById('btn-select-all').addEventListener('click', () => {
+                    allTypes.forEach(type => enabledTypes.add(type));
+                    syncPillStyles();
+                    renderLayers();
+                });
+
+                // 4. Deselect All
+                document.getElementById('btn-deselect-all').addEventListener('click', () => {
+                    enabledTypes.clear();
+                    selectedLine = null;
+                    document.getElementById('info-content').innerHTML = `<p class="placeholder">點選列車以顯示資訊</p>`;
+                    syncPillStyles();
+                    renderLayers();
+                });
+
+                // 5. Run once on startup to set initial colors
+                syncPillStyles();
                 
                 const deckInstance = new deck.DeckGL({
                     container: 'container',
