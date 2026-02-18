@@ -189,26 +189,28 @@
                 const normalLabelData = [];
                 const sparseLabelData = [];
                 Object.entries(stationDistances).forEach(([name, yValue]) => {
-                    for (let x = 720; x <= 5040; x += 360) {
-                        denseLabelData.push({
-                            text: name,
-                            position: [x, yValue],
-                            y: yValue
-                        });
-                    }
-                    for (let x = 720; x <= 5040; x += 720) {
-                        normalLabelData.push({
-                            text: name,
-                            position: [x, yValue],
-                            y: yValue
-                        });
-                    }
-                    for (let x = 720; x <= 5040; x += 1440) {
-                        sparseLabelData.push({
-                            text: name,
-                            position: [x, yValue],
-                            y: yValue
-                        });
+                    if (stationList.has(name)) {
+                        for (let x = 720; x <= 5040; x += 360) {
+                            denseLabelData.push({
+                                text: name,
+                                position: [x, yValue],
+                                y: yValue
+                            });
+                        }
+                        for (let x = 720; x <= 5040; x += 720) {
+                            normalLabelData.push({
+                                text: name,
+                                position: [x, yValue],
+                                y: yValue
+                            });
+                        }
+                        for (let x = 720; x <= 5040; x += 1440) {
+                            sparseLabelData.push({
+                                text: name,
+                                position: [x, yValue],
+                                y: yValue
+                            });
+                        }
                     }
                 });
 
