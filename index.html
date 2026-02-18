@@ -177,6 +177,37 @@
 
                 function renderLayers() {
                     const filteredData = rawData.filter(d => enabledTypes.has(d.train));
+                    const TIME_THRESHOLD = 5000;
+                    const processedSegments = [];
+                    rawData.filter(d => enabledTypes.has(d.train)).forEach(train => {
+                        let currentSegment = [];
+                        const points = train.data;
+
+                        for (let i = 0; i < points.length; i++) {
+                            const currentPoint = points[i];
+                            const prevPoint = points[i - 1];
+
+                            // Check constraint: Is the gap between this station and the last one too big?
+                            if (prevPoint) {
+                                const timeGap = Math.abs(stationDistances[currentPoint.x] - stationDistances[prevPoint.x]);
+                                
+                                if (timeGap > TIME_THRESHOLD) {
+                                    // Gap detected! Save the completed segment and start a new one
+                                    if (currentSegment.length > 1) {
+                                        processedSegments.push({ ...train, data: currentSegment });
+                                    }
+                                    currentSegment = []; 
+                                }
+                            }
+                            currentSegment.push(currentPoint);
+                        }
+
+                        // Push the final segment for this train
+                        if (currentSegment.length > 1) {
+                            processedSegments.push({ ...train, data: currentSegment });
+                        }
+                    });
+                    
                     const layers = [
                         new deck.PathLayer({
                             id: 'station-layer',
@@ -240,7 +271,7 @@
 
                         new deck.PathLayer({
                             id: 'main-path-layer',
-                            data: filteredData,
+                            data: processedSegments,
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: true,
                             autoHighlight: true,
