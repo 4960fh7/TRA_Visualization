@@ -185,16 +185,24 @@
                 });
 
                 const denseLabelData = [];
+                const normalLabelData = [];
                 const sparseLabelData = [];
                 Object.entries(stationDistances).forEach(([name, yValue]) => {
-                    for (let x = 240; x <= 1680; x += 120) {
+                    for (let x = 480; x <= 3360; x += 240) {
                         denseLabelData.push({
                             text: name,
                             position: [x, yValue],
                             y: yValue
                         });
                     }
-                    for (let x = 240; x <= 1680; x += 240) {
+                    for (let x = 480; x <= 3360; x += 480) {
+                        normalLabelData.push({
+                            text: name,
+                            position: [x, yValue],
+                            y: yValue
+                        });
+                    }
+                    for (let x = 480; x <= 3360; x += 960) {
                         sparseLabelData.push({
                             text: name,
                             position: [x, yValue],
@@ -206,13 +214,13 @@
                 const thickLines = [];
                 const thinLines = [];
                 const bottomLabels = [];
-                for (let x = 240; x <= 1680; x += 10) {
-                    if (x % 60 === 0) {
-                        thickLines.push({ path: [[x, 0], [x, 10000]] });
+                for (let x = 480; x <= 3360; x += 20) {
+                    if (x % 120 === 0) {
+                        thickLines.push({ path: [[x, 0], [x, 20000]] });
                     } else {
-                        thinLines.push({ path: [[x, 0], [x, 10000]] });
+                        thinLines.push({ path: [[x, 0], [x, 20000]] });
                     }
-                    bottomLabels.push({ text: `${(Math.floor(x/60)).toString().padStart(2, '0')}:${(x%60).toString().padStart(2, '0')}`, position: [x, 10000] });
+                    bottomLabels.push({ text: `${(Math.floor(x/120)).toString().padStart(2, '0')}:${(x%120).toString().padStart(2, '0')}`, position: [x, 20000] });
                 }
 
                 function renderLayers() {
@@ -253,7 +261,7 @@
                             id: 'station-layer',
                             data: Object.entries(stationDistances),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => [[-200, d[1]], [2000, d[1]]],
+                            getPath: d => [[420, d[1]], [3300, d[1]]],
                             getColor: [80, 80, 80],
                             getWidth: 1,
                             widthMaxPixels: 2,
@@ -261,7 +269,7 @@
                         }),
                         new deck.TextLayer({
                             id: 'station-labels',
-                            data: currentZoom > 0.8 ? denseLabelData : currentZoom > -1.1 ? sparseLabelData : [],
+                            data: currentZoom > 0.8 ? denseLabelData : currentZoom > -0.2 ? normalLabelData : currentZoom > -1.1 ? sparseLabelData : [],
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => d.position,
                             getText: d => d.text,
@@ -316,7 +324,7 @@
                             pickable: true,
                             autoHighlight: true,
                             highlightColor: [255, 255, 255, 150],
-                            getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
+                            getPath: d => d.data.map(p => [p.y*2, stationDistances[p.x]]),
                             getColor: d => colorPalette[d.train],
                             getWidth: 1.5,
                             widthMaxPixels: 2,
@@ -328,7 +336,7 @@
                             data: selectedLine && enabledTypes.has(selectedLine.train) ? [selectedLine] : [],
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: false,
-                            getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
+                            getPath: d => d.data.map(p => [p.y*2, stationDistances[p.x]]),
                             getColor: [255, 255, 0], // Yellow highlight
                             getWidth: 2.5,
                             widthMaxPixels: 3,
@@ -339,7 +347,7 @@
                             id: 'json-layer',
                             data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [d.y, stationDistances[d.x]], 
+                            getPosition: d => [d.y*2, stationDistances[d.x]], 
                             getFillColor: [200, 200, 200],
                             getRadius: 0.0001,
                             radiusMaxPixels: 0.001,
