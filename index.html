@@ -17,10 +17,10 @@
     </head>
     <body>
         <div id="container">
-            <div id="view-monitor">
+            <!-- <div id="view-monitor">
                 Zoom: <span id="val-zoom">0</span> | 
                 Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
-            </div>
+            </div> -->
         </div>
         <div id="sidebar">
             <h2>篩選器</h2>
@@ -188,21 +188,21 @@
                 const normalLabelData = [];
                 const sparseLabelData = [];
                 Object.entries(stationDistances).forEach(([name, yValue]) => {
-                    for (let x = 480; x <= 3360; x += 240) {
+                    for (let x = 720; x <= 5040; x += 360) {
                         denseLabelData.push({
                             text: name,
                             position: [x, yValue],
                             y: yValue
                         });
                     }
-                    for (let x = 480; x <= 3360; x += 480) {
+                    for (let x = 720; x <= 5040; x += 720) {
                         normalLabelData.push({
                             text: name,
                             position: [x, yValue],
                             y: yValue
                         });
                     }
-                    for (let x = 480; x <= 3360; x += 960) {
+                    for (let x = 720; x <= 5040; x += 1440) {
                         sparseLabelData.push({
                             text: name,
                             position: [x, yValue],
@@ -214,13 +214,13 @@
                 const thickLines = [];
                 const thinLines = [];
                 const bottomLabels = [];
-                for (let x = 480; x <= 3360; x += 20) {
-                    if (x % 120 === 0) {
-                        thickLines.push({ path: [[x, 0], [x, 20000]] });
+                for (let x = 720; x <= 5040; x += 30) {
+                    if (x % 180 === 0) {
+                        thickLines.push({ path: [[x, 0], [x, 10000]] });
                     } else {
-                        thinLines.push({ path: [[x, 0], [x, 20000]] });
+                        thinLines.push({ path: [[x, 0], [x, 10000]] });
                     }
-                    bottomLabels.push({ text: `${(Math.floor(x/120)).toString().padStart(2, '0')}:${(x%120).toString().padStart(2, '0')}`, position: [x, 20000] });
+                    bottomLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}:${(x%180/3).toString().padStart(2, '0')}`, position: [x, 10000] });
                 }
 
                 function renderLayers() {
@@ -261,7 +261,7 @@
                             id: 'station-layer',
                             data: Object.entries(stationDistances),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => [[420, d[1]], [3300, d[1]]],
+                            getPath: d => [[630, d[1]], [5130, d[1]]],
                             getColor: [80, 80, 80],
                             getWidth: 1,
                             widthMaxPixels: 2,
@@ -276,7 +276,7 @@
                             getSize: 12,
                             sizeMaxPixels: 12,
                             sizeMinPixels: 0,
-                            getColor: [128, 128, 128],
+                            getColor: [180, 180, 180],
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
                             getAlignmentBaseline: 'bottom', // Position ABOVE the point
@@ -324,7 +324,7 @@
                             pickable: true,
                             autoHighlight: true,
                             highlightColor: [255, 255, 255, 150],
-                            getPath: d => d.data.map(p => [p.y*2, stationDistances[p.x]]),
+                            getPath: d => d.data.map(p => [p.y*3, stationDistances[p.x]]),
                             getColor: d => colorPalette[d.train],
                             getWidth: 1.5,
                             widthMaxPixels: 2,
@@ -336,10 +336,10 @@
                             data: selectedLine && enabledTypes.has(selectedLine.train) ? [selectedLine] : [],
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: false,
-                            getPath: d => d.data.map(p => [p.y*2, stationDistances[p.x]]),
-                            getColor: [255, 255, 0], // Yellow highlight
-                            getWidth: 2.5,
-                            widthMaxPixels: 3,
+                            getPath: d => d.data.map(p => [p.y*3, stationDistances[p.x]]),
+                            getColor: [255, 196, 0], // Yellow highlight
+                            getWidth: 3,
+                            widthMaxPixels: 3.5,
                             widthMinPixels: 0
                         }),
 
@@ -347,7 +347,7 @@
                             id: 'json-layer',
                             data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [d.y*2, stationDistances[d.x]], 
+                            getPosition: d => [d.y*3, stationDistances[d.x]], 
                             getFillColor: [200, 200, 200],
                             getRadius: 0.0001,
                             radiusMaxPixels: 0.001,
