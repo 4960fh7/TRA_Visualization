@@ -18,6 +18,17 @@
     <body>
         <div id="container"></div>
         <div id="sidebar">
+            <h2>篩選器</h2>
+            <div id="filters">
+                <label><input type="checkbox" id="puyuma" checked> 普悠瑪</label><br>
+                <label><input type="checkbox" id="taroko" checked> 太魯閣</label><br>
+                <label><input type="checkbox" id="newtzechiang" checked> 新自強</label><br>
+                <label><input type="checkbox" id="tzechiang" checked> 自強</label><br>
+                <label><input type="checkbox" id="chukuang" checked> 莒光</label><br>
+                <label><input type="checkbox" id="localfast" checked> 區間快</label><br>
+                <label><input type="checkbox" id="local" checked> 區間</label>
+            </div>
+            <hr>
             <h2>列車資訊</h2>
             <div id="info-content">
                 <p class="placeholder">點選列車以顯示資訊</p>
@@ -60,7 +71,7 @@
 
                 const labelData = [];
                 Object.entries(stationDistances).forEach(([name, yValue]) => {
-                    for (let x = 240; x <= 1680; x += 100) {
+                    for (let x = 240; x <= 1680; x += 120) {
                         labelData.push({
                             text: name,
                             position: [x, yValue],
@@ -78,7 +89,7 @@
                     } else {
                         thinLines.push({ path: [[x, 0], [x, 10000]] });
                     }
-                    bottomLabels.push({ text: `${(Math.floor(x/60)).toString().padStart(2, '0')}:${(x%60).toString().padStart(2, '0')}`, position: [x, 1000] });
+                    bottomLabels.push({ text: `${(Math.floor(x/60)).toString().padStart(2, '0')}:${(x%60).toString().padStart(2, '0')}`, position: [x, 10000] });
                 }
 
                 function renderLayers() {
@@ -93,7 +104,6 @@
                             widthMaxPixels: 2,
                             widthMinPixels: 0
                         }),
-
                         new deck.TextLayer({
                             id: 'horizontal-labels',
                             data: labelData,
@@ -121,7 +131,6 @@
                             widthMaxPixels: 1.6,
                             widthMinPixels: 0
                         }),
-
                         new deck.PathLayer({
                             id: 'thick-time-lines',
                             data: thickLines,
@@ -132,7 +141,6 @@
                             widthMinPixels: 2,
                             widthMinPixels: 0
                         }),
-                        
                         new deck.TextLayer({
                             id: 'vertical-labels',
                             data: bottomLabels,
@@ -156,10 +164,9 @@
                             getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
                             getColor: d => colorPalette[d.train],
                             getWidth: 1.5,
-                            widthMaxPixels: 2.5,
+                            widthMaxPixels: 2,
                             widthMinPixels: 0
                         }),
-
                         new deck.PathLayer({
                             id: 'selection-layer',
                             // This array is either empty or contains exactly one item
@@ -169,7 +176,7 @@
                             getPath: d => d.data.map(p => [p.y, stationDistances[p.x]]),
                             getColor: [255, 255, 0], // Yellow highlight
                             getWidth: 2.5,
-                            widthMaxPixels: 4,
+                            widthMaxPixels: 3,
                             widthMinPixels: 0
                         }),
 
