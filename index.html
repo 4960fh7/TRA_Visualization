@@ -240,13 +240,13 @@
                 }
                 for (let y = minDistance; y <= maxDistance; y += 250) {
                     for (let x = 720; x <= 5040; x += 30) {
-                        denseLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}:${(x%180/3).toString().padStart(2, '0')}`, position: [x, y] });
+                        denseLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}${(x%180/3).toString().padStart(2, '0')}`, position: [x+5, y] });
                     }
                     for (let x = 720; x <= 5040; x += 90) {
-                        normalLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}:${(x%180/3).toString().padStart(2, '0')}`, position: [x, y] });
+                        normalLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}${(x%180/3).toString().padStart(2, '0')}`, position: [x+5, y] });
                     }
                     for (let x = 720; x <= 5040; x += 180) {
-                        sparseLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}:${(x%180/3).toString().padStart(2, '0')}`, position: [x, y] });
+                        sparseLabels.push({ text: `${(Math.floor(x/180)).toString().padStart(2, '0')}${(x%180/3).toString().padStart(2, '0')}`, position: [x+5, y] });
                     }
                 }
 
@@ -342,7 +342,7 @@
                             getSize: 12,
                             sizeMaxPixels: 12,
                             sizeMinPixels: 0,
-                            getColor: [128, 128, 128],
+                            getColor: [180, 180, 180],
                             characterSet: 'auto',
                             getAlignmentBaseline: 'top', // Position BELOW the point
                             getTextAnchor: 'start',
