@@ -170,26 +170,50 @@
 
                 linePills.forEach(pill => {
                     pill.addEventListener('click', () => {
-                        // UI Update
+                        // 1. UI Update for Buttons
                         linePills.forEach(p => p.classList.remove('active'));
                         pill.classList.add('active');
 
-                        // Logic Update
+                        // 2. Logic Update: Switch references
                         const lineType = pill.getAttribute('data-line');
                         stationList = (lineType === 'mountain') ? mountStationList : seaStationList;
                         stationDistances = (lineType === 'mountain') ? mountStationDistances : seaStationDistances;
                         
-                        // Re-calculate derived data
+                        // 3. Update the Highlighted Selection
+                        if (selectedLine) {
+                            // Find if this train (by number) exists in the rawData 
+                            // and has valid stops for the NEW route
+                            const trainNumber = selectedLine.number;
+                            
+                            // We search for a segment of this train that matches our new stationList
+                            const updatedMatch = rawData.find(t => 
+                                t.number === trainNumber && 
+                                t.data.some(p => stationList.has(p.x))
+                            );
+
+                            if (updatedMatch) {
+                                // Update selectedLine to the version compatible with the new route
+                                selectedLine = updatedMatch;
+                            } else {
+                                // If the train doesn't run on this line, clear selection
+                                selectedLine = null;
+                                showSchedule = false;
+                                document.getElementById('info-content').innerHTML = `<p class="placeholder">點選列車以顯示資訊</p>`;
+                            }
+                        }
+
+                        // 4. Re-calculate derived data and refresh UI
                         updateStationGridData();
                         updateInfoBox();
-                        
-                        // Refresh Map
                         renderLayers();
                     });
                 });
 
                 function updateInfoBox() {
-                    if (!selectedLine) return;
+                    if (!selectedLine) {
+                        infoBox.innerHTML = `<p class="placeholder">點選列車以顯示資訊</p>`;
+                        return;
+                    };
                     
                     const viaText = selectedLine.info.via !== '-' ? `<br>經由${selectedLine.info.via}。` : '';
                     const btnLabel = showSchedule ? "隱藏停靠站" : "顯示停靠站";
