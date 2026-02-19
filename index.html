@@ -301,6 +301,26 @@
                             processedSegments.push({ ...train, data: currentSegment });
                         }
                     });
+
+                    let scheduleData = [];
+                    if (showSchedule && selectedLine) {
+                        const grouped = {};
+                        selectedLine.data.forEach(p => {
+                            if (!grouped[p.x]) grouped[p.x] = [];
+                            grouped[p.x].push(p.y);
+                        });
+
+                        scheduleData = Object.entries(grouped).map(([name, times]) => {
+                            // Sort times to ensure [arrival, departure] order
+                            const sortedTimes = times.sort((a, b) => a - b);
+                            return {
+                                station: name,
+                                arr: sortedTimes[0],
+                                dep: sortedTimes[1],
+                                yCoord: stationDistances[name]
+                            };
+                        });
+                    }
                     
                     const layers = [
                         new deck.PathLayer({
@@ -393,26 +413,27 @@
                         }),
                         new deck.TextLayer({
                             id: 'train-schedule-labels',
-                            // Only provide data if a line is selected AND the toggle is ON
-                            data: (showSchedule && selectedLine) ? selectedLine.data : [],
+                            data: scheduleData, // Use the grouped data
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [d.y * 3, stationDistances[d.x]],
-                            // Format: "14:30 基隆"
+                            getPosition: d => [d.arr * 3, d.yCoord], // Anchor at arrival time
                             getText: d => {
-                                const hh = Math.floor(d.y / 60).toString().padStart(2, '0');
-                                const mm = (d.y % 60).toString().padStart(2, '0');
-                                return `${hh}:${mm} ${d.x}`;
+                                const format = (val) => {
+                                    const hh = Math.floor(val / 60).toString().padStart(2, '0');
+                                    const mm = (val % 60).toString().padStart(2, '0');
+                                    return `${hh}${mm}`;
+                                };
+                                return `${format(d.arr)}-${format(d.dep)} ${d.station}`;
                             },
                             getSize: 13,
                             getColor: [255, 255, 255],
                             characterSet: 'auto',
                             getTextAnchor: 'start',
                             getAlignmentBaseline: 'center',
-                            pixelOffset: [15, 0], // Offset to the right of the path
+                            pixelOffset: [15, 0], 
                             background: true,
-                            getBackgroundColor: [0, 0, 0, 180] // Dark background for readability
+                            getBackgroundColor: [0, 0, 0, 180]
                         }),
-
+                        
                         new deck.ScatterplotLayer({
                             id: 'json-layer',
                             data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
