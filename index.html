@@ -200,7 +200,7 @@
                     onClick: (info) => {
                         if (info.object && info.layer.id === 'main-path-layer') {
                             selectedLine = info.object;
-                            showSchedule = false; 
+                            showSchedule = true; 
                             updateInfoBox();
                         } else {
                             // Reset if clicking background
@@ -315,8 +315,8 @@
                             const sortedTimes = times.sort((a, b) => a - b);
                             return {
                                 station: name,
-                                arr: sortedTimes[0],
-                                dep: sortedTimes[1],
+                                arr: Math.ceil(sortedTimes[0]),
+                                dep: Math.floor(sortedTimes[1]),
                                 yCoord: stationDistances[name]
                             };
                         });
@@ -415,7 +415,7 @@
                             id: 'train-schedule-labels',
                             data: scheduleData, // Use the grouped data
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [d.arr * 3, d.yCoord], // Anchor at arrival time
+                            getPosition: d => [d.dep * 3, d.yCoord], // Anchor at arrival time
                             getText: d => {
                                 const format = (val) => {
                                     const hh = Math.floor(val / 60).toString().padStart(2, '0');
