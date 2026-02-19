@@ -79,7 +79,7 @@
             let stationDistances = mountStationDistances;
 
             async function initMap() {
-                const response = await fetch('data/20260218.json'); 
+                const response = await fetch('data/20260219.json'); 
                 const rawData = await response.json();
                 const infoBox = document.getElementById('info-content');
                 const valZoom = document.getElementById('val-zoom');
@@ -193,14 +193,13 @@
                     const viaText = selectedLine.info.via !== '-' ? `<br>經由${selectedLine.info.via}。` : '';
                     const btnLabel = showSchedule ? "隱藏停靠站" : "顯示停靠站";
                     const btnClass = showSchedule ? "info-pill active" : "info-pill";
-                    const driveDays = selectedLine.info.drive;
                     const formattedNote = (selectedLine.info.note || "").replace(/。/g, '。<br>');
 
                     infoBox.innerHTML = `
                         <p><strong>${selectedLine.train} ${selectedLine.number}   </strong>
                         <button id="btn-toggle-schedule" class="${btnClass}">${btnLabel}</button></p>
                         <p>${selectedLine.info.start} → ${selectedLine.info.end}${viaText}</p>
-                        <p>行駛日期：${driveDays}</p>
+                        <p>行駛日期：${selectedLine.info.drive}</p>
                         <p>${formattedNote}</p>
                     `;
 
