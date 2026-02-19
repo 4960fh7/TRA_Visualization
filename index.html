@@ -28,7 +28,7 @@
                 <button class="pill line-pill active" data-line="mountain">山線</button>
                 <button class="pill line-pill" data-line="sea">海線</button>
             </div>
-            <h2>篩選器</h2>
+            <h2>車種</h2>
             <div id="pill-container">
                 <button id="btn-select-all" class="pill utility">全選</button>
                 <button id="btn-deselect-all" class="pill utility">全部不選</button>
@@ -41,7 +41,7 @@
                 <button class="pill active" data-type="區間" checked> 區間</button>
             </div>
             <hr>
-            <h2>車種</h2>
+            <h2>列車資訊</h2>
             <div id="info-content">
                 <p class="placeholder">點選列車以顯示資訊</p>
             </div>
@@ -181,6 +181,7 @@
                         
                         // Re-calculate derived data
                         updateStationGridData();
+                        updateInfoBox();
                         
                         // Refresh Map
                         renderLayers();
