@@ -290,9 +290,9 @@
                         if (stationList.has(name)) {
                             for (let x = 240; x <= 1680; x += 120) { // Every 2 hours
                                 const entry = { text: name, position: [x * 3, yValue], y: yValue };
-                                if (x % 480 === 0) sparseLabelData.push(entry);
-                                if (x % 240 === 0) normalLabelData.push(entry);
-                                denseLabelData.push(entry);
+                                if (x % 480 === 0) newSparseLabelData.push(entry);
+                                if (x % 240 === 0) newNormalLabelData.push(entry);
+                                newDenseLabelData.push(entry);
                             }
                         }
                     });
