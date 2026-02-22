@@ -295,6 +295,7 @@
                 let sparseLabels = [];
                 let normalLabels = [];
                 let denseLabels = [];
+                let distances = Array.from(stationList).map(name => stationDistances[name]);
                 let minDistance = Math.min(...distances);
                 let maxDistance = Math.max(...distances);
                 function updateStationGridData() {
@@ -316,7 +317,7 @@
                             }
                         }
                     });
-                    const distances = Array.from(stationList).map(name => stationDistances[name]);
+                    let distances = Array.from(stationList).map(name => stationDistances[name]);
                     let minDistance = Math.min(...distances);
                     let maxDistance = Math.max(...distances);
                     for (let x = 240; x <= 1680; x += 10) {
