@@ -234,16 +234,31 @@
                     });
                     boxesHtml += '</div>';
 
-                    const viaText = selectedLine.info.via !== '-' ? `<br>經由${selectedLine.info.via}。` : '';
+                    const viaText = selectedLine.info.via !== '-' ? `(${(selectedLine.info.via).replace(/線/g, '')})` : '';
                     const btnLabel = showSchedule ? "隱藏停靠站" : "顯示停靠站";
                     const btnClass = showSchedule ? "info-pill active" : "info-pill";
-                    const formattedNote = (selectedLine.info.note || "").replace(/。/g, '。<br>');
+                    let rawNote = selectedLine.info.note || "";
+                    let processedNote = "";
+                    if (selectedLine.info.drive !== "0") {
+                        // Find the index of the first '。'
+                        const firstStopIndex = rawNote.indexOf('。');
+                        if (firstStopIndex !== -1) {
+                            // Slice from the character AFTER the first '。'
+                            processedNote = rawNote.slice(firstStopIndex + 1);
+                        } else {
+                            processedNote = rawNote;
+                        }
+                    } else {
+                        // For '0' (Extra/Added trains), keep the "Specified date" line
+                        processedNote = rawNote;
+                    }
+                    const formattedNote = processedNote.trim().replace(/。/g, '。<br>');
 
                     infoBox.innerHTML = `
-                        <p><strong>${selectedLine.train} ${selectedLine.number}   </strong>
+                        <p><strong>${selectedLine.train} ${selectedLine.number} ${viaText} </strong>
                         <button id="btn-toggle-schedule" class="${btnClass}">${btnLabel}</button></p>
-                        <p>${selectedLine.info.start} → ${selectedLine.info.end}${viaText}</p>
-                        <p>行駛日：</p>${boxesHtml}
+                        <p>${selectedLine.info.start} → ${selectedLine.info.end}</p>
+                        <p>${boxesHtml}</p>
                         <p>${formattedNote}</p>
                     `;
 
