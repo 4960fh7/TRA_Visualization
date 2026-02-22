@@ -245,8 +245,7 @@
                     const formattedNote = processedNote.trim().replace(/。/g, '。<br>');
 
                     infoBox.innerHTML = `
-                        <p><strong>${selectedLine.train} ${selectedLine.number} ${viaText} </strong>
-                        <button id="btn-toggle-schedule" class="${btnClass}">${btnLabel}</button></p>
+                        <p><strong>${selectedLine.train} ${selectedLine.number} </strong> ${viaText}</p>
                         <p>${selectedLine.info.start} → ${selectedLine.info.end}</p>
                         <p>${boxesHtml}</p>
                         <p>${formattedNote}</p>
