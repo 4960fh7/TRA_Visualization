@@ -295,6 +295,8 @@
                 let sparseLabels = [];
                 let normalLabels = [];
                 let denseLabels = [];
+                let minDistance = Math.min(...distances);
+                let maxDistance = Math.max(...distances);
                 function updateStationGridData() {
                     const newDenseLabelData = [];
                     const newNormalLabelData = [];
@@ -315,8 +317,8 @@
                         }
                     });
                     const distances = Array.from(stationList).map(name => stationDistances[name]);
-                    const minDistance = Math.min(...distances);
-                    const maxDistance = Math.max(...distances);
+                    let minDistance = Math.min(...distances);
+                    let maxDistance = Math.max(...distances);
                     for (let x = 240; x <= 1680; x += 10) {
                         const path = [[x*3, minDistance], [x*3, maxDistance]];
                         if (x % 60 === 0) {
