@@ -339,14 +339,14 @@
                     let minDistance = Math.min(...distances);
                     let maxDistance = Math.max(...distances);
                     for (let x = 240; x <= 1680; x += 10) {
-                        const path = [[x*3, minDistance], [x*3, maxDistance]];
+                        const path = [[x*3, minDistance-PERIOD], [x*3, maxDistance+PERIOD]];
                         if (x % 60 === 0) {
                             newThickLines.push({ path });
                         } else {
                             newThinLines.push({ path });
                         }
                     }
-                    for (let y = minDistance; y <= maxDistance; y += 250) {
+                    for (let y = minDistance-PERIOD; y <= maxDistance+PERIOD; y += 400) {
                         for (let x = 240; x <= 1680; x += 10) {
                             const label = { text: `${(Math.floor(x/60)).toString().padStart(2, '0')}${(x%60).toString().padStart(2, '0')}`, position: [(x*3)+5, y] };
                             newDenseLabels.push(label);
@@ -397,7 +397,7 @@
                             }));
                     }
                     
-                    const layers = yOffsets.flatMap(offset => {
+                    const offsetLayers = yOffsets.flatMap(offset => {
                         return [
                             new deck.PathLayer({
                                 id: `station-layer-${offset}`,
@@ -413,7 +413,7 @@
                                 id: `station-labels-${offset}`,
                                 data: currentZoom > 0.8 ? denseLabelData : currentZoom > -0.4 ? normalLabelData : currentZoom > -1.8 ? sparseLabelData : [],
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPosition: d => d.position,
+                                getPosition: d => d.position + offset,
                                 getText: d => d.text,
                                 getSize: 12,
                                 sizeMaxPixels: 12,
@@ -427,49 +427,13 @@
                             }),
 
                             new deck.PathLayer({
-                                id: `thin-time-lines-${offset}`,
-                                data: thinLines,
-                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPath: d => d.path,
-                                getColor: [50, 50, 50], // Very faint
-                                getWidth: 0.7,
-                                widthMaxPixels: 1.6,
-                                widthMinPixels: 0
-                            }),
-                            new deck.PathLayer({
-                                id: `thick-time-lines-${offset}`,
-                                data: thickLines,
-                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPath: d => d.path,
-                                getColor: [80, 80, 80], // Brighter
-                                getWidth: 1,
-                                widthMaxPixels: 2,
-                                widthMinPixels: 0
-                            }),
-                            new deck.TextLayer({
-                                id: `vertical-labels-${offset}`,
-                                data: currentZoom > 0.8 ? denseLabels : currentZoom > -0.4 ? normalLabels : currentZoom > -1.6 ? sparseLabels : currentZoom > -2.2 ? simpleLabels : [],
-                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPosition: d => d.position,
-                                getText: d => d.text,
-                                getSize: 12,
-                                sizeMaxPixels: 12,
-                                sizeMinPixels: 0,
-                                getColor: [180, 180, 180],
-                                characterSet: 'auto',
-                                getAlignmentBaseline: 'top', // Position BELOW the point
-                                getTextAnchor: 'start',
-                                pixelOffset: [5, 5]
-                            }),
-
-                            new deck.PathLayer({
                                 id: `main-path-layer-${offset}`,
                                 data: processedSegments,
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                                 pickable: true,
                                 autoHighlight: true,
                                 highlightColor: [255, 255, 255, 150],
-                                getPath: d => d.data.filter(p => stationDistances[p.x] !== undefined).map(p => [p.y*3, stationDistances[p.x]]),
+                                getPath: d => d.data.filter(p => stationDistances[p.x] !== undefined).map(p => [p.y*3, stationDistances[p.x] + PERIOD]),
                                 getColor: d => colorPalette[d.train],
                                 getWidth: 1.5,
                                 widthMaxPixels: 2,
@@ -481,7 +445,7 @@
                                 data: selectedLine && enabledTypes.has(selectedLine.train) ? processedSegments.filter(s => s.number === selectedLine.number) : [],
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                                 pickable: false,
-                                getPath: d => d.data.map(p => [p.y*3, stationDistances[p.x]]),
+                                getPath: d => d.data.map(p => [p.y*3, stationDistances[p.x] + PERIOD]),
                                 getColor: [255, 196, 0], // Yellow highlight
                                 getWidth: 4,
                                 widthMaxPixels: 4.5,
@@ -491,7 +455,7 @@
                                 id: `train-schedule-labels-${offset}`,
                                 data: scheduleData, // Use the grouped data
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPosition: d => [(d.dep+1.5) * 3, d.yCoord], // Anchor at arrival time
+                                getPosition: d => [(d.dep+1.5) * 3, d.yCoord + PERIOD], // Anchor at arrival time
                                 getText: d => {
                                     const format = (val) => {
                                         const hh = Math.floor(val / 60).toString().padStart(2, '0');
@@ -508,34 +472,74 @@
                                 pixelOffset: [15, 0], 
                                 background: true,
                                 getBackgroundColor: [0, 0, 0, 180]
-                            }),
-
-                            new deck.PathLayer({
-                                id: `current-time-line-${offset}`,
-                                data: [{
-                                    path: [[currentTimeMinutes * 3, minDistance], [currentTimeMinutes * 3, maxDistance]] // Adjust Y range as needed
-                                }],
-                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPath: d => d.path,
-                                getColor: [255, 0, 0, 150], // Red line with some transparency
-                                getWidth: 2,
-                                widthMaxPixels: 3.5,
-                                widthMinPixels: 0
-                            }),
-                            
-                            new deck.ScatterplotLayer({
-                                id: `json-layer-${offset}`,
-                                data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
-                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPosition: d => [d.y*3, stationDistances[d.x]], 
-                                getFillColor: [200, 200, 200],
-                                getRadius: 0.0001,
-                                radiusMaxPixels: 0.001,
-                                radiusMinPixels: 0.00001
                             })
                         ];
                     });
 
+                    const layers = [
+                        new deck.PathLayer({
+                            id: 'thin-time-lines',
+                            data: thinLines,
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            getPath: d => d.path,
+                            getColor: [50, 50, 50], // Very faint
+                            getWidth: 0.7,
+                            widthMaxPixels: 1.6,
+                            widthMinPixels: 0
+                        }),
+                        new deck.PathLayer({
+                            id: 'thick-time-lines',
+                            data: thickLines,
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            getPath: d => d.path,
+                            getColor: [80, 80, 80], // Brighter
+                            getWidth: 1,
+                            widthMaxPixels: 2,
+                            widthMinPixels: 0
+                        }),
+                        new deck.TextLayer({
+                            id: 'vertical-labels',
+                            data: currentZoom > 0.8 ? denseLabels : currentZoom > -0.4 ? normalLabels : currentZoom > -1.6 ? sparseLabels : currentZoom > -2.2 ? simpleLabels : [],
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            getPosition: d => d.position,
+                            getText: d => d.text,
+                            getSize: 12,
+                            sizeMaxPixels: 12,
+                            sizeMinPixels: 0,
+                            getColor: [180, 180, 180],
+                            characterSet: 'auto',
+                            getAlignmentBaseline: 'top', // Position BELOW the point
+                            getTextAnchor: 'start',
+                            pixelOffset: [5, 5]
+                        }),
+
+
+                        new deck.PathLayer({
+                            id: 'current-time-line',
+                            data: [{
+                                path: [[currentTimeMinutes * 3, minDistance], [currentTimeMinutes * 3, maxDistance]] // Adjust Y range as needed
+                            }],
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            getPath: d => d.path,
+                            getColor: [255, 0, 0, 150], // Red line with some transparency
+                            getWidth: 2,
+                            widthMaxPixels: 3.5,
+                            widthMinPixels: 0
+                        }), 
+                        
+                        new deck.ScatterplotLayer({
+                            id: 'json-layer',
+                            data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            getPosition: d => [d.y*3, stationDistances[d.x]], 
+                            getFillColor: [200, 200, 200],
+                            getRadius: 0.0001,
+                            radiusMaxPixels: 0.001,
+                            radiusMinPixels: 0.00001
+                        })
+                    ]
+
+                    deckInstance.setProps({offsetLayers});
                     deckInstance.setProps({layers});
                 };
 
