@@ -370,15 +370,17 @@
 
                 function renderLayers() {
                     const yOffsets = [-PERIOD, 0, PERIOD];
-                    const filteredData = rawData.filter(d => enabledTypes.has(d.train));
                     const TIME_THRESHOLD = 5000;
-                    const processedSegments = [];
-                    rawData.filter(d => enabledTypes.has(d.train)).forEach(train => {
-                        const currentSegment = train.data.filter(p => stationList.has(p.x));
-                        if (currentSegment.length > 1) {
-                            processedSegments.push({ ...train, data: currentSegment });
-                        }
-                    });
+                    // 1. Filter and Clean Train Data
+                    const processedSegments = rawData
+                        .filter(train => enabledTypes.has(train.train))
+                        .map(train => {
+                            // Only keep points that exist in our station list/distance map
+                            const validPoints = train.data.filter(p => stationDistances[p.x] !== undefined);
+                            return { ...train, data: validPoints };
+                        })
+                        .filter(train => train.data.length > 1); // Only keep paths with at least 2 points
+
                     let scheduleData = [];
                     if (showSchedule && selectedLine) {
                         const grouped = {};
@@ -389,12 +391,15 @@
                             }
                         });
 
-                        scheduleData = Object.entries(grouped).map(([name, times]) => ({
+                        scheduleData = Object.entries(grouped).map(([name, times]) => {
+                            const sortedTimes = times.sort((a, b) => a - b);
+                            return {
                                 station: name,
-                                arr: Math.ceil(times.sort((a,b)=>a-b)[0]),
-                                dep: Math.floor(times.sort((a,b)=>a-b)[1]),
+                                arr: Math.ceil(sortedTimes[0]),
+                                dep: Math.floor(sortedTimes[1] || sortedTimes[0]), // Handle single-point stops
                                 yCoord: stationDistances[name]
-                            }));
+                            };
+                        });
                     }
                     
                     const offsetLayers = yOffsets.flatMap(offset => {
@@ -476,7 +481,7 @@
                         ];
                     });
 
-                    const layers = [
+                    const baseLayers = [
                         new deck.PathLayer({
                             id: 'thin-time-lines',
                             data: thinLines,
@@ -539,7 +544,7 @@
                         })
                     ]
 
-                    deckInstance.setProps({offsetLayers, layers});
+                    deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers] });
                 };
 
                 // 1. Handle the "X" button for de-selection
