@@ -284,7 +284,10 @@
                             valX.innerText = Math.round(viewState.target[0]);
                             valY.innerText = Math.round(viewState.target[1]);
                         }
-                        deckInstance.setProps({viewState}); 
+                        const clampedZoom = Math.min(Math.max(viewState.zoom, -3.75), 3.25);
+                        const nextViewState = {...viewState, zoom: clampedZoom};
+                        currentViewState = nextViewState;
+                        deckInstance.setProps({viewState: nextViewState});
                         renderLayers(); // Re-render for dynamic font sizes
                     },
 
@@ -444,7 +447,7 @@
                                 id: `station-layer-${offset}`,
                                 data: Object.entries(stationDistances).filter(([name, yValue]) => stationList.has(name)),
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPath: d => [[630, d[1] + offset], [5130, d[1] + offset], 0],
+                                getPath: d => [[630, d[1] + offset, 0], [5130, d[1] + offset, 0]],
                                 getColor: [80, 80, 80],
                                 getWidth: 1,
                                 widthMaxPixels: 2,
@@ -486,7 +489,7 @@
                                 data: selectedLine && enabledTypes.has(selectedLine.train) ? processedSegments.filter(s => s.number === selectedLine.number) : [],
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                                 pickable: false,
-                                getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset, 15]),
+                                getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset, 20]),
                                 getColor: [255, 196, 0], // Yellow highlight
                                 getWidth: 4,
                                 widthMaxPixels: 4.5,
