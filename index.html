@@ -277,7 +277,6 @@
                         } else if (viewState.target[1] < 0) {
                             viewState.target[1] += PERIOD;
                         }
-                        viewState.zoom = Math.min(Math.max(viewState.zoom, -3.75), 3.25);
                         currentZoom = viewState.zoom;
                         const monitor = document.getElementById('view-monitor');
                         if (monitor.style.display === 'block') {
