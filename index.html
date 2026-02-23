@@ -449,7 +449,7 @@
                                 id: `station-labels-${offset}`,
                                 data: currentZoom > 0.8 ? denseLabelData : currentZoom > -0.4 ? normalLabelData : currentZoom > -1.8 ? sparseLabelData : [],
                                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                                getPosition: d => d.position + offset,
+                                getPosition: d => [d.position[0], d.position[1] + offset],
                                 getText: d => d.text,
                                 getSize: 12,
                                 sizeMaxPixels: 12,
