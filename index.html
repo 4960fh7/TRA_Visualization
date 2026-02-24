@@ -509,7 +509,12 @@
                                 getWidth: 1.5,
                                 widthMaxPixels: 2,
                                 widthMinPixels: 0
-                            }),
+                            })
+                        ];
+                    });
+
+                    const selectionLayers = yOffsets.flatMap(offset => {
+                        return [
                             new deck.PathLayer({
                                 id: `selection-layer-${offset}`,
                                 // This array is either empty or contains exactly one item
@@ -589,7 +594,7 @@
                         })
                     ];
 
-                    deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers, ...mainPlotLayers, ...currentTimeLayers] });
+                    deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers, ...mainPlotLayers, ...selectionLayers, ...currentTimeLayers] });
                 };
 
                 // 1. Handle the "X" button for de-selection
