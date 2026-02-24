@@ -467,32 +467,37 @@
                             };
                         });
                     }
-
-                    // 3. Assemble Deck.gl Layers
-                    const offsetLayers = yOffsets.flatMap(offset => [
-                        new deck.PathLayer({
-                            id: `station-layer-${offset}`,
-                            data: Object.entries(stationDistances).filter(([name]) => stationList.has(name)),
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => [[630, d[1] + offset], [5130, d[1] + offset]],
-                            getColor: [80, 80, 80],
-                            getWidth: 1,
-                            widthMaxPixels: 2
-                        }),
-                        new deck.TextLayer({
-                            id: `station-labels-${offset}`,
-                            data: currentZoom > 0.8 ? denseLabelData : currentZoom > -0.4 ? normalLabelData : currentZoom > -1.8 ? sparseLabelData : [],
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [d.position[0], d.position[1] + offset],
-                            getText: d => d.text,
-                            getSize: 12,
-                            sizeMaxPixels: 12,
-                            getColor: [180, 180, 180],
-                            getAlignmentBaseline: 'bottom',
-                            getTextAnchor: 'middle',
-                            pixelOffset: [0, -10]
-                        })
-                    ]);
+                    
+                    const offsetLayers = yOffsets.flatMap(offset => {
+                        return [
+                            new deck.PathLayer({
+                                id: `station-layer-${offset}`,
+                                data: Object.entries(stationDistances).filter(([name, yValue]) => stationList.has(name)),
+                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                                getPath: d => [[630, d[1] + offset], [5130, d[1] + offset]],
+                                getColor: [80, 80, 80],
+                                getWidth: 1,
+                                widthMaxPixels: 2,
+                                widthMinPixels: 0
+                            }),
+                            new deck.TextLayer({
+                                id: `station-labels-${offset}`,
+                                data: currentZoom > 0.8 ? denseLabelData : currentZoom > -0.4 ? normalLabelData : currentZoom > -1.8 ? sparseLabelData : [],
+                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                                getPosition: d => [d.position[0], d.position[1] + offset],
+                                getText: d => d.text,
+                                getSize: 12,
+                                sizeMaxPixels: 12,
+                                sizeMinPixels: 0,
+                                getColor: [180, 180, 180],
+                                characterSet: 'auto',
+                                fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
+                                getAlignmentBaseline: 'bottom', // Position ABOVE the point
+                                getTextAnchor: 'middle',        // Center text on the X coordinate
+                                pixelOffset: [0, -10]
+                            })
+                        ];
+                    });
 
                     const mainPlotLayers = yOffsets.map(offset => new deck.PathLayer({
                         id: `main-path-layer-${offset}`,
@@ -507,34 +512,45 @@
                         widthMaxPixels: 2
                     }));
 
-                    const selectionLayers = yOffsets.flatMap(offset => [
-                        new deck.PathLayer({
-                            id: `selection-layer-${offset}`,
-                            data: selectedLine && enabledTypes.has(selectedLine.train) ? processedSegments.filter(s => s.number === selectedLine.number) : [],
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
-                            getColor: [255, 196, 0],
-                            getWidth: 4,
-                            widthMaxPixels: 4.5
-                        }),
-                        new deck.TextLayer({
-                            id: `train-schedule-labels-${offset}`,
-                            data: scheduleData,
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPosition: d => [(d.dep + 1.5) * 3, d.yCoord + offset],
-                            getText: d => {
-                                const fmt = (v) => `${Math.floor(v / 60).toString().padStart(2, '0')}${(v % 60).toString().padStart(2, '0')}`;
-                                return `${fmt(d.arr)} - ${fmt(d.dep)} ${d.station}`;
-                            },
-                            getSize: 13,
-                            getColor: [255, 255, 255],
-                            getTextAnchor: 'start',
-                            getAlignmentBaseline: 'center',
-                            pixelOffset: [15, 0],
-                            background: true,
-                            getBackgroundColor: [0, 0, 0, 180]
-                        })
-                    ]);
+                    const selectionLayers = yOffsets.flatMap(offset => {
+                        return [
+                            new deck.PathLayer({
+                                id: `selection-layer-${offset}`,
+                                // This array is either empty or contains exactly one item
+                                data: selectedLine && enabledTypes.has(selectedLine.train) ? processedSegments.filter(s => s.number === selectedLine.number) : [],
+                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                                pickable: false,
+                                getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
+                                getColor: [255, 196, 0], // Yellow highlight
+                                getWidth: 4,
+                                widthMaxPixels: 4.5,
+                                widthMinPixels: 0
+                            }),
+
+                            new deck.TextLayer({
+                                id: `train-schedule-labels-${offset}`,
+                                data: scheduleData, // Use the grouped data
+                                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                                getPosition: d => [(d.dep+1.5) * 3, d.yCoord + offset, 0], // Anchor at arrival time
+                                getText: d => {
+                                    const format = (val) => {
+                                        const hh = Math.floor(val / 60).toString().padStart(2, '0');
+                                        const mm = (val % 60).toString().padStart(2, '0');
+                                        return `${hh}${mm}`;
+                                    };
+                                    return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
+                                },
+                                getSize: 13,
+                                getColor: [255, 255, 255],
+                                characterSet: 'auto',
+                                getTextAnchor: 'start',
+                                getAlignmentBaseline: 'center',
+                                pixelOffset: [15, 0], 
+                                background: true,
+                                getBackgroundColor: [0, 0, 0, 180]
+                            })
+                        ];
+                    });
 
                     const baseLayers = [
                         new deck.PathLayer({
