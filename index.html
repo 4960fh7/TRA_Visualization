@@ -40,32 +40,40 @@
             #info-content p:last-child { border-right: none; }
 
             .day-container {
-                /* REMOVE: width: 150px; height: 16px; */
-                display: inline-flex; /* Use inline-flex to take only needed space */
+                display: inline-flex; 
                 align-items: center; 
-                justify-content: center;
-                gap: 4px; 
-                flex-shrink: 0; /* Ensures the container doesn't get squeezed by text */
-                margin: 0 10px; /* Gives some breathing room before/after the boxes */
+                gap: 3px; 
+                flex-shrink: 0;
+                vertical-align: middle;
+                margin: 0 10px; /* Space between text and boxes */
             }
 
             .day-box { 
-                /* Force specific dimensions */
-                width: 22px; 
-                height: 22px; 
+                /* Use min/max to lock the square shape */
+                width: 20px; 
+                height: 20px;
+                min-width: 20px;
+                min-height: 20px;
                 
-                /* Crucial: ensure it displays as flex to center the text inside */
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
                 
-                flex-shrink: 0; /* Strict instruction: do not shrink! */
-                font-size: 12px; 
+                font-size: 11px; 
                 border-radius: 4px; 
                 font-weight: bold; 
                 background-color: #444; 
                 color: #888;
-                line-height: 1; /* Prevents font height from bloating the box */
+                flex-shrink: 0; /* Anti-stretch insurance */
+                box-sizing: border-box;
+            }
+
+            /* Fix the diagonal line for a square box */
+            .day-box.special-rule::after { 
+                content: ""; position: absolute; top: 0; left: 0; width: 100%; 
+                height: 100%; 
+                background: linear-gradient(to top right, transparent 48%, currentColor 48%, currentColor 52%, transparent 52%);
+                pointer-events: none;
             }
             
             .day-box.active { background-color: #eee; color: #000; }
@@ -256,7 +264,13 @@
                         ? (rawNote.includes('。') ? rawNote.slice(rawNote.indexOf('。') + 1) : rawNote)
                         : rawNote;
 
-                    DOM.infoBox.innerHTML = `<strong>${state.selectedLine.train} ${state.selectedLine.number} </strong> ${viaText} ${state.selectedLine.info.start} → ${state.selectedLine.info.end} ${boxesHtml} ${processedNote.trim()}`;
+                    DOM.infoBox.innerHTML = `
+                        <span><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
+                        <span>${viaText}</span>
+                        <span>${state.selectedLine.info.start} → ${state.selectedLine.info.end}</span>
+                        ${boxesHtml}
+                        <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
+                    `;
                 }
 
                 function updateStationGridData() {
