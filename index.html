@@ -6,13 +6,17 @@
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
         <style>
             body { margin: 0; padding: 0; display: flex; background-color: #111; font-family: sans-serif; }
-            #container { width: 75vw; height: 100vh; }
+            #container { width: 75vw; height: 90vh; }
             #sidebar { 
                 width: 25vw; height: 100vh; background-color: #222; color: white; 
                 padding: 20px; box-sizing: border-box; border-left: 1px solid #444;
             }
             .placeholder { color: #666; font-style: italic; }
             h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
+            #bottompanel {
+                width: 75vw; height: 10vh; background-color: #111; color: white; 
+                padding: 10px; box-sizing: border-box; border-top: 1px solid #444;
+            }
         </style>
     </head>
     <body>
@@ -40,7 +44,8 @@
                 <button class="pill active" data-type="區間快" checked> 區間快</button>
                 <button class="pill active" data-type="區間" checked> 區間</button>
             </div>
-            <hr>
+        </div>
+        <div id="bottompanel">
             <h2 style="display: flex; justify-content: space-between; align-items: center;">
                 列車資訊
                 <button id="btn-clear-selection" style="display: none; background: none; border: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>            </h2>
