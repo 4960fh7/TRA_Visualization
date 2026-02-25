@@ -40,14 +40,34 @@
             #info-content p:last-child { border-right: none; }
 
             .day-container {
-                width: 150px; height: 16px; display: flex; align-items: center; justify-content: center;
-                gap: 3px; display: flex; flex-shrink: 0;
+                /* REMOVE: width: 150px; height: 16px; */
+                display: inline-flex; /* Use inline-flex to take only needed space */
+                align-items: center; 
+                justify-content: center;
+                gap: 4px; 
+                flex-shrink: 0; /* Ensures the container doesn't get squeezed by text */
+                margin: 0 10px; /* Gives some breathing room before/after the boxes */
             }
+
             .day-box { 
-                width: 14px; height: 14px; align-items: center; 
-                justify-content: center; font-size: 12px; border-radius: 4px; flex-shrink: 0;
-                font-weight: bold; background-color: #444; color: #888; 
+                /* Force specific dimensions */
+                width: 22px; 
+                height: 22px; 
+                
+                /* Crucial: ensure it displays as flex to center the text inside */
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                
+                flex-shrink: 0; /* Strict instruction: do not shrink! */
+                font-size: 12px; 
+                border-radius: 4px; 
+                font-weight: bold; 
+                background-color: #444; 
+                color: #888;
+                line-height: 1; /* Prevents font height from bloating the box */
             }
+            
             .day-box.active { background-color: #eee; color: #000; }
             .day-box.special-rule { position: relative; overflow: hidden; }
             .day-box.special-rule::after { 
