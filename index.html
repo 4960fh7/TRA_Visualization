@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
     <head>
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
         <title>Taiwan Railway Operation Diagram</title>
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
         <style>
@@ -10,7 +10,7 @@
             #container { width: 100%; height: 90vh; position: relative; }
             #bottompanel {
                 width: 100%; height: 10vh; background-color: #111; color: white; 
-                padding: 10px; box-sizing: border-box; border-top: 1px solid #444;
+                padding: 4px; box-sizing: border-box; border-top: 1px solid #444;
             }
             #sidebar { 
                 width: 25vw; height: 100vh; background-color: #222; color: white; 
@@ -18,6 +18,45 @@
             }
             .placeholder { color: #666; font-style: italic; }
             h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
+            #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
+            .pill { 
+                border: 1px solid #444; padding: 8px 16px; border-radius: 20px; 
+                cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s ease; 
+                background-color: #333; color: #888; 
+            }
+            .pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
+            .pill.active { color: black; border-color: transparent; }
+            .pill.utility:hover { background-color: #666; color: white; }
+            .line-pill.active { background-color: #0078d4; color: white; }
+
+            .day-container { display: flex; gap: 4px; margin-top: 10px; }
+            .day-box { 
+                width: 24px; height: 24px; display: flex; align-items: center; 
+                justify-content: center; font-size: 12px; border-radius: 4px; 
+                font-weight: bold; background-color: #444; color: #888; 
+            }
+            .day-box.active { background-color: #eee; color: #000; }
+            
+            .day-box.special-rule { position: relative; overflow: hidden; }
+            .day-box.special-rule::after { 
+                content: ""; position: absolute; top: 0; left: 0; width: 100%; 
+                height: 1px; background: currentColor; transform: rotate(-45deg); 
+                transform-origin: top left; 
+            }
+
+            #btn-clear-selection { 
+                background: none; border: none; color: #888; 
+                cursor: pointer; font-size: 28px; line-height: 1; padding: 0;
+            }
+
+            /* --- Map Overlay --- */
+            #view-monitor { 
+                display: none; position: absolute; bottom: 20px; left: 20px; 
+                background: rgba(0, 0, 0, 0.8); color: #00ff00; padding: 8px 12px; 
+                border-radius: 4px; font-family: monospace; font-size: 12px; 
+                pointer-events: none; z-index: 10; border: 1px solid #444; 
+            }
+            #view-monitor span { color: white; }
         </style>
     </head>
     <body>
@@ -56,28 +95,6 @@
                 <button class="pill active" data-type="區間" checked> 區間</button>
             </div>
         </div>
-
-        <style>
-            #container { position: relative; width: 80vw; height: 100vh; }
-            #view-monitor { display: none; position: absolute; bottom: 20px; left: 20px; background: rgba(0, 0, 0, 0.8); color: #00ff00; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; pointer-events: none; z-index: 10; border: 1px solid #444; }
-            #view-monitor span { color: white; }
-            #filter label { display: block; padding: 5px 0; cursor: pointer; color: #ccc; }
-            #filter input { margin-right: 10px; }
-            hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
-            #pill-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; }
-            .pill { border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s ease; background-color: #333; color: #888; border: 1px solid #444; }
-            .pill.active { color: black; border-color: transparent; }
-            .pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
-            .pill.utility:hover, .pill.utility:active { background-color: #666; color: white; border-color: transparent; }
-            .info-pill { margin-top: 12px; display: inline-block; background-color: #444; color: #eee; padding: 6px 14px; border-radius: 15px; font-size: 12px; cursor: pointer; border: 1px solid #555; transition: all 0.2s; }
-            .info-pill.active { background-color: #ffc400; color: black; border-color: transparent; }
-            .line-pill.active { background-color: #0078d4; color: white; }
-            .day-container { display: flex; gap: 4px; margin-top: 5px; }
-            .day-box { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 3px; font-weight: bold; background-color: #444; color: #888; }
-            .day-box.active { background-color: #eee; color: #000; }
-            .day-box.special-rule { position: relative; overflow: hidden; }
-            .day-box.special-rule::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: currentColor; transform: rotate(-45deg); transform-origin: top left; }
-        </style>
 
         <script type="text/javascript">
             // INITIALIZE
