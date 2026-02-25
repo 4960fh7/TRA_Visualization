@@ -38,7 +38,7 @@
             }
             #info-content p:last-child { border-right: none; }
 
-            .day-container { display: flex; gap: 4px; margin-top: 10px; }
+            .day-container { display: flex; gap: 4px; margin-top: 10px; display: flex; }
             .day-box { 
                 width: 24px; height: 24px; display: flex; align-items: center; 
                 justify-content: center; font-size: 12px; border-radius: 4px; 
@@ -231,7 +231,6 @@
                     let processedNote = (state.selectedLine.info.drive !== "0") 
                         ? (rawNote.includes('。') ? rawNote.slice(rawNote.indexOf('。') + 1) : rawNote)
                         : rawNote;
-                    const formattedNote = processedNote.trim().replace(/。/g, '。<br>');
 
                     DOM.infoBox.innerHTML = `<strong>${state.selectedLine.train} ${state.selectedLine.number} </strong> ${viaText} ${state.selectedLine.info.start} → ${state.selectedLine.info.end} ${boxesHtml} ${formattedNote}`;
                 }
