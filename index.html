@@ -233,12 +233,7 @@
                         : rawNote;
                     const formattedNote = processedNote.trim().replace(/。/g, '。<br>');
 
-                    DOM.infoBox.innerHTML = `
-                        <div><strong>${state.selectedLine.train} ${state.selectedLine.number} </strong> ${viaText}</div>
-                        <div>${state.selectedLine.info.start} → ${state.selectedLine.info.end}</div>
-                        <div>${boxesHtml}</div>
-                        <div>${formattedNote}</div>
-                    `;
+                    DOM.infoBox.innerHTML = `<strong>${state.selectedLine.train} ${state.selectedLine.number} </strong> ${viaText} ${state.selectedLine.info.start} → ${state.selectedLine.info.end} ${boxesHtml} ${formattedNote}`;
                 }
 
                 function updateStationGridData() {
