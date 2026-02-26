@@ -435,7 +435,7 @@
                     });
                     let iconsHtml = '<div class="service-container">';
                     Object.entries(serviceIcons).forEach(([name, symbol]) => {
-                        if (rawNote.includes(name)) {
+                        if (state.selectedLine.info.img.includes(name)) {
                             iconsHtml += `
                                 <div class="service-box" title="${name}">
                                     <span style="font-size: 14px;">${symbol}</span>
