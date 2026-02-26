@@ -283,6 +283,7 @@
             };
             const dateSelector = document.getElementById('date-selector');
             const today = new Date();
+            console.log(today.toISOString())
             dateSelector.value = today.toISOString().split('T')[0];
 
             function getSelectedDateFilename() {
