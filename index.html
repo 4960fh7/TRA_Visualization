@@ -233,10 +233,6 @@
                     }
                 }
 
-                dateSelector.addEventListener('change', () => {
-                    loadData();
-                });
-                
                 state.currentTimeMinutes = today.getHours() * 60 + today.getMinutes();
                 if (state.currentTimeMinutes < 240) state.currentTimeMinutes += 1440;
                 const deckInstance = new deck.DeckGL({
@@ -412,6 +408,10 @@
                         syncPillStyles();
                         renderLayers();
                     });
+                });
+
+                DOM.dateSelector.addEventListener('change', () => {
+                    loadData();
                 });
 
                 DOM.btnSelectAll.addEventListener('click', () => {
