@@ -417,9 +417,7 @@
                     let rawNote = state.selectedLine.info.note || "";
                     let specialNote = (state.selectedLine.info.drive === "0") 
                         ? (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "") : "";
-                    let processedNote = (state.selectedLine.info.drive !== "0") 
-                        ? (rawNote.includes('。') ? rawNote.slice(rawNote.indexOf('。') + 1) : rawNote)
-                        : rawNote;
+                    let processedNote = state.selectedLine.info.drive;
                     
                     const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
                     let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
