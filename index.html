@@ -40,7 +40,7 @@
                     width: 100vw !important;
                 }
             }
-            
+
             #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
             .pill { 
                 border: 1px solid #444; padding: 8px 16px; border-radius: 20px; 
@@ -85,9 +85,9 @@
                 height: 1.2em;
                 white-space: nowrap;
             }
-            .train-id { width: 80px; }
-            .via-label { width: 40px; font-weight: bold; }
-            .route-display { width: 180px; }
+            .train-id { width: 70px; }
+            .via-label { width: 30px; font-weight: bold; }
+            .route-display { width: 160px; }
 
             #info-content .day-container {
                 display: inline-flex !important;
@@ -162,7 +162,7 @@
                 <div id="info-content">
                     <p class="placeholder">點選列車以顯示資訊</p>
                 </div>
-                <button id="btn-clear-selection" style="display: none; background: none; border: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>            </h2>
+                <button id="btn-clear-selection" style="display: none; background: none; border: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>
             </div>
         </div>
         <div id="sidebar">
@@ -667,6 +667,14 @@
                 renderLayers();
             }
             
+            window.addEventListener('resize', () => {
+                // This ensures deck.gl calculates the new height/width of its parent container
+                deckInstance.setProps({
+                    width: '100%',
+                    height: '100%'
+                });
+            });
+
             initMap();
         </script>
     </body>
