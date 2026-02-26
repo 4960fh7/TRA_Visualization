@@ -289,14 +289,14 @@
             }
 
             const serviceIcons = {
-                "腳踏車設施": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-bicy.png",
-                "自由座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-freeSeat.jpg",
-                "騰雲座艙": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-business.svg",
-                "哺乳室": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-nursingroom.png",
-                "輪椅座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-wheelchair.png",
-                "訂便當服務": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-lunchbox.png",
-                "桌型座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-table.png",
-                "跨日列車": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-crossday.png"
+                "腳踏車設施": "🚲",
+                "自由座": "💺",
+                "騰雲座艙": "✨",
+                "哺乳室": "🍼",
+                "輪椅座": "♿",
+                "訂便當服務": "🍱",
+                "桌型座": "🪑",
+                "跨日列車": "🌙"
             };
 
             // Main initialization
@@ -441,11 +441,11 @@
                         }
                     });
                     let iconsHtml = '<div class="service-container">';
-                    Object.entries(serviceIcons).forEach(([name, url]) => {
+                    Object.entries(serviceIcons).forEach(([name, symbol]) => {
                         if (processedNote.includes(name)) {
                             iconsHtml += `
                                 <div class="service-box" title="${name}">
-                                    <img src="${url}" alt="${name}" referrerpolicy="no-referrer">
+                                    <span style="font-size: 14px;">${symbol}</span>
                                 </div>`;
                         }
                     });
