@@ -417,7 +417,6 @@
                     let rawNote = state.selectedLine.info.note || "";
                     let specialNote = (state.selectedLine.info.drive === "0") 
                         ? (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "") : "";
-                    let processedNote = state.selectedLine.info.drive;
                     
                     const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
                     let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
@@ -436,7 +435,7 @@
                     });
                     let iconsHtml = '<div class="service-container">';
                     Object.entries(serviceIcons).forEach(([name, symbol]) => {
-                        if (processedNote.includes(name)) {
+                        if (rawNote.includes(name)) {
                             iconsHtml += `
                                 <div class="service-box" title="${name}">
                                     <span style="font-size: 14px;">${symbol}</span>
@@ -753,13 +752,13 @@
                 renderLayers();
             }
 
-            window.addEventListener('resize', () => {
-                // This ensures deck.gl calculates the new height/width of its parent container
-                deckInstance.setProps({
-                    width: '100%',
-                    height: '100%'
-                });
-            });
+            // window.addEventListener('resize', () => {
+            //     // This ensures deck.gl calculates the new height/width of its parent container
+            //     deckInstance.setProps({
+            //         width: '100%',
+            //         height: '100%'
+            //     });
+            // });
 
             initMap();
         </script>
