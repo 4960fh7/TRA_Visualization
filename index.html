@@ -216,7 +216,7 @@
                 const today = new Date();
                 DOM.dateSelector.value = today.toISOString().split('T')[0];
                 function getSelectedDateFilename() {
-                    const rawDate = dateSelector.value; // "2026-02-26"
+                    const rawDate = DOM.dateSelector.value; // "2026-02-26"
                     const formattedDate = rawDate.replace(/-/g, ''); // "20260226"
                     return `data/${formattedDate}.json`;
                 }
