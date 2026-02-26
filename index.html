@@ -21,6 +21,26 @@
             .placeholder { color: #666; font-style: italic; }
             #sidebar h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
 
+            @media (max-width: 768px) {
+                #sidebar {
+                    top: auto;        /* Remove the top alignment */
+                    bottom: 0;        /* Stick to the bottom */
+                    left: 0;
+                    width: 100vw;     /* Full width */
+                    height: 30vh;     /* 30% of viewport height */
+                    z-index: 1000;    /* Ensure it stays above the map */
+                    overflow-y: auto; /* Allow scrolling if content is long */
+                    border-right: none;
+                    border-top: 1px solid #444; /* Add a top border instead */
+                }
+
+                /* Adjust the map container so it isn't completely hidden */
+                #container {
+                    height: 70vh !important; /* Give the map the remaining 70% */
+                    width: 100vw !important;
+                }
+            }
+            
             #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
             .pill { 
                 border: 1px solid #444; padding: 8px 16px; border-radius: 20px; 
