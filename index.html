@@ -32,6 +32,22 @@
             .pill.utility:hover { background-color: #666; color: white; }
             .line-pill.active { background-color: #0078d4; color: white; }
 
+            .date-input {
+                width: 100%;
+                padding: 10px;
+                background-color: #333;
+                border: 1px solid #444;
+                color: white;
+                border-radius: 8px;
+                font-size: 16px;
+                margin-bottom: 20px;
+                outline: none;
+                cursor: pointer;
+            }
+            .date-input::-webkit-calendar-picker-indicator {
+                filter: invert(1); /* Makes the calendar icon white */
+            }
+
             #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
             #info-content div , #info-content p { 
                 margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap;
@@ -49,8 +65,8 @@
                 height: 1.2em;
                 white-space: nowrap;
             }
-            .train-id { width: 120px; }
-            .via-label { width: 60px; font-weight: bold; }
+            .train-id { width: 80px; }
+            .via-label { width: 40px; font-weight: bold; }
             .route-display { width: 180px; }
 
             #info-content .day-container {
@@ -130,6 +146,10 @@
             </div>
         </div>
         <div id="sidebar">
+            <h2>日期</h2>
+            <div>
+                <input type="date" id="date-selector" class="date-input">
+            </div>
             <h2>路線</h2>
             <div id="line-pill-container">
                 <button class="pill line-pill active" data-line="mountain">山線</button>
@@ -173,12 +193,6 @@
             };
             // Main initialization
             async function initMap() {
-                const response = await fetch('data/20260219.json');
-                const rawData = await response.json();
-                const now = new Date();
-                state.currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
-                if (state.currentTimeMinutes < 240) state.currentTimeMinutes += 1440;
-
                 const DOM = {
                     infoBox: document.getElementById('info-content'),
                     valZoom: document.getElementById('val-zoom'),
@@ -189,12 +203,42 @@
                     trainPills: document.querySelectorAll('.pill[data-type]'),
                     typeFilters: document.querySelectorAll('.type-filter'),
                     linePills: document.querySelectorAll('.line-pill'),
+                    dateSelector: document.getElementById('date-selector'),
                     btnSelectAll: document.getElementById('btn-select-all'),
                     btnDeselectAll: document.getElementById('btn-deselect-all'),
                     btnClearSelection: document.getElementById('btn-clear-selection'),
                     viewMonitor: document.getElementById('view-monitor')
                 };
 
+                const today = new Date();
+                DOM.dateSelector.value = today.toISOString().split('T')[0];
+                function getSelectedDateFilename() {
+                    const rawDate = dateSelector.value; // "2026-02-26"
+                    const formattedDate = rawDate.replace(/-/g, ''); // "20260226"
+                    return `data/${formattedDate}.json`;
+                }
+                async function loadData() {
+                    const filename = getSelectedDateFilename();
+                    try {
+                        const response = await fetch(filename);
+                        if (!response.ok) throw new Error('File not found');
+                        const data = await response.json();
+                        
+                        // Update your state and redraw
+                        state.allData = data; 
+                        updateMap(); // Or whatever function starts your rendering
+                    } catch (err) {
+                        console.error("Error loading date file:", err);
+                        // Optional: show an alert if data for that date doesn't exist
+                    }
+                }
+
+                dateSelector.addEventListener('change', () => {
+                    loadData();
+                });
+                
+                state.currentTimeMinutes = today.getHours() * 60 + today.getMinutes();
+                if (state.currentTimeMinutes < 240) state.currentTimeMinutes += 1440;
                 const deckInstance = new deck.DeckGL({
                     container: 'container',
                     views: [new deck.OrthographicView({id: 'ortho'})],
