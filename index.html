@@ -163,6 +163,40 @@
             #info-content .day-box.special-rule::after { transform: translate(-50%, -50%) rotate(-45deg); }
             .day-box.active { background-color: #eee !important; color: #000 !important; }
 
+            .service-container {
+                display: inline-flex;
+                gap: 4px;
+                margin-left: 10px;
+                vertical-align: middle;
+            }
+
+            .service-box {
+                width: 24px;
+                height: 24px;
+                background-color: #333; /* Dark background like day-boxes */
+                border: 1px solid #444;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                cursor: help;
+            }
+
+            .service-box img {
+                width: 18px;  /* Slightly smaller than box for padding */
+                height: 18px;
+                object-fit: contain;
+                /* Optional: If the icons are too bright, uncomment the line below */
+                /* filter: brightness(0.8); */
+            }
+
+            /* Tooltip style inherited from your day-container logic */
+            .service-box[title]:hover {
+                background-color: #444;
+                border-color: #666;
+            }
+
             #btn-clear-selection { 
                 background: none; border: none; color: #888; 
                 cursor: pointer; font-size: 28px; line-height: 1; padding: 0;
@@ -251,6 +285,17 @@
                 const formattedDate = rawDate.replace(/-/g, ''); // "20260226"
                 return `data/${formattedDate}.json`;
             }
+
+            const serviceIcons = {
+                "腳踏車設施": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-bicy.png",
+                "自由座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-freeSeat.jpg",
+                "騰雲座艙": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-business.svg",
+                "哺乳室": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-nursingroom.png",
+                "輪椅座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-wheelchair.png",
+                "訂便當服務": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-lunchbox.png",
+                "桌型座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-table.png",
+                "跨日列車": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-crossday.png"
+            };
 
             // Main initialization
             async function initMap() {
@@ -393,12 +438,23 @@
                             boxesHtml += `<div class="day-box ${isActive ? 'active' : ''}">${daysLabel[num]}</div>`;
                         }
                     });
+                    let iconsHtml = '<div class="service-container">';
+                    Object.entries(serviceIcons).forEach(([name, url]) => {
+                        if (processedNote.includes(name)) {
+                            iconsHtml += `
+                                <div class="service-box" title="${name}">
+                                    <img src="${url}" alt="${name}">
+                                </div>`;
+                        }
+                    });
+                    iconsHtml += '</div>';
                     boxesHtml += '</div>';
                     DOM.infoBox.innerHTML = `
                         <span class="info-segment train-id"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
                         <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
                         <span class="info-segment route-display">${state.selectedLine.info.start} → ${state.selectedLine.info.end}</span>
                         ${boxesHtml}
+                        ${iconsHtml}
                     `;
                     // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
                 }
