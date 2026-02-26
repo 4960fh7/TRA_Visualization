@@ -381,7 +381,7 @@
                         if (state.stationList.has(name)) {
                             for (let x = 240; x <= 1680; x += 120) {
                                 const entry = { text: name, position: [x * 3, yValue], y: yValue };
-                                if (x % 480 === 0 && mainStationList.includes(name)) gridData.sparseLabelData.push(entry);
+                                if (x % 480 === 0 && mainStationList.has(name)) gridData.sparseLabelData.push(entry);
                                 if (x % 240 === 0) gridData.normalLabelData.push(entry);
                                 gridData.denseLabelData.push(entry);
                             }
