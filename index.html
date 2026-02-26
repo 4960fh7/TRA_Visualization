@@ -26,8 +26,8 @@
                     top: auto;        /* Remove the top alignment */
                     bottom: 0;        /* Stick to the bottom */
                     left: 0;
-                    width: 100vw;     /* Full width */
-                    height: 30vh;     /* 30% of viewport height */
+                    width: 100vw !important;     /* Full width */
+                    height: 30vh !important;     /* 30% of viewport height */
                     z-index: 1000;    /* Ensure it stays above the map */
                     overflow-y: auto; /* Allow scrolling if content is long */
                     border-right: none;
@@ -666,7 +666,7 @@
                 updateStationGridData();
                 renderLayers();
             }
-            
+
             window.addEventListener('resize', () => {
                 // This ensures deck.gl calculates the new height/width of its parent container
                 deckInstance.setProps({
