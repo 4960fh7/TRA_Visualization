@@ -132,7 +132,7 @@
             #info-content .day-box.special-rule::before { transform: translate(-50%, -50%) rotate(45deg); }
             #info-content .day-box.special-rule::after { transform: translate(-50%, -50%) rotate(-45deg); }
             .day-box.active { background-color: #eee !important; color: #000 !important; }
-            
+
             #btn-clear-selection { 
                 background: none; border: none; color: #888; 
                 cursor: pointer; font-size: 28px; line-height: 1; padding: 0;
@@ -239,7 +239,7 @@
                     viewMonitor: document.getElementById('view-monitor')
                 };
 
-                const response = await fetch('data/20260219.json');
+                const response = await fetch(`data/${dateSelector.value.replace(/-/g, '')}.json`);
                 let rawData = await response.json();
 
                 async function loadData() {
