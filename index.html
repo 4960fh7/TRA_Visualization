@@ -210,6 +210,9 @@
                     viewMonitor: document.getElementById('view-monitor')
                 };
 
+                let response = await fetch('data/20260219.json');
+                let rawData = await response.json();
+
                 const today = new Date();
                 DOM.dateSelector.value = today.toISOString().split('T')[0];
                 function getSelectedDateFilename() {
@@ -222,10 +225,10 @@
                     try {
                         const response = await fetch(filename);
                         if (!response.ok) throw new Error('File not found');
-                        const data = await response.json();
+                        rawData = await response.json();
                         
                         // Update your state and redraw
-                        state.allData = data; 
+                        state.allData = rawData; 
                         updateMap(); // Or whatever function starts your rendering
                     } catch (err) {
                         console.error("Error loading date file:", err);
