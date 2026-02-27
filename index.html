@@ -5,19 +5,27 @@
         <title>Taiwan Railway Operation Diagram</title>
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
         <style>
+            :root {
+                --bg-color: #1a1a1a; --sidebar-bg: #222222; --text-color: #ffffff;
+                --border-color: #444444; --panel-bg: rgba(30, 30, 30, 0.9);
+            }
             body { margin: 0; padding: 0; display: flex; background-color: #111; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; }
+            body.light-theme {
+                --bg-color: #f0f0f0; --sidebar-bg: #ffffff; --text-color: #1a1a1a;
+                --border-color: #cccccc; --panel-bg: rgba(255, 255, 255, 0.9);
+            }
             #main-wrapper { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
             #container { width: 100%; height: 90vh; position: relative; }
             #bottompanel {
-                width: 100%; height: 10vh; background-color: #111; color: white; 
-                padding: 0 15px; box-sizing: border-box; border-top: 1px solid #444;
+                width: 100%; height: 10vh; background-color: var(--sidebar-bg); color: var(--text-color);
+                padding: 0 15px; box-sizing: border-box; border-top: 1px solid var(--border-color);
                 display: flex; flex-direction: row; align-items: center; 
                 justify-content: flex-start; gap: 20px; overflow: hidden;
             }
             #sidebar { 
-                width: 25vw; height: 100vh; background-color: #222; color: white; 
-                padding: 20px; box-sizing: border-box; border-left: 1px solid #444; z-index: 2000;
-                position: fixed; right: 0; top: 0; transition: transform 0.3s ease-in-out;
+                width: 25vw; height: 100vh; background-color: var(--panel-bg); color: var(--text-color);
+                padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color);
+                z-index: 2000; position: fixed; right: 0; top: 0; transition: transform 0.3s ease-in-out;
                 box-shadow: -5px 0 15px rgba(0,0,0,0.3);
             }
             .placeholder { color: #666; font-style: italic; }
@@ -30,26 +38,6 @@
             #sidebar.collapsed { transform: translateX(100%); }
             #sidebar.collapsed + .toggle-btn, .collapsed ~ #sidebar-toggle { right: 0; }
             #sidebar.collapsed .icon, #sidebar.collapsed + #sidebar-toggle .icon { display: inline-block; transform: rotate(180deg); }
-
-            @media (max-width: 768px) {
-                #sidebar {
-                    top: auto;        /* Remove the top alignment */
-                    bottom: 0;        /* Stick to the bottom */
-                    left: 0;
-                    width: 100vw !important;     /* Full width */
-                    height: 30vh !important;     /* 30% of viewport height */
-                    z-index: 1000;    /* Ensure it stays above the map */
-                    overflow-y: auto; /* Allow scrolling if content is long */
-                    border-right: none;
-                    border-top: 1px solid #444; /* Add a top border instead */
-                }
-
-                /* Adjust the map container so it isn't completely hidden */
-                #container {
-                    height: 70vh !important; /* Give the map the remaining 70% */
-                    width: 100vw !important;
-                }
-            }
 
             #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
             .pill { 
@@ -90,60 +78,31 @@
             }
             
             .day-container[title]:hover::after {
-                content: attr(title);
-                position: absolute;
-                bottom: 125%; /* Position above the boxes */
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: #333;
-                color: #fff;
-                padding: 5px 10px;
-                border-radius: 4px;
-                font-size: 0.85em;
-                white-space: nowrap;
-                z-index: 1001;
-                border: 1px solid #555;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                content: attr(title); position: absolute; bottom: 125%; left: 50%;
+                transform: translateX(-50%); background-color: #333; color: #fff;
+                padding: 5px 10px; border-radius: 4px; font-size: 0.85em; white-space: nowrap;
+                z-index: 1001; border: 1px solid #555; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             }
 
-            /* Small arrow below the tooltip */
             .day-container[title]:hover::before {
-                content: "";
-                position: absolute;
-                bottom: 110%;
-                left: 50%;
-                transform: translateX(-50%);
-                border-width: 5px;
-                border-style: solid;
-                border-color: #333 transparent transparent transparent;
-                z-index: 1001;
+                content: ""; position: absolute; bottom: 110%; left: 50%; 
+                transform: translateX(-50%); border-width: 5px; border-style: solid;
+                border-color: #333 transparent transparent transparent; z-index: 1001;
             }
 
             #info-content .day-box { 
-                width: 18px !important;
-                min-width: 18px !important;
-                height: 18px !important;
-                min-height: 18px !important;
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-                padding: 0 !important;
-                border-right: none !important;
-                flex: 0 0 18px !important;
-                font-size: 9px;
-                border-radius: 4px;
-                font-weight: bold;
-                background-color: #444;
-                color: #888;
-                line-height: 1;
+                width: 18px !important; min-width: 18px !important; height: 18px !important;
+                min-height: 18px !important; display: flex !important; align-items: center;
+                justify-content: center; padding: 0 !important; border-right: none !important;
+                flex: 0 0 18px !important; font-size: 9px; border-radius: 4px;
+                font-weight: bold; background-color: var(--border-color); color: var(--text-color); line-height: 1;
             }
-            #info-content .day-box.special-rule { position: relative; color: #888; }
+            #info-content .day-box.special-rule { position: relative; color: var(--text-color); }
             #info-content .day-box.special-rule::before,
             #info-content .day-box.special-rule::after {
                 content: ""; position: absolute; top: 50%; left: 50%; width: 80%;
                 height: 1px; background-color: #ff0000; z-index: 1;
             }
-
             #info-content .day-box.special-rule::before { transform: translate(-50%, -50%) rotate(45deg); }
             #info-content .day-box.special-rule::after { transform: translate(-50%, -50%) rotate(-45deg); }
             .day-box.active { background-color: #eee !important; color: #000 !important; }
@@ -154,25 +113,13 @@
             }
 
             .service-box {
-                width: 20px !important;
-                min-width: 20px !important;
-                height: 20px !important;
-                min-height: 20px !important;
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-                padding: 0 !important;
-                flex: 0 0 18px !important;
-                font-size: 9px;
-                border-radius: 4px;
-                background-color: #333; /* Dark background like day-boxes */
-                border: 1px solid #444;
-                overflow: hidden;
+                width: 20px !important; min-width: 20px !important; height: 20px !important;
+                min-height: 20px !important; display: flex !important; align-items: center;
+                justify-content: center; padding: 0 !important; flex: 0 0 18px !important;
+                font-size: 9px; border-radius: 4px; background-color: var(--border-color); 
+                border: 1px solid #444; overflow: hidden;
             }
-
             .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
-
-            /* Tooltip style inherited from your day-container logic */
             .service-box[title]:hover { background-color: #444; border-color: #666; }
 
             #btn-clear-selection { 
@@ -193,8 +140,7 @@
         <div id="main-wrapper">
             <div id="container">
                 <div id="view-monitor">
-                    Zoom: <span id="val-zoom">0</span> | 
-                    Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
+                    Zoom: <span id="val-zoom">0</span> | Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
                 </div>
             </div>
             <div id="bottompanel">
@@ -209,6 +155,9 @@
             <span class="icon">❯</span>
         </button>
         <div id="sidebar">
+            <button id="theme-toggle" class="utility-btn">
+                <span id="theme-icon">☀️</span>
+            </button>
             <h2>日期</h2>
             <div>
                 <input type="date" id="date-selector" class="date-input">
@@ -252,34 +201,17 @@
                 period: 8759, initialY: 246, currentTimeMinutes: 0
             };
             let gridData = {
-                denseLabels: [], normalLabels: [], sparseLabels: [],
-                thickLines: [], thinLines: [],
+                denseLabels: [], normalLabels: [], sparseLabels: [], thickLines: [], thinLines: [],
                 simpleLabels: [], denseLabelData: [], normalLabelData: [], sparseLabelData: [],
                 minDistance: 0, maxDistance: 0
             };
             const dateSelector = document.getElementById('date-selector');
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); 
-            const dd = String(today.getDate()).padStart(2, '0');
-            dateSelector.value = `${yyyy}-${mm}-${dd}`;
+            dateSelector.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-            function getSelectedDateFilename() {
-                const rawDate = dateSelector.value; // "2026-02-26"
-                const formattedDate = rawDate.replace(/-/g, ''); // "20260226"
-                return `data/${formattedDate}.json`;
-            }
+            function getSelectedDateFilename() { return `data/${dateSelector.value.replace(/-/g, '')}.json`; }
 
-            // const serviceIcons = {
-            //     "腳踏車設施": "🚲",
-            //     "自由座": "💺",
-            //     "騰雲座艙": "✨",
-            //     "哺乳室": "🍼",
-            //     "輪椅座": "♿",
-            //     "訂便當服務": "🍱",
-            //     "桌型座": "🪑",
-            //     "跨日列車": "🌙"
-            // };
+            // const serviceIcons = { "腳踏車設施": "🚲", "自由座": "💺", "騰雲座艙": "✨", "哺乳室": "🍼", "輪椅座": "♿", "訂便當服務": "🍱", "桌型座": "🪑", "跨日列車": "🌙" };
             const serviceIcons = {
                 "腳踏車設施": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-bicy.png",
                 "自由座": "https://www.railway.gov.tw/tra-tip-web/static/images/serve-freeSeat.jpg",
@@ -294,17 +226,31 @@
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebar-toggle');
             const toggleIcon = toggleBtn.querySelector('.icon');
-
             toggleBtn.addEventListener('click', () => {
                 const isCollapsed = sidebar.classList.toggle('collapsed');
-                if (isCollapsed) {
-                    toggleBtn.style.right = '0px';
-                    toggleIcon.textContent = '❮'; 
-                } else {
-                    toggleBtn.style.right = '25vw'; 
-                    toggleIcon.textContent = '❯';
-                }
+                toggleBtn.style.right = isCollapsed ? '0px' : '25vw'; 
+                toggleIcon.textContent = isCollapsed ? '❮' : '❯'; 
             });
+
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+            if (localStorage.getItem('theme') === 'light') {
+                body.classList.add('light-theme');
+                themeIcon.textContent = '🌙';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('light-theme');
+                const isLight = body.classList.contains('light-theme');
+                themeIcon.textContent = isLight ? '🌙' : '☀️';
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                updateMapTheme(isLight);
+            });
+            function updateMapTheme(isLight) {
+                const newColors = isLight ? [0, 0, 0] : [255, 255, 255];
+                renderLayers(); 
+            }
 
             // Main initialization
             async function initMap() {
@@ -332,15 +278,12 @@
                     try {
                         const response = await fetch(filename);
                         rawData = await response.json();
-                        if (state.selectedLine) {
-                            state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || null;
-                        }
-
+                        if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || null; }
                         updateInfoBox();
                         renderLayers();
                     } catch (err) {
-                        // console.error("Error loading date file:", err);
                         alert("可選擇日期範圍: 2026/02/19 ~ 2026/03/01");
+                        // console.error("Error loading date file:", err);
                     }
                 }
 
@@ -391,7 +334,6 @@
                     DOM.trainPills.forEach(pill => {
                         const type = pill.getAttribute('data-type');
                         const color = colorPalette[type];
-                        
                         if (state.enabledTypes.has(type)) {
                             pill.classList.add('active');
                             pill.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
@@ -416,13 +358,12 @@
                     const daysLabel = ["加", "一", "二", "三", "四", "五", "六", "日", "例"];
                     const sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8];
                     const viaText = state.selectedLine.info.via !== '-' ? `(${(state.selectedLine.info.via).replace(/線/g, '')})` : '';
-                    let viaColor = "#888"; // Default gray
-                    if (viaText.includes("山")) viaColor = "#4CAF50";       // Green
-                    else if (viaText.includes("海")) viaColor = "#2196F3";  // Blue
+                    let viaColor = "#888";
+                    if (viaText.includes("山")) viaColor = "#4CAF50";
+                    else if (viaText.includes("海")) viaColor = "#2196F3";
                     else if (viaText.includes("成追")) viaColor = "#FF5722";
                     let rawNote = state.selectedLine.info.note || "";
-                    let specialNote = (state.selectedLine.info.drive === "0") 
-                        ? (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "") : "";
+                    let specialNote = (state.selectedLine.info.drive === "0") ? (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "") : "";
                     
                     const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
                     let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
@@ -430,15 +371,12 @@
                         const driveStr = state.selectedLine.info.drive;
                         const isActive = driveStr.includes(num.toString());
                         if (num === 8) {
-                            const isExcluded = driveStr.includes("9");
-                            const activeClass = isActive ? 'active' : '';
-                            const specialClass = isExcluded ? 'special-rule' : '';
-                            
-                            boxesHtml += `<div class="day-box ${activeClass} ${specialClass}">${daysLabel[num]}</div>`;
+                            boxesHtml += `<div class="day-box ${isActive ? 'active' : ''} ${driveStr.includes("9") ? 'special-rule' : ''}">${daysLabel[num]}</div>`;
                         } else {
                             boxesHtml += `<div class="day-box ${isActive ? 'active' : ''}">${daysLabel[num]}</div>`;
                         }
                     });
+                    boxesHtml += '</div>';
                     let iconsHtml = '<div class="service-container">';
                     Object.entries(serviceIcons).forEach(([name, url]) => {
                         if (state.selectedLine.info.img.includes(name)) {
@@ -449,7 +387,6 @@
                         }
                     });
                     iconsHtml += '</div>';
-                    boxesHtml += '</div>';
                     DOM.infoBox.innerHTML = `
                         <span class="info-segment train-id"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
                         <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
@@ -461,10 +398,7 @@
                 }
 
                 function updateStationGridData() {
-                    // Reset grid
                     Object.keys(gridData).forEach(key => Array.isArray(gridData[key]) ? gridData[key] = [] : null);
-                    
-                    // Map Labels
                     Object.entries(state.stationDistances).forEach(([name, yValue]) => {
                         if (state.stationList.has(name)) {
                             for (let x = 240; x <= 1680; x += 120) {
@@ -480,13 +414,11 @@
                     gridData.minDistance = Math.min(...distances);
                     gridData.maxDistance = Math.max(...distances);
                     
-                    // Map Lines
                     for (let x = 240; x <= 1680; x += 10) {
                         const path = [[x * 3, gridData.minDistance - state.period], [x * 3, gridData.maxDistance + state.period]];
                         (x % 60 === 0) ? gridData.thickLines.push({ path }) : gridData.thinLines.push({ path });
                     }
 
-                    // Map Time Labels
                     for (let y = gridData.minDistance - state.period; y <= gridData.maxDistance + state.period; y += 400) {
                         for (let x = 240; x <= 1680; x += 10) {
                             const label = { text: `${Math.floor(x/60).toString().padStart(2, '0')}${(x%60).toString().padStart(2, '0')}`, position: [(x*3)+5, y] };
@@ -508,7 +440,6 @@
                     checkbox.addEventListener('change', (e) => {
                         const type = e.target.value;
                         e.target.checked ? state.enabledTypes.add(type) : state.enabledTypes.delete(type);
-
                         if (state.selectedLine && state.selectedLine.type === type && !e.target.checked) {
                             state.selectedLine = null;
                             updateInfoBox();
@@ -534,9 +465,7 @@
                     });
                 });
 
-                dateSelector.addEventListener('change', () => {
-                    loadData();
-                });
+                dateSelector.addEventListener('change', () => { loadData(); });
 
                 DOM.btnSelectAll.addEventListener('click', () => {
                     Object.keys(colorPalette).forEach(type => state.enabledTypes.add(type));
@@ -556,30 +485,25 @@
                     pill.addEventListener('click', () => {
                         DOM.linePills.forEach(p => p.classList.remove('active'));
                         pill.classList.add('active');
-
                         const lineType = pill.getAttribute('data-line');
                         const isMountain = lineType === 'mountain';
-                        
                         state.stationList = isMountain ? mountStationList : seaStationList;
                         state.stationDistances = isMountain ? mountStationDistances : seaStationDistances;
                         state.period = isMountain ? 8759 : 8806;
                         
-                        // Cross-check selected line
                         if (state.selectedLine) {
                             const updatedMatch = rawData.find(t => 
                                 t.number === state.selectedLine.number && 
                                 t.data.some(p => state.stationList.has(p.x))
                             );
 
-                            if (updatedMatch) {
-                                state.selectedLine = updatedMatch;
-                            } else {
+                            if (updatedMatch) { state.selectedLine = updatedMatch; }
+                            else {
                                 state.selectedLine = null;
                                 state.showSchedule = false;
                                 updateInfoBox();
                             }
                         }
-
                         updateStationGridData();
                         updateInfoBox();
                         renderLayers();
@@ -607,7 +531,6 @@
                 function renderLayers() {
                     const yOffsets = [-state.period, 0, state.period];
                     
-                    // Clean train paths to avoid jumpiness
                     const processedSegments = rawData
                         .filter(train => state.enabledTypes.has(train.train))
                         .map(train => {
@@ -618,20 +541,17 @@
                             for (let i = 0; i < validPoints.length; i++) {
                                 const currentPoint = validPoints[i];
                                 const currentRawDist = state.stationDistances[currentPoint.x];
-
                                 if (i > 0) {
                                     const prevRawDist = state.stationDistances[validPoints[i - 1].x];
                                     if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
                                     else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
                                 }
-
                                 adjustedData.push({ ...currentPoint, adjustedDist: currentRawDist + cumulativeOffset });
                             }
                             return { ...train, data: adjustedData };
                         })
                         .filter(train => train.data.length > 1);
 
-                    // Prepare active schedule data
                     let scheduleData = [];
                     if (state.showSchedule && state.selectedLine) {
                         const grouped = {};
@@ -653,7 +573,6 @@
                         });
                     }
 
-                    // Generate deck.gl layers
                     const offsetLayers = yOffsets.flatMap(offset => [
                         new deck.PathLayer({
                             id: `station-layer-${offset}`,
