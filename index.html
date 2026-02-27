@@ -50,22 +50,19 @@
                 background-color: var(--panel-bg); color: var(--subtext-color); 
             }
             .pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
-            .pill.active { color: black; border-color: transparent; }
-            .pill.utility:hover { background-color: #666; color: white; }
-            .line-pill.active { background-color: #0078d4; color: white; }
+            .pill.active { color: var(--panel-bg); border-color: transparent; }
+            .pill.utility:hover { background-color: var(--panel-bg); color: var(--text-color); }
+            .line-pill.active { background-color: #0078d4; color: var(--text-color); }
 
             .date-input {
                 width: 100%; padding: 10px; background-color: var(--panel-bg); border: 1px solid var(--border-color);
-                color: white; border-radius: 8px; font-size: 16px; margin-bottom: 20px;
+                color: var(--text-color); border-radius: 8px; font-size: 16px; margin-bottom: 20px;
                 outline: none; cursor: pointer; 
             }
             .date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
 
             #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
-            #info-content div , #info-content p { 
-                margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap;
-                padding: 0 15px; border-right: 1px solid #333;
-            }
+            #info-content div , #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
             #info-content p:last-child { border-right: none; }
 
             #info-content .info-segment {
@@ -151,7 +148,7 @@
                 <div id="info-content">
                     <p class="placeholder">點選列車以顯示資訊</p>
                 </div>
-                <button id="btn-clear-selection" style="display: none; background: none; border: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>
+                <button id="btn-clear-selection" style="display: none; background: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>
             </div>
         </div>
         <button id="sidebar-toggle" class="toggle-btn">
@@ -345,7 +342,7 @@
                             pill.style.color = 'black';
                         } else {
                             pill.classList.remove('active');
-                            pill.style.backgroundColor = '#333';
+                            pill.style.backgroundColor = isLight ? '#ccc' : '#333';
                             pill.style.color = '#888';
                         }
                     });
