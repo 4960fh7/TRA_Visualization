@@ -22,28 +22,29 @@
             #sidebar h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
             .toggle-btn {
                 position: fixed;
-                left: 300px;
+                /* This calculation keeps it exactly on the left edge of the sidebar */
+                right: 25%; 
                 top: 20px;
                 z-index: 2100;
                 background: #333;
                 color: white;
                 border: 1px solid #444;
-                border-radius: 0 4px 4px 0;
-                padding: 10px 6px;
+                border-radius: 4px 0 0 4px; /* Rounded corners on the left side */
+                padding: 10px 8px;
                 cursor: pointer;
-                transition: left 0.3s ease-in-out;
+                transition: right 0.3s ease-in-out;
             }
             #sidebar.collapsed {
-                transform: translateX(-100%);
+                transform: translateX(100%);
             }
 
-            .collapsed + #sidebar-toggle {
-                left: 0;
+            #sidebar.collapsed ~ #sidebar-toggle {
+                right: 0;
             }
 
-            .collapsed + #sidebar-toggle .icon {
+            #sidebar.collapsed ~ #sidebar-toggle .icon {
                 display: inline-block;
-                transform: rotate(180deg); /* Flip the arrow */
+                transform: rotate(180deg);
             }
 
             @media (max-width: 768px) {
@@ -214,18 +215,10 @@
                 overflow: hidden;
             }
 
-            .service-box img {
-                width: 18px;
-                height: 18px;
-                object-fit: contain;
-                /* filter: brightness(0.8); */
-            }
+            .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
 
             /* Tooltip style inherited from your day-container logic */
-            .service-box[title]:hover {
-                background-color: #444;
-                border-color: #666;
-            }
+            .service-box[title]:hover { background-color: #444; border-color: #666; }
 
             #btn-clear-selection { 
                 background: none; border: none; color: #888; 
