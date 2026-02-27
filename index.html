@@ -16,36 +16,19 @@
             }
             #sidebar { 
                 width: 25vw; height: 100vh; background-color: #222; color: white; 
-                padding: 20px; box-sizing: border-box; border-left: 1px solid #444;
+                padding: 20px; box-sizing: border-box; border-left: 1px solid #444; z-index: 2000;
+                position: fixed; right: 0; top: 0; transition: transform 0.3s ease-in-out;
             }
             .placeholder { color: #666; font-style: italic; }
             #sidebar h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
             .toggle-btn {
-                position: fixed;
-                /* This calculation keeps it exactly on the left edge of the sidebar */
-                right: 25%; 
-                top: 20px;
-                z-index: 2100;
-                background: #333;
-                color: white;
-                border: 1px solid #444;
-                border-radius: 4px 0 0 4px; /* Rounded corners on the left side */
-                padding: 10px 8px;
-                cursor: pointer;
-                transition: right 0.3s ease-in-out;
+                position: fixed; right: 25vw; top: 20px; z-index: 2100; background: #333;
+                color: white; border: 1px solid #444; border-radius: 4px 0 0 4px; 
+                padding: 10px 8px; cursor: pointer; transition: right 0.3s ease-in-out;
             }
-            #sidebar.collapsed {
-                transform: translateX(100%);
-            }
-
-            #sidebar.collapsed ~ #sidebar-toggle {
-                right: 0;
-            }
-
-            #sidebar.collapsed ~ #sidebar-toggle .icon {
-                display: inline-block;
-                transform: rotate(180deg);
-            }
+            #sidebar.collapsed { transform: translateX(100%); }
+            #sidebar.collapsed ~ #sidebar-toggle { right: 0; }
+            #sidebar.collapsed ~ #sidebar-toggle .icon { display: inline-block; transform: rotate(180deg); }
 
             @media (max-width: 768px) {
                 #sidebar {
@@ -79,20 +62,11 @@
             .line-pill.active { background-color: #0078d4; color: white; }
 
             .date-input {
-                width: 100%;
-                padding: 10px;
-                background-color: #333;
-                border: 1px solid #444;
-                color: white;
-                border-radius: 8px;
-                font-size: 16px;
-                margin-bottom: 20px;
-                outline: none;
-                cursor: pointer;
+                width: 100%; padding: 10px; background-color: #333; border: 1px solid #444;
+                color: white; border-radius: 8px; font-size: 16px; margin-bottom: 20px;
+                outline: none; cursor: pointer; 
             }
-            .date-input::-webkit-calendar-picker-indicator {
-                filter: invert(1); /* Makes the calendar icon white */
-            }
+            .date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
 
             #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
             #info-content div , #info-content p { 
@@ -102,26 +76,16 @@
             #info-content p:last-child { border-right: none; }
 
             #info-content .info-segment {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0; /* Prevents text from squashing the segments */
-                border-right: 1px solid #333;
-                padding: 0 10px;
-                height: 1.2em;
-                white-space: nowrap;
+                display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+                border-right: 1px solid #333; padding: 0 10px; height: 1.2em; white-space: nowrap;
             }
             .train-id { width: 70px; }
             .via-label { width: 30px; font-weight: bold; }
             .route-display { width: 160px; }
 
             #info-content .day-container {
-                display: inline-flex !important;
-                height: 24px !important; /* Force height larger than 1.2em */
-                align-items: center;
-                gap: 4px;
-                padding: 0 10px;
-                border-right: none !important; /* Remove that vertical separator line */
+                display: inline-flex !important; height: 24px !important; align-items: center;
+                gap: 4px; padding: 0 10px; border-right: none !important; 
             }
             
             .day-container[title]:hover::after {
@@ -175,14 +139,8 @@
             #info-content .day-box.special-rule { position: relative; color: #888; }
             #info-content .day-box.special-rule::before,
             #info-content .day-box.special-rule::after {
-                content: "";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 80%; /* length of the cross lines */
-                height: 1px; /* thickness of the cross lines */
-                background-color: #ff0000; /* Bright red */
-                z-index: 1;
+                content: ""; position: absolute; top: 50%; left: 50%; width: 80%;
+                height: 1px; background-color: #ff0000; z-index: 1;
             }
 
             #info-content .day-box.special-rule::before { transform: translate(-50%, -50%) rotate(45deg); }
@@ -190,12 +148,8 @@
             .day-box.active { background-color: #eee !important; color: #000 !important; }
 
             .service-container {
-                display: inline-flex !important;
-                height: 24px !important;
-                align-items: center;
-                gap: 4px;
-                margin-left: 10px;
-                vertical-align: middle;
+                display: inline-flex !important; height: 24px !important;
+                align-items: center; gap: 4px; margin-left: 10px; vertical-align: middle;
             }
 
             .service-box {
@@ -341,12 +295,9 @@
 
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
-                
-                // Update the icon or text if you aren't using CSS transforms
-                // Optional: Tell the map to resize after the sidebar finishes sliding
-                // setTimeout(() => {
-                //     window.dispatchEvent(new Event('resize'));
-                // }, 300); 
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 305);
             });
 
             // Main initialization
