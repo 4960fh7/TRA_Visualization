@@ -59,7 +59,7 @@
                 color: var(--text-color); border-radius: 8px; font-size: 16px; margin-bottom: 20px;
                 outline: none; cursor: pointer; 
             }
-            .date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
+            .date-input::-webkit-calendar-picker-indicator { filter: invert(1); color: var(--text-color)}
 
             #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
             #info-content div , #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
@@ -117,7 +117,7 @@
                 width: 20px !important; min-width: 20px !important; height: 20px !important;
                 min-height: 20px !important; display: flex !important; align-items: center;
                 justify-content: center; padding: 0 !important; flex: 0 0 18px !important;
-                font-size: 9px; border-radius: 4px; background-color: var(--border-color); overflow: hidden;
+                font-size: 9px; border-radius: 4px; background-color: transparent; overflow: hidden;
             }
             .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
             .service-box[title]:hover { background-color: #444; border-color: #666; }
