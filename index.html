@@ -239,7 +239,6 @@
             if (localStorage.getItem('theme') === 'light') {
                 body.classList.add('light-theme');
                 themeIcon.textContent = '🌙';
-                updateMapTheme(isLight);
             }
 
             themeToggle.addEventListener('click', () => {
@@ -691,6 +690,10 @@
             // });
 
             initMap();
+            if (localStorage.getItem('theme') === 'light') {
+                updateMapTheme(isLight);
+            }
+
         </script>
     </body>
 </html>
