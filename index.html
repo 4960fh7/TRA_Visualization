@@ -339,7 +339,7 @@
                         if (state.enabledTypes.has(type)) {
                             pill.classList.add('active');
                             pill.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-                            pill.style.color = 'black';
+                            pill.style.color = isLight ? '#ddd' : '#222';
                         } else {
                             pill.classList.remove('active');
                             pill.style.backgroundColor = isLight ? '#ccc' : '#333';
@@ -581,7 +581,7 @@
                             data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPath: d => [[630, d[1] + offset], [5130, d[1] + offset]],
-                            getColor: [80, 80, 80],
+                            getColor: isLight ? [180, 180, 180] : [80, 80, 80],
                             getWidth: 1, widthMaxPixels: 2, widthMinPixels: 0
                         }),
                         new deck.TextLayer({
@@ -591,7 +591,7 @@
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
-                            getColor: [180, 180, 180],
+                            getColor: isLight ? [80, 80, 80] : [180, 180, 180],
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
                             getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10]
@@ -617,7 +617,7 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: false,
                             getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
-                            getColor: [255, 214, 0],
+                            getColor: isLight ? [255, 214, 0] : [255, 196, 0],
                             getWidth: 4, widthMaxPixels: 4.5, widthMinPixels: 0
                         }),
                         new deck.TextLayer({
@@ -629,20 +629,20 @@
                                 const format = (val) => `${Math.floor(val/60).toString().padStart(2,'0')}${(val%60).toString().padStart(2,'0')}`;
                                 return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
                             },
-                            getSize: 13, getColor: [255, 255, 255], characterSet: 'auto',
+                            getSize: 13, getColor: isLight ? [0, 0, 0] : [255, 255, 255], characterSet: 'auto',
                             getTextAnchor: 'start', getAlignmentBaseline: 'center', pixelOffset: [15, 0], 
-                            background: true, getBackgroundColor: [0, 0, 0, 180]
+                            background: true, getBackgroundColor: isLight ? [255, 255, 180] : [0, 0, 0, 180]
                         })
                     ]);
 
                     const baseLayers = [
                         new deck.PathLayer({
                             id: 'thin-time-lines', data: gridData.thinLines, coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => d.path, getColor: [50, 50, 50], getWidth: 0.7, widthMaxPixels: 1.6, widthMinPixels: 0
+                            getPath: d => d.path, getColor: isLight ? [200, 200, 200] : [50, 50, 50], getWidth: 0.7, widthMaxPixels: 1.6, widthMinPixels: 0
                         }),
                         new deck.PathLayer({
                             id: 'thick-time-lines', data: gridData.thickLines, coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => d.path, getColor: [80, 80, 80], getWidth: 1, widthMaxPixels: 2, widthMinPixels: 0
+                            getPath: d => d.path, getColor: isLight ? [180, 180, 180] : [80, 80, 80], getWidth: 1, widthMaxPixels: 2, widthMinPixels: 0
                         }),
                         new deck.TextLayer({
                             id: 'vertical-labels',
@@ -650,7 +650,7 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => d.position, getText: d => d.text,
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
-                            getColor: [180, 180, 180], characterSet: 'auto',
+                            getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                             getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
                         }),
                         new deck.ScatterplotLayer({
@@ -658,7 +658,7 @@
                             data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                            getFillColor: [200, 200, 200], getRadius: 0.0001, radiusMaxPixels: 0.001, radiusMinPixels: 0.00001
+                            getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: 0.0001, radiusMaxPixels: 0.001, radiusMinPixels: 0.00001
                         })
                     ];
 
@@ -667,7 +667,7 @@
                             id: 'current-time-line',
                             data: [{ path: [[state.currentTimeMinutes * 3, gridData.minDistance - state.period], [state.currentTimeMinutes * 3, gridData.maxDistance + state.period]] }],
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                            getPath: d => d.path, getColor: [0, 172, 193], getWidth: 3, widthMaxPixels: 4, widthMinPixels: 0
+                            getPath: d => d.path, getColor: isLight ? [0, 172, 193] : [0, 225, 255], getWidth: 3, widthMaxPixels: 4, widthMinPixels: 0
                         })
                     ];
 
