@@ -568,22 +568,44 @@
                     
                     const processedSegments = rawData
                         .filter(train => state.enabledTypes.has(train.train))
-                        .map(train => {
-                            const validPoints = train.data.filter(p => state.stationDistances[p.x] !== undefined);
+                        .flatMap(train => {
+                            const segments = [];
+                            let currentSegment = [];
                             let cumulativeOffset = 0;
-                            const adjustedData = [];
+                            for (let i = 0; i < train.data.length; i++) {
+                                const p = train.data[i];
+                                const currentRawDist = state.stationDistances[p.x];
 
-                            for (let i = 0; i < validPoints.length; i++) {
-                                const currentPoint = validPoints[i];
-                                const currentRawDist = state.stationDistances[currentPoint.x];
-                                if (i > 0) {
-                                    const prevRawDist = state.stationDistances[validPoints[i - 1].x];
+                                // Check if the point is a "gap" (undefined station)
+                                if (currentRawDist === undefined) {
+                                    if (currentSegment.length > 1) {
+                                        segments.push({ ...train, data: currentSegment });
+                                    }
+                                    currentSegment = []; // Reset for the next valid segment
+                                    continue;
+                                }
+
+                                // Period Wrap-around logic (Cumulative Offset)
+                                if (currentSegment.length > 0) {
+                                    const prevPoint = currentSegment[currentSegment.length - 1];
+                                    const prevRawDist = state.stationDistances[prevPoint.x];
+                                    
                                     if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
                                     else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
                                 }
-                                adjustedData.push({ ...currentPoint, adjustedDist: currentRawDist + cumulativeOffset });
+
+                                currentSegment.push({ 
+                                    ...p, 
+                                    adjustedDist: currentRawDist + cumulativeOffset 
+                                });
                             }
-                            return { ...train, data: adjustedData };
+
+                            // Push the final segment if it has enough points
+                            if (currentSegment.length > 1) {
+                                segments.push({ ...train, data: currentSegment });
+                            }
+
+                            return segments;
                         })
                         .filter(train => train.data.length > 1);
 
