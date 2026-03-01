@@ -578,18 +578,21 @@
                                 if (currentSegment.length > 0) {
                                     const prevPoint = currentSegment[currentSegment.length - 1];
                                     const prevRawDist = state.stationDistances[prevPoint.x];
-                                    
+
                                     if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
                                     else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
-                                }
-                                if (currentRawDist === undefined) {
-                                    if (currentSegment.length > 1) {
+
+                                    if (currentRawDist === undefined) {
                                         const currentCalcDist = allStationDistances[p.x];
                                         if (currentCalcDist !== undefined)  {
                                             if (currentCalcDist > 1250 && prevRawDist < 1200) {
                                                 currentSegment.push({ x: prevPoint.y + (p.y - prevPoint.y) * (1214 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 1214 + cumulativeOffset, isTemp: true  });
                                             }
                                         }
+                                    }
+                                }
+                                if (currentRawDist === undefined) {
+                                    if (currentSegment.length > 1) {
                                         segments.push({ ...train, data: currentSegment });
                                     }
                                     currentSegment = [];
