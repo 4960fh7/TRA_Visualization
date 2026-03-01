@@ -575,17 +575,6 @@
                             for (let i = 0; i < train.data.length; i++) {
                                 const p = train.data[i];
                                 const currentRawDist = state.stationDistances[p.x];
-
-                                // Check if the point is a "gap" (undefined station)
-                                if (currentRawDist === undefined) {
-                                    if (currentSegment.length > 1) {
-                                        segments.push({ ...train, data: currentSegment });
-                                    }
-                                    currentSegment = []; // Reset for the next valid segment
-                                    continue;
-                                }
-
-                                // Period Wrap-around logic (Cumulative Offset)
                                 if (currentSegment.length > 0) {
                                     const prevPoint = currentSegment[currentSegment.length - 1];
                                     const prevRawDist = state.stationDistances[prevPoint.x];
@@ -593,14 +582,23 @@
                                     if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
                                     else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
                                 }
+                                if (currentRawDist === undefined) {
+                                    if (currentSegment.length > 1) {
+                                        const currentCalcDist = allStationDistances[p.x];
+                                        if (currentCalcDist !== undefined)  {
+                                            if (currentCalcDist > 1250 && prevRawDist < 1200) {
+                                                currentSegment.push({ x: prevPoint.y + (p.y - prevPoint.y) * (1214 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 1214 + cumulativeOffset, isTemp: true  });
+                                            }
+                                        }
+                                        segments.push({ ...train, data: currentSegment });
+                                    }
+                                    currentSegment = [];
+                                    continue;
+                                }
 
-                                currentSegment.push({ 
-                                    ...p, 
-                                    adjustedDist: currentRawDist + cumulativeOffset 
-                                });
+                                currentSegment.push({ ...p, adjustedDist: currentRawDist + cumulativeOffset });
                             }
 
-                            // Push the final segment if it has enough points
                             if (currentSegment.length > 1) {
                                 segments.push({ ...train, data: currentSegment });
                             }
