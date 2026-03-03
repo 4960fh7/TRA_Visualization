@@ -109,7 +109,7 @@
                 font-size: 9px; border-radius: 4px; background-color: transparent; overflow: hidden;
             }
             .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
-            .service-box[title]:hover { background-color: #f00; border-color: #666; }
+            .service-box[title]:hover { background-color: transparent; }
 
             #btn-clear-selection { 
                 background: none; border: none; color: #888; 
@@ -231,7 +231,7 @@
             let state = {
                 selectedLine: null, showSchedule: false, currentZoom: 0, 
                 enabledTypes: new Set(['普悠瑪', '太魯閣', '新自強', '自強', '莒光', '區間快', '區間']),
-                stationList: mountStationList, stationDistances: mountStationDistances,
+                stationList: mountStationList, stationDistances: mountStationDistances, focusedStation: null,
                 period: 8759, initialY: 246, currentTimeMinutes: 0
             };
             let gridData = {
@@ -556,7 +556,11 @@
                     const yOffsets = [-state.period, 0, state.period];
                     
                     const processedSegments = rawData
-                        .filter(train => state.enabledTypes.has(train.train))
+                        .filter(train => {
+                            const isEnabled = state.enabledTypes.has(train.train);
+                            const passesStation = (state.focusedStation === null) || (train.data.some(p => p.x === state.focusedStation));
+                            return isEnabled && passesStation;
+                        })
                         .flatMap(train => {
                             const segments = [];
                             let currentSegment = [];
@@ -649,9 +653,15 @@
                             id: `station-layer-${offset}`,
                             data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            pickable: true,
+                            onclick: (info) => {
+                                const stationName = info.object.name;
+                                state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
+                                renderLayers();
+                            },
                             getPath: d => [[630, d[1] + offset], [5130, d[1] + offset]],
-                            getColor: isLight ? [180, 180, 180] : [80, 80, 80],
-                            getWidth: 1, widthMaxPixels: 2, widthMinPixels: 0
+                            getColor: d => d.name === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
+                            getWidth: d => d.name === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
                         }),
                         new deck.TextLayer({
                             id: `station-labels-${offset}`,
