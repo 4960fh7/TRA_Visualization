@@ -655,6 +655,10 @@
                         });
                     }
 
+                    const activeLabelData = state.currentZoom > 0.8 ? gridData.denseLabelData : 
+                               state.currentZoom > -0.4 ? gridData.normalLabelData : 
+                               state.currentZoom > -1.8 ? gridData.sparseLabelData : [];
+
                     const offsetLayers = yOffsets.flatMap(offset => [
                         new deck.PathLayer({
                             id: `station-layer-${offset}`,
@@ -667,7 +671,7 @@
                         }),
                         new deck.TextLayer({
                             id: `station-labels-${offset}`,
-                            data: state.currentZoom > 0.8 ? gridData.denseLabelData : state.currentZoom > -0.4 ? gridData.normalLabelData : state.currentZoom > -1.8 ? gridData.sparseLabelData : [],
+                            data: activeLabelData,
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
@@ -690,7 +694,7 @@
                             getWidth: 1.5, widthMaxPixels: 2, widthMinPixels: 0
                         })
                     ]);
-
+                    
                     const selectionLayers = yOffsets.flatMap(offset => [
                         new deck.PathLayer({
                             id: `selection-layer-${offset}`,
@@ -716,16 +720,17 @@
                         }),
                         new deck.TextLayer({
                             id: `station-labels-highlight-${offset}`,
-                            data: [{ name: state.focusedStation, y: state.stationDistances[state.focusedStation] }],
+                            data: activeLabelData.filter(d => d.text === state.focusedStation),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
-                            getPosition: d => [state.currentTimeMinutes * 3 + 180, d.y + offset],
-                            getText: d => d.name,
+                            getPosition: d => [d.position[0], d.position[1] + offset],
+                            getText: d => d.text,
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
                             getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10],
                             background: true, getBackgroundColor: isLight ? [235, 235, 235, 180] : [20, 20, 20, 180],
+                            updateTriggers: { data: [state.currentZoom, state.focusedStation] }
                         })
                     ]);
 
