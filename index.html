@@ -346,7 +346,7 @@
                             state.showSchedule = true; 
                             state.focusedStation = null;
                         } else if (info.object && info.layer.id.includes('station-layer')) {
-                            const stationName = info.object.name;
+                            const stationName = info.object[0];
                             state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
                             state.selectedLine = null;
                             state.showSchedule = false;
@@ -564,7 +564,7 @@
                     const processedSegments = rawData
                         .filter(train => {
                             const isEnabled = state.enabledTypes.has(train.train);
-                            const passesStation = (state.focusedStation === null) || (train.data.some(p => p.x === state.focusedStation));
+                            const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
                             return isEnabled && passesStation;
                         })
                         .flatMap(train => {
@@ -660,14 +660,9 @@
                             data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: true,
-                            onclick: (info) => {
-                                const stationName = info.object.name;
-                                state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
-                                renderLayers();
-                            },
                             getPath: d => [[630, d[1] + offset], [5130, d[1] + offset]],
-                            getColor: d => d.name === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
-                            getWidth: d => d.name === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
+                            getColor: d => d[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
+                            getWidth: d => d[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
                         }),
                         new deck.TextLayer({
                             id: `station-labels-${offset}`,
