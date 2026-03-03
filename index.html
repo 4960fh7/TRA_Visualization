@@ -345,14 +345,15 @@
                             state.selectedLine = rawData.find(t => t.number === trainNumber);
                             state.showSchedule = true; 
                             state.focusedStation = null;
-                        } else if (info.object && info.layer.id.includes('station-layer')) {
-                            const stationName = info.object[0];
+                        } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
+                            const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
                             state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
                             state.selectedLine = null;
                             state.showSchedule = false;
                         } else {
                             state.selectedLine = null;
                             state.showSchedule = false;
+                            state.focusedStation = null;
                         }
                         updateInfoBox();
                         renderLayers();
@@ -667,11 +668,12 @@
                         new deck.TextLayer({
                             id: `station-labels-${offset}`,
                             data: state.currentZoom > 0.8 ? gridData.denseLabelData : state.currentZoom > -0.4 ? gridData.normalLabelData : state.currentZoom > -1.8 ? gridData.sparseLabelData : [],
-                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                            coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
-                            getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
-                            getColor: isLight ? [80, 80, 80] : [180, 180, 180],
+                            getSize: d => d.text === state.focusedStation ? 16 : 12, sizeMaxPixels: 16, sizeMinPixels: 0,
+                            getColor: d => d[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [80, 80, 80] : [180, 180, 180]),
+                            getFontWeight: d => d.text === state.focusedStation ? 700 : 400,
                             characterSet: 'auto',
                             fontFamily: 'Microsoft YaHei, SimHei, Arial, sans-serif',
                             getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10]
