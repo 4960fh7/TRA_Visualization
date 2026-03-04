@@ -277,6 +277,7 @@
             dateSelector.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             today.setDate(today.getDate() - 1);
             const yesterday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            console.log(yesterday);
 
             function getSelectedDateFilename() { return `data/${dateSelector.value.replace(/-/g, '')}.json`; }
             function getYesterdayFilename() { return `data/${yesterday.replace(/-/g, '')}.json`; }
