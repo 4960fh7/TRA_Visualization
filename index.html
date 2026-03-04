@@ -142,8 +142,8 @@
                 display: flex; justify-content: space-between; align-items: center;
             }
             .modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; }
-            .close-modal { font-size: 28px; cursor: pointer; color: var(--text-color); opacity: 0.6; }
-            .close-modal:hover { opacity: 1; }
+            .close-infomodal, .close-questionmodal { font-size: 28px; cursor: pointer; color: var(--text-color); opacity: 0.6; }
+            .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
             .last-update { font-style: italic; color: #888; }
         </style>
@@ -202,7 +202,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>關於本站</h2>
-                    <span class="close-modal">&times;</span>
+                    <span class="close-infomodal">&times;</span>
                 </div>
                 <div class="modal-body">
                     <h3>網站介紹</h3>
@@ -220,7 +220,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>使用說明</h2>
-                    <span class="close-modal">&times;</span>
+                    <span class="close-questionmodal">&times;</span>
                 </div>
                 <div class="modal-body">
                     <h3>座標軸與標記</h3>
@@ -858,11 +858,15 @@
             
             const infoModal = document.getElementById('info-modal');
             const infoBtn = document.getElementById('btn-info');
-            const closeBtn = document.querySelector('.close-modal');
+            const closeinfoBtn = document.querySelector('.close-infomodal');
+            const questionModal = document.getElementById('question-modal');
+            const questionBtn = document.getElementById('btn-question');
+            const closequestionBtn = document.querySelector('.close-questionmodal');
+
             infoBtn.addEventListener('click', () => {
                 infoModal.style.display = 'flex';
             });
-            closeBtn.addEventListener('click', () => {
+            closeinfoBtn.addEventListener('click', () => {
                 infoModal.style.display = 'none';
             });
             window.addEventListener('click', (event) => {
@@ -871,12 +875,10 @@
                 }
             });
 
-            const questionModal = document.getElementById('question-modal');
-            const questionBtn = document.getElementById('btn-question');
             questionBtn.addEventListener('click', () => {
                 questionModal.style.display = 'flex';
             });
-            closeBtn.addEventListener('click', () => {
+            closequestionBtn.addEventListener('click', () => {
                 questionModal.style.display = 'none';
             });
             window.addEventListener('click', (event) => {
