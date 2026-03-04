@@ -173,6 +173,9 @@
             <button id="btn-info" class="pill" title="關於本站">
                 <span class="icon">ℹ️</span>
             </button>
+            <button id="btn-question" class="pill" title="使用說明">
+                <span class="icon">❓</span>
+            </button>
             <h2>日期</h2>
             <div>
                 <input type="date" id="date-selector" class="date-input" title="選擇日期">
@@ -210,6 +213,21 @@
                     <p>3. 地圖資料與列車位置僅大致計算，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
                     <p class="last-update">版本： test | 最後更新： 2026/03/04</p>
+                </div>
+            </div>
+        </div>
+        <div id="question-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>使用說明</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <h3>座標軸與標記</h3>
+                    <p>橫軸代表時間，天藍色鉛直線為現在時間。</p>
+                    <p>縱軸代表車站，往上為順行，往下為逆行。</p>
+                    <p>彩色折線代表列車行駛路線，其中與車站重疊的橫線段為停留的車站，斜線經過的車站為僅通過。</p>
+                    <h3>側邊欄</h3>
                 </div>
             </div>
         </div>
@@ -566,8 +584,10 @@
                         state.focusedStation = null;
                         state.selectedLine = null;
                         state.showSchedule = false;
-                        const modal = document.getElementById('info-modal');
-                        if (modal) modal.style.display = 'none';
+                        const infoModal = document.getElementById('info-modal');
+                        if (infoModal) infoModal.style.display = 'none';
+                        const questionModal = document.getElementById('question-modal');
+                        if (questionModal) questionModal.style.display = 'none';
                         updateInfoBox();
                         renderLayers();
                     }
@@ -825,21 +845,36 @@
 
             initMap();
             
-            const modal = document.getElementById('info-modal');
+            const infoModal = document.getElementById('info-modal');
             const infoBtn = document.getElementById('btn-info');
             const closeBtn = document.querySelector('.close-modal');
 
             infoBtn.addEventListener('click', () => {
-                modal.style.display = 'flex';
+                infoModal.style.display = 'flex';
             });
             closeBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
+                infoModal.style.display = 'none';
             });
             window.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
+                if (event.target === infoModal) {
+                    infoModal.style.display = 'none';
                 }
             });
+            const questionModal = document.getElementById('question-modal');
+            const questionBtn = document.getElementById('btn-question');
+
+            questionBtn.addEventListener('click', () => {
+                questionModal.style.display = 'flex';
+            });
+            closeBtn.addEventListener('click', () => {
+                questionModal.style.display = 'none';
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === questionModal) {
+                    questionModal.style.display = 'none';
+                }
+            });
+
 
         </script>
     </body>
