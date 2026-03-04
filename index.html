@@ -259,6 +259,7 @@
 
             let deckInstance = null;
             let rawData = [];
+            let yrawData = [];
             let state = {
                 selectedLine: null, showSchedule: false, currentZoom: 0, 
                 enabledTypes: new Set(['普悠瑪', '太魯閣', '新自強', '自強', '莒光', '區間快', '區間']),
@@ -277,7 +278,6 @@
             dateSelector.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             today.setDate(today.getDate() - 1);
             const yesterday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            console.log(yesterday);
 
             function getSelectedDateFilename() { return `data/${dateSelector.value.replace(/-/g, '')}.json`; }
             function getYesterdayFilename() { return `data/${yesterday.replace(/-/g, '')}.json`; }
