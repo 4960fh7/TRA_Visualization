@@ -561,6 +561,15 @@
                     if (key === 'm') {
                         DOM.viewMonitor.style.display = (DOM.viewMonitor.style.display === 'block') ? 'none' : 'block';
                     }
+                    if (key === "escape" || e.keyCode === 27) {
+                        state.focusedStation = null;
+                        state.selectedLine = null;
+                        state.showSchedule = false;
+                        const modal = document.getElementById('info-modal');
+                        if (modal) modal.style.display = 'none';
+                        updateInfoBox();
+                        renderLayers();
+                    }
                 });
 
                 function renderLayers() {
