@@ -399,7 +399,7 @@
                     onClick: (info) => {
                         if (info.object && info.layer.id.includes('main-path-layer')) {
                             const trainNumber = info.object.number;
-                            state.selectedLine = rawData.find(t => t.number === trainNumber);
+                            state.selectedLine = rawData.find(t => t.number === trainNumber) || yrawData.find(t => t.number === trainNumber);
                             state.showSchedule = true; 
                             state.focusedStation = null;
                         } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
@@ -585,7 +585,12 @@
                                 t.number === state.selectedLine.number && 
                                 t.data.some(p => state.stationList.has(p.x))
                             );
+                            const yupdatedMatch = yrawData.find(t => 
+                                t.number === state.selectedLine.number && 
+                                t.data.some(p => state.stationList.has(p.x))
+                            );
                             if (updatedMatch) { state.selectedLine = updatedMatch; }
+                            else if ( yupdatedMatch ) { state.selectedLine = yupdatedMatch; }
                             else {
                                 state.selectedLine = null;
                                 state.showSchedule = false;
