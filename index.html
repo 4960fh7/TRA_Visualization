@@ -381,7 +381,8 @@
                 let rawData = await response.json();
                 const yresponse = await fetch(`data/${yesterday.replace(/-/g, '')}.json`);
                 let yrawData = await yresponse.json();
-                let processedSegments = [];
+                let todaySegments = [];
+                let yesterdaySegments = [];
 
                 async function loadData() {
                     const filename = getSelectedDateFilename();
@@ -708,7 +709,7 @@
                 function renderLayers() {
                     const yOffsets = [-state.period, 0, state.period];
                     
-                    const todaySegments = rawData
+                    todaySegments = rawData
                         .filter(train => {
                             const isEnabled = state.enabledTypes.has(train.train);
                             const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
@@ -790,7 +791,7 @@
                         })
                         .filter(train => train.data.length > 1);
 
-                    const yesterdaySegments = yrawData
+                    yesterdaySegments = yrawData
                         .filter(train => {
                             const isEnabled = state.enabledTypes.has(train.train);
                             const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
@@ -874,7 +875,7 @@
                         })
                         .filter(train => train.data.length > 1);
 
-                    processedSegments = [...todaySegments, ...yesterdaySegments];
+                    const processedSegments = [...todaySegments, ...yesterdaySegments];
 
                     let scheduleData = [];
                     if (state.showSchedule && state.selectedLine) {
