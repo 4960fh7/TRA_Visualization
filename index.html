@@ -789,7 +789,7 @@
                     if (state.showSchedule && state.selectedLine) {
                         const grouped = {};
                         state.selectedLine.data.forEach(p => {
-                            if (state.stationDistances[p.x] !== undefined) {
+                            if (state.stationDistances[p.x] !== undefined && p.y < 1560) {
                                 if (!grouped[p.x]) grouped[p.x] = [];
                                 grouped[p.x].push(p.y);
                             }
