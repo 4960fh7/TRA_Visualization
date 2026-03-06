@@ -167,7 +167,7 @@
                 </div>
                 <div id="view-null" class="tab-view" style="display: flex; align-items: center; width: 100%; gap: 20px;">
                     <h2 style="margin: 0; white-space: nowrap;">資訊</h2>
-                    <div id="station-info-content">
+                    <div>
                         <p class="placeholder">點選列車或車站以顯示資訊</p>
                     </div>
                 </div>
@@ -360,6 +360,7 @@
             async function initMap() {
                 const DOM = {
                     infoBox: document.getElementById('info-content'),
+                    stationBox: document.getElementById('station-info-content'),
                     valZoom: document.getElementById('val-zoom'),
                     valX: document.getElementById('val-x'),
                     valY: document.getElementById('val-y'),
@@ -471,11 +472,7 @@
                 }
 
                 function updateInfoBox() {
-                    if (!state.selectedLine) {
-                        DOM.infoBox.innerHTML = `<p class="placeholder">點選列車或車站以顯示資訊</p>`;
-                        DOM.btnClearSelection.style.display = 'none';
-                        return;
-                    }
+                    if (!state.selectedLine) { return; }
                     
                     DOM.btnClearSelection.style.display = 'block';
 
@@ -519,6 +516,12 @@
                         ${iconsHtml}
                     `;
                     // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
+                    
+                    DOM.stationBox.innerHTML = `
+                        <span class="info-segment train-id"><strong>${state.focusedStation}站</strong></span>
+                        <span>順行</span>
+                        <span>逆行</span>
+                    `;
                 }
 
                 function updateStationGridData() {
