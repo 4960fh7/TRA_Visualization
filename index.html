@@ -473,55 +473,62 @@
 
                 function updateInfoBox() {
                     if (!state.selectedLine) { return; }
-                    
                     DOM.btnClearSelection.style.display = 'block';
 
-                    const daysLabel = ["加", "一", "二", "三", "四", "五", "六", "日", "例"];
-                    const sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-                    const viaText = state.selectedLine.info.via !== '-' ? `(${(state.selectedLine.info.via).replace(/線/g, '')})` : '';
-                    let viaColor = "#888";
-                    if (viaText.includes("山")) viaColor = "#4CAF50";
-                    else if (viaText.includes("海")) viaColor = "#2196F3";
-                    else if (viaText.includes("成追")) viaColor = "#FF5722";
-                    let rawNote = state.selectedLine.info.note || "";
-                    let specialNote = (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "");
-                    
-                    const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
-                    let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
-                    sequence.forEach(num => {
-                        const driveStr = state.selectedLine.info.drive;
-                        const isActive = driveStr.includes(num.toString());
-                        if (num === 8) {
-                            boxesHtml += `<div class="day-box ${isActive ? 'active' : ''} ${driveStr.includes("9") ? 'special-rule' : ''}">${daysLabel[num]}</div>`;
-                        } else {
-                            boxesHtml += `<div class="day-box ${isActive ? 'active' : ''}">${daysLabel[num]}</div>`;
-                        }
-                    });
-                    boxesHtml += '</div>';
-                    let iconsHtml = '<div class="service-container">';
-                    Object.entries(serviceIcons).forEach(([name, url]) => {
-                        if (state.selectedLine.info.img.includes(name) || state.selectedLine.info.note.includes(name)) {
-                            iconsHtml += `
-                                <div class="service-box" title="${name}">
-                                    <img src="${url}" alt="${name}">
-                                </div>`;
-                        }
-                    });
-                    iconsHtml += '</div>';
-                    DOM.infoBox.innerHTML = `
-                        <span class="info-segment train-id"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
-                        <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
-                        <span class="info-segment route-display">${state.selectedLine.info.start} → ${state.selectedLine.info.end}</span>
-                        ${boxesHtml}
-                        ${iconsHtml}
-                    `;
-                    // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
-                    
-                    DOM.stationBox.innerHTML = `
-                        <span class="info-segment train-id"><strong>${state.focusedStation}站</strong></span>
-                        <span>順行</span>
-                        <span>逆行</span>
-                    `;
+                    if (state.selectedLine) {
+                        const daysLabel = ["加", "一", "二", "三", "四", "五", "六", "日", "例"];
+                        const sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+                        const viaText = state.selectedLine.info.via !== '-' ? `(${(state.selectedLine.info.via).replace(/線/g, '')})` : '';
+                        let viaColor = "#888";
+                        if (viaText.includes("山")) viaColor = "#4CAF50";
+                        else if (viaText.includes("海")) viaColor = "#2196F3";
+                        else if (viaText.includes("成追")) viaColor = "#FF5722";
+                        let rawNote = state.selectedLine.info.note || "";
+                        let specialNote = (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "");
+                        
+                        const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
+                        let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
+                        sequence.forEach(num => {
+                            const driveStr = state.selectedLine.info.drive;
+                            const isActive = driveStr.includes(num.toString());
+                            if (num === 8) {
+                                boxesHtml += `<div class="day-box ${isActive ? 'active' : ''} ${driveStr.includes("9") ? 'special-rule' : ''}">${daysLabel[num]}</div>`;
+                            } else {
+                                boxesHtml += `<div class="day-box ${isActive ? 'active' : ''}">${daysLabel[num]}</div>`;
+                            }
+                        });
+                        boxesHtml += '</div>';
+                        let iconsHtml = '<div class="service-container">';
+                        Object.entries(serviceIcons).forEach(([name, url]) => {
+                            if (state.selectedLine.info.img.includes(name) || state.selectedLine.info.note.includes(name)) {
+                                iconsHtml += `
+                                    <div class="service-box" title="${name}">
+                                        <img src="${url}" alt="${name}">
+                                    </div>`;
+                            }
+                        });
+                        iconsHtml += '</div>';
+                        DOM.infoBox.innerHTML = `
+                            <span class="info-segment train-id"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
+                            <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
+                            <span class="info-segment route-display">${state.selectedLine.info.start} → ${state.selectedLine.info.end}</span>
+                            ${boxesHtml}
+                            ${iconsHtml}
+                        `;
+                        // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
+
+                    }
+                    else if (state.focusedStation) {
+                        DOM.stationBox.innerHTML = `
+                            <span class="info-segment train-id"><strong>${state.focusedStation}站</strong></span>
+                            <span>順行</span>
+                            <span>逆行</span>
+                        `;
+                    } else {
+                        // Optional: Clear the box if no station is focused
+                        DOM.stationBox.innerHTML = '';
+                        DOM.infoBox.innerHTML = '';
+                    }
                 }
 
                 function updateStationGridData() {
