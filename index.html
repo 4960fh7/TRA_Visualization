@@ -344,13 +344,11 @@
                     // Priority 1: Train selected
                     trainView.classList.remove('hidden');
                     clearBtn.style.display = 'block';
-                    updateTrainInfo(); // Function to populate train details
                 } 
                 else if (state.focusedStation) {
                     // Priority 2: Station selected
                     stationView.classList.remove('hidden');
                     clearBtn.style.display = 'block';
-                    updateStationInfo(); // Function to populate station details
                 } 
                 else {
                     // Priority 3: Nothing selected
