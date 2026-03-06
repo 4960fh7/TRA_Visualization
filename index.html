@@ -441,7 +441,7 @@
                             state.focusedStation = null;
                         } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                             const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                            state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
+                            state.focusedStation = stationName;
                             state.selectedLine = null;
                             state.showSchedule = false;
                         } else {
