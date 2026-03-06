@@ -26,7 +26,7 @@
                 width: 100%; height: 10vh; background-color: var(--panel-bg); color: var(--text-color);
                 padding: 0 15px; box-sizing: border-box; border-top: 1px solid var(--border-color);
                 display: flex; flex-direction: row; align-items: center; transition: all 0.3s ease-in-out;
-                justify-content: flex-start; gap: 20px; overflow: hidden;
+                justify-content: flex-start; gap: 20px; overflow: auto;
             }
             #sidebar { 
                 width: 25vw; height: 100vh; background-color: var(--sidebar-bg); color: var(--text-color);
@@ -532,9 +532,7 @@
                             // 2. Filter for trains that haven't left yet (current time or later)
                             .filter(t => t !== null && t.time >= state.currentTimeMinutes)
                             // 3. Sort by departure time
-                            .sort((a, b) => a.time - b.time)
-                            // 4. Take the top 2
-                            .slice(0, 2);
+                            .sort((a, b) => a.time - b.time);
                         const formatTime = (totalMin) => {
                             const h = Math.floor((totalMin % 1440) / 60);
                             const m = Math.floor(totalMin % 60);
