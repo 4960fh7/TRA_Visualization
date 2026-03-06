@@ -441,9 +441,9 @@
                             state.focusedStation = null;
                         } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                             const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                            state.focusedStation = stationName;
                             state.selectedLine = null;
                             state.showSchedule = false;
+                            state.focusedStation = stationName;
                         } else {
                             state.selectedLine = null;
                             state.showSchedule = false;
@@ -472,9 +472,7 @@
                 }
 
                 function updateInfoBox() {
-                    if (!state.selectedLine) { return; }
                     DOM.btnClearSelection.style.display = 'block';
-
                     if (state.selectedLine) {
                         const daysLabel = ["加", "一", "二", "三", "四", "五", "六", "日", "例"];
                         const sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -519,10 +517,40 @@
 
                     }
                     else if (state.focusedStation) {
+                        const nextTrains = processedSegments
+                            .map(train => {
+                                const stop = train.data.find(p => p.x === state.focusedStation);
+                                return stop ? { 
+                                    number: train.number, 
+                                    type: train.train, 
+                                    dest: train.info.to, 
+                                    time: stop.y // This is the minutes from 00:00
+                                } : null;
+                            })
+                            // 2. Filter for trains that haven't left yet (current time or later)
+                            .filter(t => t !== null && t.time >= state.currentTimeMinutes)
+                            // 3. Sort by departure time
+                            .sort((a, b) => a.time - b.time)
+                            // 4. Take the top 2
+                            .slice(0, 2);
+                        const formatTime = (totalMin) => {
+                            const h = Math.floor((totalMin % 1440) / 60);
+                            const m = Math.floor(totalMin % 60);
+                            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                        };
+                        let trainsHtml = nextTrains.length > 0 
+                            ? nextTrains.map(t => `
+                                <div class="info-segment" style="border-left: 1px solid var(--border-color); padding: 0 10px;">
+                                    <span style="color: var(--monitor-color); margin-right: 5px;">${t.type}${t.number}</span>
+                                    <span style="font-weight: bold; margin-right: 5px;">${formatTime(t.time)}</span>
+                                    往 <span style="margin-left: 3px;">${t.dest}</span>
+                                </div>
+                            `).join('')
+                            : `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`;
+
                         DOM.stationBox.innerHTML = `
-                            <span class="info-segment train-id"><strong>${state.focusedStation}站</strong></span>
-                            <span>順行</span>
-                            <span>逆行</span>
+                            <span class="info-segment" style="font-size: 1.1em;"><strong>${state.focusedStation}站</strong></span>
+                            ${trainsHtml}
                         `;
                     } else {
                         // Optional: Clear the box if no station is focused
