@@ -112,6 +112,18 @@
             .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
             .service-box[title]:hover { background-color: transparent; }
 
+            #bottom-tabs { display: flex; gap: 2px; position: absolute; top: -32px; left: 15px; }
+            .tab-btn {
+                background-color: var(--panel-bg); color: var(--subtext-color); 
+                border: 1px solid var(--border-color); border-bottom: none; font-size: 14px;
+                padding: 6px 15px; border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s ease;
+            }
+            .tab-btn.active {
+                background-color: var(--panel-bg); color: var(--text-color);
+                font-weight: bold; height: 32px; margin-top: -2px;
+            }
+            .hidden { display: none !important; }
+
             #btn-clear-selection { 
                 background: none; border: none; color: #888; 
                 cursor: pointer; font-size: 28px; line-height: 1; padding: 0;
@@ -131,7 +143,6 @@
                 background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
                 display: none; justify-content: center; align-items: center;
             }
-
             .modal-content {
                 background-color: var(--sidebar-bg); color: var(--text-color);
                 padding: 0; width: 90%; max-width: 85vw; border-radius: 8px;
@@ -157,10 +168,24 @@
                 </div>
             </div>
             <div id="bottompanel">
-                <h2 style="display: flex; justify-content: space-between; align-items: center; width: 85;"> 列車資訊   </h2>
-                <div id="info-content">
-                    <p class="placeholder">點選列車以顯示資訊</p>
+                <div id="bottom-tabs">
+                    <button id="tab-train" class="tab-btn active" onclick="switchBottomTab('train')">列車資訊</button>
+                    <button id="tab-station" class="tab-btn" onclick="switchBottomTab('station')">車站資訊</button>
                 </div>
+                <div id="view-train" class="tab-view" style="display: flex; align-items: center; width: 100%; gap: 20px;">
+                    <h2 style="margin: 0; white-space: nowrap;">列車資訊</h2>
+                    <div id="info-content">
+                        <p class="placeholder">點選列車以顯示資訊</p>
+                    </div>
+                </div>
+
+                <div id="view-station" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
+                    <h2 style="margin: 0; white-space: nowrap;">車站資訊</h2>
+                    <div id="station-info-content">
+                        <p class="placeholder">點選車站以顯示資訊</p>
+                    </div>
+                </div>
+
                 <button id="btn-clear-selection" style="display: none; background: none; color: #888; cursor: pointer; font-size: 24px; line-height: 1;">&times;</button>
             </div>
         </div>
@@ -213,7 +238,7 @@
                     <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                    <p class="last-update">版本： test | 最後更新： 2026/03/04</p>
+                    <p class="last-update">版本： test | 最後更新： 2026/03/06</p>
                 </div>
             </div>
         </div>
@@ -320,6 +345,21 @@
                 isLight = true;
             }
 
+            function switchBottomTab(tabName) {
+                document.getElementById('tab-train').classList.toggle('active', tabName === 'train');
+                document.getElementById('tab-station').classList.toggle('active', tabName === 'station');
+
+                const trainView = document.getElementById('view-train');
+                const stationView = document.getElementById('view-station');
+                if (tabName === 'train') {
+                    trainView.classList.remove('hidden');
+                    stationView.classList.add('hidden');
+                } else {
+                    trainView.classList.add('hidden');
+                    stationView.classList.remove('hidden');
+                }
+            }
+
             // Main initialization
             async function initMap() {
                 const DOM = {
@@ -402,11 +442,13 @@
                             state.selectedLine = rawData.find(t => t.number === trainNumber) || yrawData.find(t => t.number === trainNumber);
                             state.showSchedule = true; 
                             state.focusedStation = null;
+                            switchBottomTab('train');
                         } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                             const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
                             state.focusedStation = (state.focusedStation === stationName) ? null : stationName;
                             state.selectedLine = null;
                             state.showSchedule = false;
+                            switchBottomTab('station');
                         } else {
                             state.selectedLine = null;
                             state.showSchedule = false;
