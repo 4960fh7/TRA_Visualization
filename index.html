@@ -26,7 +26,7 @@
                 width: 100%; height: 15vh; background-color: var(--panel-bg); color: var(--text-color);
                 padding: 0 15px; box-sizing: border-box; border-top: 1px solid var(--border-color);
                 display: flex; flex-direction: row; align-items: center; transition: all 0.3s ease-in-out;
-                justify-content: flex-start; gap: 20px; overflow: hidden scroll;
+                justify-content: flex-start; gap: 20px; overflow: auto;
             }
             /* .scrollable { overflow: scroll !important; } */
             #sidebar { 
@@ -520,7 +520,8 @@
 
                     }
                     else if (state.focusedStation) {
-                        const nextTrains = processedSegments
+                        const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
+                        const nextTrains = allAvailableTrains
                             .map(train => {
                                 const stop = train.data.find(p => p.x === state.focusedStation);
                                 return stop ? { 
