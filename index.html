@@ -4,6 +4,9 @@
         <meta charset="UTF-8">
         <title>Taiwan Railway Operation Diagram</title>
         <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap" rel="stylesheet">
         <style>
             :root {
                 --bg-color: #000; --sidebar-bg: #444; --text-color: #ddd;
@@ -149,6 +152,8 @@
             .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
             .last-update { font-style: italic; color: #888; }
+
+            .biz-udgothic-regular { font-family: "BIZ UDGothic", sans-serif; font-weight: 400; font-style: normal; }
         </style>
     </head>
     <body>
@@ -168,7 +173,7 @@
                     <div id="station-info-content" class="scrollable"></div>
                 </div>
                 <div id="view-null" class="tab-view" style="display: flex; align-items: center; width: 100%; gap: 20px;">
-                    <h2 style="margin: 0; white-space: nowrap;">資訊</h2>
+                    <h2 style="margin: 0; white-space: nowrap;">列車資訊</h2>
                     <div>
                         <p class="placeholder">點選列車或車站以顯示資訊</p>
                     </div>
@@ -225,7 +230,7 @@
                     <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                    <p class="last-update">版本： test | 最後更新： 2026/03/06</p>
+                    <p class="last-update">版本： test | 最後更新： 2026/03/08</p>
                 </div>
             </div>
         </div>
@@ -253,7 +258,7 @@
                     <p>1. 列車資訊由左至右分別為：車種、車次、經由路線、起訖站與時間、行駛日期、乘客服務與其他資訊。</p>
                     <p>2. 滑鼠指標停留在行駛日期上，可顯示加班列車的行駛日期。</p>
                     <p>3. 滑鼠指標停留在乘客服務上，可顯示各圖示所對應的資訊。</p>
-                    <p>點擊車站（橫線）會篩選有停靠該車站的列車。點擊空白處或按下 Esc 鍵可取消篩選。</p>
+                    <p>點擊車站（橫線）會篩選有停靠該車站的列車，並在下方顯示車站資訊。點擊空白處或按下 Esc 鍵可取消篩選。</p>
                 </div>
             </div>
         </div>
@@ -533,7 +538,8 @@
                                 } : null;
                             })
                             .filter(t => t !== null && t.time >= state.currentTimeMinutes)
-                            .sort((a, b) => a.time - b.time);
+                            .sort((a, b) => a.time - b.time)
+                            .slice(0, 2);
                         const formatTime = (totalMin) => {
                             const h = Math.floor((totalMin % 1440) / 60);
                             const m = Math.floor(totalMin % 60);
