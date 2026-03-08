@@ -454,8 +454,8 @@
                             state.focusedStation = null;
                         }
                         updateBottomPanel()
-                        updateInfoBox();
                         renderLayers();
+                        updateInfoBox();
                     }
                 });
 
@@ -518,7 +518,6 @@
                             ${iconsHtml}
                         `;
                         // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
-
                     }
                     else if (state.focusedStation) {
                         const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
@@ -529,12 +528,10 @@
                                     number: train.number, 
                                     type: train.train, 
                                     dest: train.info.end.slice(6), 
-                                    time: stop.y // This is the minutes from 00:00
+                                    time: stop.y
                                 } : null;
                             })
-                            // 2. Filter for trains that haven't left yet (current time or later)
                             .filter(t => t !== null && t.time >= state.currentTimeMinutes)
-                            // 3. Sort by departure time
                             .sort((a, b) => a.time - b.time);
                         const formatTime = (totalMin) => {
                             const h = Math.floor((totalMin % 1440) / 60);
@@ -550,7 +547,6 @@
                             ${trainsHtml}
                         `;
                     } else {
-                        // Optional: Clear the box if no station is focused
                         DOM.stationBox.innerHTML = '';
                         DOM.infoBox.innerHTML = '';
                     }
@@ -1040,6 +1036,7 @@
                     themeIcon.textContent = isLight ? '🌙' : '☀️';
                     localStorage.setItem('theme', isLight ? 'light' : 'dark');
                     updateMapTheme(isLight);
+                    updateInfoBox();
                 });
                 if (localStorage.getItem('theme') === 'light') {
                     isLight = true;
