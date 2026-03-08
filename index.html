@@ -612,13 +612,13 @@
                             state.enabledTypes.delete(type);
                             if (state.selectedLine && state.selectedLine.train === type) {
                                 state.selectedLine = null;
-                                updateInfoBox();
                             }
                         } else {
                             state.enabledTypes.add(type);
                         }
                         syncPillStyles();
                         renderLayers();
+                        updateInfoBox();
                     });
                 });
 
@@ -628,13 +628,14 @@
                     Object.keys(colorPalette).forEach(type => state.enabledTypes.add(type));
                     syncPillStyles();
                     renderLayers();
+                    updateInfoBox();
                 });
                 DOM.btnDeselectAll.addEventListener('click', () => {
                     state.enabledTypes.clear();
                     state.selectedLine = null;
-                    updateInfoBox();
                     syncPillStyles();
                     renderLayers();
+                    updateInfoBox();
                 });
 
                 let isMountain = true;
