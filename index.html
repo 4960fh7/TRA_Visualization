@@ -523,7 +523,7 @@
                         });
                         iconsHtml += '</div>';
                         DOM.infoBox.innerHTML = `
-                            <span class="info-segment train-id" style="color: ${htmlcolorPalette[t.type]}"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
+                            <span class="info-segment train-id" style="color: ${htmlcolorPalette[state.selectedLine.train]}"><strong>${state.selectedLine.train} ${state.selectedLine.number}</strong></span>
                             <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
                             <span class="info-segment route-display">${state.selectedLine.info.start} → ${state.selectedLine.info.end}</span>
                             ${boxesHtml}
