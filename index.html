@@ -56,7 +56,8 @@
             .pill:hover, .rev-pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
             .pill.active { color: var(--panel-bg); border-color: transparent; }
             .pill.utility:hover { background-color: var(--panel-bg); color: var(--text-color); }
-            .line-pill.active { background-color: #0078d4; color: var(--text-color); }
+            .mount-text.active { background-color: #4CAF50; color: var(--text-color); }
+            .sea-text.active { background-color: #2196F3; color: var(--text-color); }
 
             .date-input {
                 width: 60%; padding: 10px; background-color: var(--panel-bg); border: 1px solid var(--border-color);
@@ -194,8 +195,8 @@
             </div>
             <h2>路線</h2>
             <div id="line-pill-container">
-                <button class="pill line-pill active" data-line="mountain">山線</button>
-                <button class="pill line-pill" data-line="sea">海線</button>
+                <button class="pill line-pill mount-text active" data-line="mountain">山線</button>
+                <button class="pill line-pill sea-text" data-line="sea">海線</button>
             </div>
             <h2>車種</h2>
             <div id="pill-container">
@@ -544,7 +545,7 @@
 
                         DOM.stationBox.innerHTML = `
                             <span class="info-segment" style="font-size: 1.1em;"><strong>${state.focusedStation}站</strong></span>
-                            ${trainsHtml}
+                            <span>${trainsHtml}</span>
                         `;
                     } else {
                         DOM.stationBox.innerHTML = '';
