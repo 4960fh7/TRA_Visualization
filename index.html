@@ -536,23 +536,32 @@
                         const nextTrains = allAvailableTrains
                             .map(train => {
                                 const stop = train.data.find(p => p.x === state.focusedStation);
+                                const firstPoint = train.data[0];
+                                const secondPoint = train.data[2];
+                                const isclockwise = (state.stationDistances[firstPoint.x] > state.stationDistances[secondPoint.x]) || (state.stationDistances[firstPoint.x] <= 1000 && state.stationDistances[secondPoint.x] >= 6000);
                                 return stop ? { 
                                     number: train.number, 
                                     type: train.train, 
                                     dest: train.info.end.slice(6), 
-                                    time: stop.y
+                                    time: stop.y,
+                                    isclockwise: isclockwise
                                 } : null;
                             })
                             .filter(t => t !== null && t.time >= state.currentTimeMinutes)
-                            .sort((a, b) => a.time - b.time)
-                            .slice(0, 2);
+                            .sort((a, b) => a.time - b.time);
+                        const cwTrains = nextTrains.filter(t => t.isClockwise).slice(0, 2);
+                        const ccwTrains = nextTrains.filter(t => !t.isClockwise).slice(0, 2);
                         const formatTime = (totalMin) => {
                             const h = Math.floor((totalMin % 1440) / 60);
                             const m = Math.floor(totalMin % 60);
                             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
                         };
+                        if (nextTrains.length > 0) {
+                            const cwtext = cwTrains.map(t => `<span style="color: ${htmlcolorPalette[t.type]};">${t.type} ${t.number}</span><span> ${formatTime(t.time)} 往 ${t.dest}</span>`).join(' >> ');
+                            const ccwtext = ccwTrains.map(t => `<span style="color: ${htmlcolorPalette[t.type]};">${t.type} ${t.number}</span><span> ${formatTime(t.time)} 往 ${t.dest}</span>`).join(' >> ');
+                        }
                         let trainsHtml = nextTrains.length > 0 
-                            ? nextTrains.map(t => `<span style="color: ${htmlcolorPalette[t.type]};">${t.type} ${t.number}</span><span> ${formatTime(t.time)} 往 ${t.dest}</span>`).join('      ')
+                            ? `<span>順行 >> ${cwtext}</span><div>逆行 >> ${ccwtext}</div>`
                             : `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`;
 
                         DOM.stationBox.innerHTML = `
