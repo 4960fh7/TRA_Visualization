@@ -538,7 +538,8 @@
                                 const stop = train.data.find(p => p.x === state.focusedStation);
                                 const firstPoint = train.data[0];
                                 const secondPoint = train.data[2];
-                                const isclockwise = (state.stationDistances[firstPoint.x] > state.stationDistances[secondPoint.x]) || (state.stationDistances[firstPoint.x] <= 1000 && state.stationDistances[secondPoint.x] >= 6000);
+                                console.log(train.data.length);
+                                const isclockwise = (allStationDistances[firstPoint.x] > allStationDistances[secondPoint.x]) || (allStationDistances[firstPoint.x] <= 1000 && allStationDistances[secondPoint.x] >= 6000);
                                 return stop ? { 
                                     number: train.number, 
                                     type: train.train, 
