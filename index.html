@@ -560,10 +560,13 @@
                         if (nextTrains.length > 0) {
                             const cwtext = cwTrains.map(t => `<span style="color: ${htmlcolorPalette[t.type]};">${t.type} ${t.number}</span><span> ${formatTime(t.time)} 往 ${t.dest}</span>`).join(' >> ');
                             const ccwtext = ccwTrains.map(t => `<span style="color: ${htmlcolorPalette[t.type]};">${t.type} ${t.number}</span><span> ${formatTime(t.time)} 往 ${t.dest}</span>`).join(' >> ');
+                        } else {
+                            const cwtext = "";
+                            const ccwtext = "";
                         }
                         let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
-                            : cwtext != undefined && ccwtext == undefined ? `<span>順行 >> ${cwtext}</span><div>逆行無後續車次</div>`
-                            : cwtext == undefined && ccwtext != undefined ? `<span>順行無後續車次</span><div>逆行 >> ${ccwtext}</div>`
+                            : cwtext != "" && ccwtext == "" ? `<span>順行 >> ${cwtext}</span><div>逆行無後續車次</div>`
+                            : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次</span><div>逆行 >> ${ccwtext}</div>`
                             : `<span>順行 >> ${cwtext}</span><div>逆行 >> ${ccwtext}</div>`;
 
                         DOM.stationBox.innerHTML = `
