@@ -569,10 +569,10 @@
 
                         DOM.stationBox.innerHTML = `
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20; font-size: 1.1em; white-space: nowrap; background: var(--panel-bg); border-right: 2px solid #555; padding-left: 10px; padding-right: 10px; height: 15vh">
+                                <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20; font-size: 1.2em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); padding-left: 20px; padding-right: 20px; height: 15vh; transition: all 0.3s ease; ">
                                     <strong>${state.focusedStation}站</strong>
                                 </div>
-                                <div style="display: flex; flex-direction: row; gap: 15px; align-items: center; line-height: 1.4; font-size: 0.95em; padding-right: 40vw">
+                                <div style="display: flex; flex-direction: row; gap: 15px; align-items: center; line-height: 1.4; font-size: 0.95em; padding-right: 35vw">
                                     ${trainsHtml}
                                 </div>
                             </div>
@@ -623,6 +623,14 @@
                         }
                     }
                 }
+
+                const panel = document.getElementById('bottompanel');
+                panel.addEventListener('wheel', (event) => {
+                    if (event.deltaY !== 0) {
+                        event.preventDefault();
+                        panel.scrollLeft += event.deltaY;
+                    }
+                }, { passive: false });
 
                 DOM.typeFilters.forEach(checkbox => {
                     checkbox.addEventListener('change', (e) => {
