@@ -540,8 +540,8 @@
                     else if (state.focusedStation) {
                         const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
                         const nextTrains = allAvailableTrains
-                        .map(train => {
-                            const stop = train.data.findlast(p => p.x === state.focusedStation);
+                        .map(train => {ˇ
+                            const stop = train.data.findLast(p => p.x === state.focusedStation);
                             const stopDistances = train.data.map(p => allStationDistances[p.x]).filter(d => d !== undefined);
                                 return stop ? { 
                                     number: train.number, 
