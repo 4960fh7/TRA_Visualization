@@ -970,7 +970,6 @@
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
                             fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
-                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [80, 80, 80] : [180, 180, 180],
                             characterSet: 'auto',
@@ -1009,6 +1008,7 @@
                                 const format = (val) => `${Math.floor(val/60).toString().padStart(2,'0')}${(val%60).toString().padStart(2,'0')}`;
                                 return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
                             },
+                            fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
                             getSize: 13, getColor: isLight ? [0, 0, 0] : [255, 255, 255], characterSet: 'auto',
                             getTextAnchor: 'start', getAlignmentBaseline: 'center', pixelOffset: [15, 0], 
                             background: true, getBackgroundColor: isLight ? [255, 255, 255, 180] : [0, 0, 0, 180]
@@ -1020,7 +1020,6 @@
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
                             fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
-                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                             characterSet: 'auto',
@@ -1045,7 +1044,6 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => d.position, getText: d => d.text,
                             fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
-                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                             getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
