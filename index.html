@@ -177,6 +177,9 @@
                 <div id="view-monitor">
                     Zoom: <span id="val-zoom">0</span> | Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
                 </div>
+                <div style="font-family: 'Orbitron', 'GlowSansTCCom'; visibility: hidden; position: absolute;">
+                    Preloading Fonts Orbitron & 未来荧黑 ...
+                </div>
             </div>
             <div id="bottompanel" class="biz-udgothic-regular">
                 <div id="view-train" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
@@ -966,6 +969,8 @@
                             pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
+                            fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
+                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [80, 80, 80] : [180, 180, 180],
                             characterSet: 'auto',
@@ -1014,6 +1019,8 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
                             getPosition: d => [d.position[0], d.position[1] + offset],
                             getText: d => d.text,
+                            fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
+                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                             characterSet: 'auto',
@@ -1037,6 +1044,8 @@
                             data: state.currentZoom > 0.8 ? gridData.denseLabels : state.currentZoom > -0.4 ? gridData.normalLabels : state.currentZoom > -1.6 ? gridData.sparseLabels : state.currentZoom > -2 ? gridData.simpleLabels : [],
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             getPosition: d => d.position, getText: d => d.text,
+                            fontFamily: 'Orbitron, GlowSansTCCom, sans-serif', 
+                            fontSettings: { sdf: true, buffer: 4, fontSize: 64 },
                             getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                             getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                             getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
