@@ -579,15 +579,15 @@
                         <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                             style="cursor: pointer; transition: opacity 0.2s;"
                             onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
-                            <span style="color: ${htmlcolorPalette[t.type]}; opacity: ${t.time == state.focusedStation ? 0.75 : 1};">${t.type} ${t.number}</span>
-                            <span style="opacity: ${t.time == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
+                            <span style="color: ${htmlcolorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.75 : 1};">${t.type} ${t.number}</span>
+                            <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
                         </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
                         const ccwtext = nextTrains.length > 0 ? ccwTrains.map(t => `
                         <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                             style="cursor: pointer; transition: opacity 0.2s;"
                             onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
-                            <span style="color: ${htmlcolorPalette[t.type]}; opacity: ${t.time == state.focusedStation ? 0.75 : 1};">${t.type} ${t.number}</span>
-                            <span style="opacity: ${t.time == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
+                            <span style="color: ${htmlcolorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.75 : 1};">${t.type} ${t.number}</span>
+                            <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
                         </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
                         let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
                             : cwtext != "" && ccwtext == "" ? `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
