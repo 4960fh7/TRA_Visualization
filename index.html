@@ -390,19 +390,6 @@
                     nullView.classList.remove('hidden');
                 }
             }
-
-            window.selectTrain = function(trainNumber) {
-                const allTrainsSource = [...rawData, ...yrawData];
-                const selected = allTrainsSource.find(t => t.number === trainNumber);
-                console.log(allTrainsSource);
-                
-                if (selected) {
-                    state.selectedLine = selected;
-                    state.focusedStation = null; 
-                    updateInfoBox(); 
-                    renderLayers(); 
-                }
-            };
             
             // Main initialization
             async function initMap() {
@@ -1170,6 +1157,18 @@
                 }
             });
 
+            window.selectTrain = function(trainNumber) {
+                const allTrainsSource = [...rawData, ...yrawData];
+                const selected = allTrainsSource.find(t => t.number === trainNumber);
+                console.log(allTrainsSource);
+                
+                if (selected) {
+                    state.selectedLine = selected;
+                    state.focusedStation = null; 
+                    updateInfoBox(); 
+                    renderLayers(); 
+                }
+            };
 
         </script>
     </body>
