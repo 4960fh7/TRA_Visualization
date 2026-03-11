@@ -486,7 +486,7 @@
                             state.showSchedule = false;
                             state.focusedStation = null;
                         }
-                        updateBottomPanel()
+                        updateBottomPanel();
                         renderLayers();
                         updateInfoBox();
                     }
@@ -1119,9 +1119,11 @@
                     console.log(selected);
                     if (selected) {
                         state.selectedLine = selected;
+                        state.showSchedule = true; 
                         state.focusedStation = null; 
-                        updateInfoBox(); 
+                        updateBottomPanel();
                         renderLayers(); 
+                        updateInfoBox(); 
                     }
                 };
 
