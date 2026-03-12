@@ -564,9 +564,9 @@
                             const depStr = times.dep !== null ? formatTime(times.dep) : (times.arr !== null ? formatTime(times.arr) : "--:--");
                             const isFocused = name === state.focusedStation ? 'border-bottom: 2px solid #fff; font-weight: bold;' : '';
                             return `
-                                <div class="panel-train-info" style="width: 20px; text-align: center; ${isFocused}">
+                                <span style="width: 15px; text-align: center; display: inline-block; white-space: nowrap; ${isFocused}">
                                     <span style="font-size: 0.8em;">${name}<br><span style="font-size: 0.6em; opacity: 0.7;">${arrStr}<br>${depStr}</span></span>
-                                </div>
+                                </span>
                             `;
                         }).join('<b style="opacity: 0.5; align-self: center;">→</b>');
                         DOM.infoBox.innerHTML = `
@@ -578,7 +578,7 @@
                                     ${boxesHtml}
                                     ${iconsHtml}
                                 </span>
-                                <span style="display: flex; flex-direction: row; gap: 15px; align-items: center; padding-left: 20px; padding-right: 50vw;">${stationsHtml}</span>
+                                <span style="display: flex; flex-direction: row; align-items: center; padding-left: 20px; padding-right: 50vw;">${stationsHtml}</span>
                             </div>
                         `;
                         // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
