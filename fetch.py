@@ -112,7 +112,7 @@ for (train_type, train_number) in tqdm(train_list):
             dep_time = int(dep_time[:2]) * 60 + int(dep_time[3:])
             if arr_time < 720 and "跨日" in img:
                 arr_time += 1440
-            if dep_time < 720 and "跨日" in img:
+            if dep_time < 720 and arr_time > 1320:
                 dep_time += 1440
             if arr_time == dep_time:
                 arr_time -= 0.5
