@@ -1171,43 +1171,30 @@
                             switchLine('sea');
                         }
                     }
-if (state.stationDistances[stationName] !== undefined) {
-        state.selectedLine = null;
-        state.showSchedule = false; 
-        state.focusedStation = stationName; 
-
-        // 1. IMPROVED: Safer way to get the current view state
-        // Check props, then the internal state of the view manager, then your state tracker, then an empty object
-        const currentVS = deckInstance.props.viewState || 
-                          (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) || 
-                          state.viewState || 
-                          {};
-
-        const targetY = state.stationDistances[stationName];
-
-        // 2. SAFE ACCESS: Use optional chaining or defaults for target and zoom
-        const currentTarget = currentVS.target || [state.currentTimeMinutes * 3 + 180, 0, 0];
-        const currentZoom = (typeof currentVS.zoom === 'number') ? currentVS.zoom : (state.currentZoom || 0);
-
-        // 3. REASSIGN: Create the new state with the animation triggers
-        const updatedViewState = {
-            ...currentVS,
-            target: [currentTarget[0], targetY, currentTarget[2] || 0], 
-            zoom: currentZoom,
-            transitionDuration: 600,
-            transitionInterpolator: new deck.LinearInterpolator(['target']),
-            transitionInterruption: 1 // deck.TRANSITION_EVENTS.BREAK
-        };
-
-        // 4. Update the tracker and the map
-        state.viewState = updatedViewState;
-        console.log("Moving from:", currentVS.target, "To:", updatedViewState.target);
-        deckInstance.setProps({ viewState: updatedViewState });
-
-        updateBottomPanel();
-        renderLayers(); 
-        updateInfoBox(); 
-    }
+                    if (state.stationDistances[stationName] !== undefined) {
+                        state.selectedLine = null;
+                        state.showSchedule = false; 
+                        state.focusedStation = stationName; 
+                        const currentVS = deckInstance.props.viewState || 
+                                        (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) || 
+                                        state.viewState || {};
+                        const targetY = state.stationDistances[stationName];
+                        const currentTarget = currentVS.target || [state.currentTimeMinutes * 3 + 180, 0, 0];
+                        const currentZoom = (typeof currentVS.zoom === 'number') ? currentVS.zoom : (state.currentZoom || 0);
+                        const updatedViewState = {
+                            ...currentVS,
+                            target: [currentTarget[0], targetY, currentTarget[2] || 0], 
+                            zoom: currentZoom,
+                            transitionDuration: 400,
+                            transitionInterpolator: new deck.LinearInterpolator(['target']),
+                            transitionInterruption: 1
+                        };
+                        state.viewState = updatedViewState;
+                        deckInstance.setProps({ viewState: updatedViewState });
+                        updateBottomPanel();
+                        renderLayers(); 
+                        updateInfoBox(); 
+                    }
                 };
                 syncPillStyles();
                 updateStationGridData();
