@@ -96,7 +96,7 @@
                 font-family: "Orbitron", "GlowSansTCCom-Compressed", sans-serif;
             }
 
-            #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
+            #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; }
             #info-content div , #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
 
             #info-content .info-segment {
@@ -197,7 +197,7 @@
             <div id="bottompanel" class="biz-udgothic-regular">
                 <div id="view-train" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
                     <h2 style="margin: 0; white-space: nowrap;">列車資訊</h2>
-                    <div id="info-content"></div>
+                    <div id="info-content" class="scrollable"></div>
                 </div>
                 <div id="view-station" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
                     <h2 style="margin: 0; white-space: nowrap;">車站資訊</h2>
@@ -564,8 +564,8 @@
                             const depStr = times.dep !== null ? formatTime(times.dep) : (times.arr !== null ? formatTime(times.arr) : "--:--");
                             const isFocused = name === state.focusedStation ? 'border-bottom: 2px solid #fff; font-weight: bold;' : '';
                             return `
-                                <div class="panel-train-info" style="width: 25px; text-align: center; ${isFocused}">
-                                    <span style="font-size: 1em; margin-top: 4px;">${name}<br><span style="font-size: 0.7em; opacity: 0.7;">${arrStr}<br>${depStr}</span></span>
+                                <div class="panel-train-info" style="width: 20px; text-align: center; ${isFocused}">
+                                    <span style="font-size: 0.8em;">${name}<br><span style="font-size: 0.6em; opacity: 0.7;">${arrStr}<br>${depStr}</span></span>
                                 </div>
                             `;
                         }).join('<b style="opacity: 0.5; align-self: center;">→</b>');
