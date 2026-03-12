@@ -1185,6 +1185,8 @@
                             transitionInterpolator: new deck.LinearInterpolator(['target'])
                         };
                         updatedViewState.target[1] = targetY;
+                        updatedViewState.transitionDuration = 400;
+                        updatedViewState.transitionInterpolator = new deck.LinearInterpolator(['target']);
                         deckInstance.setProps({ viewState: updatedViewState });
                         console.log(deckInstance);
                         updateBottomPanel();
