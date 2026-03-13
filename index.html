@@ -505,7 +505,7 @@
                         const color = colorPalette[type];
                         if (state.enabledTypes.has(type)) {
                             pill.classList.add('active');
-                            pill.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                            pill.style.backgroundColor = color;
                             pill.style.color = isLight ? '#ddd' : '#222';
                         } else {
                             pill.classList.remove('active');
@@ -1041,7 +1041,13 @@
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                             getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
-                            getColor: d => colorPalette[d.train],
+                            getColor: d => { 
+                                const hexcolor = colorPalette[d.train];
+                                const r = parseInt(hexcolor.substring(0, 2), 16);
+                                const g = parseInt(hexcolor.substring(2, 4), 16);
+                                const b = parseInt(hexcolor.substring(4, 6), 16);
+                                return [r, g, b]; 
+                            },
                             getWidth: 1.5, widthMaxPixels: 2, widthMinPixels: 0
                         })
                     ]);
