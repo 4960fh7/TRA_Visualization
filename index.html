@@ -378,24 +378,14 @@
                 const trainView = document.getElementById('view-train');
                 const stationView = document.getElementById('view-station');
                 const nullView = document.getElementById('view-null');
-                const clearBtn = document.getElementById('btn-clear-selection');
-
-                // Hide everything first
                 [trainView, stationView, nullView].forEach(v => v.classList.add('hidden'));
-                clearBtn.style.display = 'none';
-
                 if (state.selectedLine) {
-                    // Priority 1: Train selected
                     trainView.classList.remove('hidden');
-                    clearBtn.style.display = 'block';
                 } 
                 else if (state.focusedStation) {
-                    // Priority 2: Station selected
                     stationView.classList.remove('hidden');
-                    clearBtn.style.display = 'block';
                 } 
                 else {
-                    // Priority 3: Nothing selected
                     nullView.classList.remove('hidden');
                 }
             }
@@ -480,20 +470,16 @@
                     },
 
                     onClick: (info) => {
+                        state.selectedLine = null;
+                        state.showSchedule = false;
+                        state.focusedStation = null;
                         if (info.object && info.layer.id.includes('main-path-layer')) {
                             const trainNumber = info.object.number;
                             state.selectedLine = rawData.find(t => t.number === trainNumber) || yrawData.find(t => t.number === trainNumber);
                             state.showSchedule = true; 
-                            state.focusedStation = null;
                         } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                             const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                            state.selectedLine = null;
-                            state.showSchedule = false;
                             state.focusedStation = stationName;
-                        } else {
-                            state.selectedLine = null;
-                            state.showSchedule = false;
-                            state.focusedStation = null;
                         }
                         updateBottomPanel();
                         renderLayers();
@@ -527,10 +513,9 @@
                         const daysLabel = ["加", "一", "二", "三", "四", "五", "六", "日", "例"];
                         const sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8];
                         const viaText = state.selectedLine.info.via !== '-' ? `(${(state.selectedLine.info.via).replace(/線/g, '')})` : '';
-                        let viaColor = "#888";
-                        if (viaText.includes("山")) viaColor = "#4CAF50";
-                        else if (viaText.includes("海")) viaColor = "#2196F3";
-                        else if (viaText.includes("成追")) viaColor = "#FF5722";
+                        const viaColor = (viaText.includes("山"))   ? "#4CAF50"
+                                       : (viaText.includes("海"))   ? "#2196F3"
+                                       : (viaText.includes("成追")) ? "#FF5722" : "#888";
                         let rawNote = state.selectedLine.info.note || "";
                         let specialNote = (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "");
                         
