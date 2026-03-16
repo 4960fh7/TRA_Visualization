@@ -189,16 +189,16 @@
             .feedback-form textarea {
                 width: 100%; height: 60px; padding: 5px; outline: none; resize: none;
                 border: 1px solid var(--border-color); border-radius: 8px; transition: border-color 0.3s ease;
-                color: var(--text-color); font-family: inherit; font-size: 0.8em;
+                color: var(--text-color); font-family: inherit; font-size: 0.8em; background-color: transparent;
             }
-            .feedback-form textarea:focus { border-color: var(--text-color); background-color: rgba(255, 255, 255, 0.1); }
+            .feedback-form textarea:focus { border-color: var(--text-color); background-color: var(--bg-color); }
 
             .submit-btn {
-                align-self: flex-end; padding: 10px 30px; background-color: transparent;
+                align-self: flex-end; padding: 10px 30px; background-color: var(--panel-bg);
                 color: var(--text-color); border: 1px solid var(--border-color);
                 cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px;
             }
-            .submit-btn:hover { background-color: var(--text-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
+            .submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
             
             /* .biz-udgothic-regular { font-family: "BIZ UDGothic", sans-serif; font-weight: 400; font-style: normal; } */
         </style>
@@ -289,7 +289,7 @@
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <button type="submit" class="pill submit-btn">傳送</button>
-                            <span id="submit-status" style="font-size: 0.8em; color: #4CAF50; display: none;">✓ 成功送出回應！</span>
+                            <span id="submit-status" style="font-size: 0.8em; color: var(--text-color); display: none;">✓ 成功送出回應！</span>
                         </div>
                     </form>
                 </div>
@@ -445,7 +445,7 @@
 
                         if (response.ok) {
                             if (statusMsg) statusMsg.style.display = "block";
-                            if (feedbackText) feedbackText.style.boxShadow = "0 0 15px #4CAF50";
+                            if (feedbackText) feedbackText.style.boxShadow = "0 0 15px var(--text-color)";
                             
                             feedbackForm.reset();
                             if (submitBtn) submitBtn.innerText = "傳送";
