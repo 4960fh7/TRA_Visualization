@@ -447,8 +447,10 @@
                     const statusMsg = feedbackForm.querySelector('#submit-status');
                     const feedbackText = feedbackForm.querySelector('#feedback-text');
 
-                    submitBtn.innerText = "SENDING...";
-                    submitBtn.disabled = true;
+                    if (submitBtn) {
+                        submitBtn.innerText = "SENDING...";
+                        submitBtn.disabled = true;
+                    }
 
                     const formData = new FormData(feedbackForm);
 
@@ -464,20 +466,24 @@
                             if (feedbackText) feedbackText.style.boxShadow = "0 0 15px #4CAF50";
                             
                             feedbackForm.reset();
-                            submitBtn.innerText = "TRANSMIT";
+                            if (submitBtn) submitBtn.innerText = "TRANSMIT";
                             
                             setTimeout(() => {
                                 if (statusMsg) statusMsg.style.display = "none";
                                 if (feedbackText) feedbackText.style.boxShadow = "none";
-                                submitBtn.disabled = false;
+                                if (submitBtn) submitBtn.disabled = false;
                             }, 5000);
                         } else {
-                            throw new Error();
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || "Submission failed");
                         }
                     } catch (error) {
-                        alert("Transmission failed.");
-                        submitBtn.innerText = "RETRY";
-                        submitBtn.disabled = false;
+                        console.error("Formspree Error:", error);
+                        alert("Transmission failed. Please try again.");
+                        if (submitBtn) {
+                            submitBtn.innerText = "RETRY";
+                            submitBtn.disabled = false;
+                        }
                     }
                 }
             });
