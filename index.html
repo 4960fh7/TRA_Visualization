@@ -184,8 +184,8 @@
             .feedback-form {
                 display: flex;
                 flex-direction: column;
-                gap: 15px;
-                padding: 20px;
+                gap: 10px;
+                padding: 5px;
                 background-color: var(--panel-bg);
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
@@ -200,7 +200,7 @@
 
             .input-group label {
                 font-size: 0.8em;
-                color: var(--accent-color, #00f2ff); /* Using a cyan accent if you have one */
+                color: var(--text-color); /* Using a cyan accent if you have one */
                 letter-spacing: 2px;
                 text-transform: uppercase;
             }
@@ -325,16 +325,17 @@
                     <p class="last-update">版本： test | 最後更新： 2026/03/16</p>
                 </div>
                 <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
+                    <input type="hidden" name="_next" value="https://https://formspree.io/thanks?language=zh">
                     <div class="input-group">
-                        <label for="message">COMM_ENCRYPTED_FEEDBACK</label>
+                        <label for="message">意見回應</label>
                         <textarea 
                             name="message" 
                             id="message" 
-                            placeholder="Enter your advice or comments here..." 
+                            placeholder="輸入任何想法、建議或回應！" 
                             required
                         ></textarea>
                     </div>
-                    <button type="submit" class="pill submit-btn">TRANSMIT</button>
+                    <button type="submit" class="pill submit-btn">傳送</button>
                 </form>
             </div>
         </div>
