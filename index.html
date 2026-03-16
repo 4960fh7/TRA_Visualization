@@ -165,15 +165,15 @@
             }
             .modal-content {
                 background-color: var(--sidebar-bg); color: var(--text-color);
-                padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; letter-spacing: 0.2px; 
+                padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; 
                 border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
                 animation: all 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85vh;
             }
             .modal-header {
-                padding: 15px 20px; border-bottom: 1px solid var(--border-color); letter-spacing: 1px; 
+                padding: 15px 20px; border-bottom: 1px solid var(--border-color); letter-spacing: 2px; 
                 display: flex; justify-content: space-between; align-items: center;
             }
-            .modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; }
+            .modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; letter-spacing: 1px; }
             .close-infomodal, .close-questionmodal { font-size: 28px; cursor: pointer; color: var(--text-color); opacity: 0.6; }
             .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -181,33 +181,15 @@
 
             .orbitron { font-family: "Orbitron", sans-serif; font-optical-sizing: auto; font-weight: 500; font-style: normal; }
 
-            .feedback-form {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                padding: 5px;
-                background-color: var(--panel-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                font-family: "GlowSansSCCom-Compressed", sans-serif;
-            }
+            .feedback-form { display: flex; flex-direction: column; font-family: "GlowSansSCCom-Compressed"; }
 
             .input-group { display: flex; flex-direction: column; gap: 8px; }
             .input-group label { font-size: 1em; color: var(--text-color); letter-spacing: 1px; text-transform: uppercase; }
 
             .feedback-form textarea {
-                width: 100%;
-                height: 60px;
-                padding: 5px;
-                background-color: rgba(255, 255, 255, 0.05); /* Slight transparency */
-                border: 1px solid var(--border-color);
-                border-radius: 8px;
-                color: var(--text-color);
-                font-family: inherit; /* Inherits Orbitron */
-                font-size: 0.8em;
-                outline: none;
-                resize: none;
-                transition: border-color 0.3s ease;
+                width: 100%; height: 60px; padding: 5px; outline: none; resize: none;
+                border: 1px solid var(--border-color); border-radius: 8px; transition: border-color 0.3s ease;
+                color: var(--text-color); font-family: inherit; font-size: 0.8em;
             }
             .feedback-form textarea:focus { border-color: var(--text-color); background-color: rgba(255, 255, 255, 0.1); }
 
@@ -299,14 +281,15 @@
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
                     <p class="last-update">版本： test | 最後更新： 2026/03/16</p>
+                    <h3>意見回應</h3>
                     <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                         <div class="input-group">
-                            <label for="feedback-text"><strong>意見回應</strong></label>
+                            <!-- <label for="feedback-text"><strong></strong></label> -->
                             <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span id="submit-status" style="font-size: 0.8em; color: #4CAF50; display: none;">✓ 成功送出回應！</span>
                             <button type="submit" class="pill submit-btn">傳送</button>
+                            <span id="submit-status" style="font-size: 0.8em; color: #4CAF50; display: none;">✓ 成功送出回應！</span>
                         </div>
                     </form>
                 </div>
@@ -447,7 +430,7 @@
                     const feedbackText = feedbackForm.querySelector('#feedback-text');
 
                     if (submitBtn) {
-                        submitBtn.innerText = "SENDING...";
+                        submitBtn.innerText = "傳送中...";
                         submitBtn.disabled = true;
                     }
 
@@ -465,20 +448,20 @@
                             if (feedbackText) feedbackText.style.boxShadow = "0 0 15px #4CAF50";
                             
                             feedbackForm.reset();
-                            if (submitBtn) submitBtn.innerText = "TRANSMIT";
+                            if (submitBtn) submitBtn.innerText = "傳送";
                             
                             setTimeout(() => {
                                 if (statusMsg) statusMsg.style.display = "none";
                                 if (feedbackText) feedbackText.style.boxShadow = "none";
                                 if (submitBtn) submitBtn.disabled = false;
-                            }, 5000);
+                            }, 3000);
                         } else {
                             const errorData = await response.json();
                             throw new Error(errorData.error || "Submission failed");
                         }
                     } catch (error) {
                         console.error("Formspree Error:", error);
-                        alert("Transmission failed. Please try again.");
+                        alert("傳送失敗，請重試。");
                         if (submitBtn) {
                             submitBtn.innerText = "RETRY";
                             submitBtn.disabled = false;
