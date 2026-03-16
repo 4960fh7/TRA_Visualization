@@ -165,12 +165,12 @@
             }
             .modal-content {
                 background-color: var(--sidebar-bg); color: var(--text-color);
-                padding: 0; width: 90%; max-width: 85vw; border-radius: 8px;
+                padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; letter-spacing: 0.2px; 
                 border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
                 animation: all 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85vh;
             }
             .modal-header {
-                padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+                padding: 15px 20px; border-bottom: 1px solid var(--border-color); letter-spacing: 1px; 
                 display: flex; justify-content: space-between; align-items: center;
             }
             .modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; }
@@ -193,7 +193,7 @@
             }
 
             .input-group { display: flex; flex-direction: column; gap: 8px; }
-            .input-group label { font-size: 1em; color: var(--text-color); letter-spacing: 2px; text-transform: uppercase; }
+            .input-group label { font-size: 1em; color: var(--text-color); letter-spacing: 1px; text-transform: uppercase; }
 
             .feedback-form textarea {
                 width: 100%;
@@ -302,7 +302,7 @@
                     <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                         <input type="hidden" name="_next" value="https://https://formspree.io/thanks?language=zh">
                         <div class="input-group">
-                            <label for="message">意見回應</label>
+                            <label for="message"><strong>意見回應</strong></label>
                             <textarea name="message" id="message" placeholder="輸入任何想法、建議或回應！" required></textarea>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -437,10 +437,6 @@
                     nullView.classList.remove('hidden');
                 }
             }
-
-            const feedbackForm = document.getElementById('feedback-form');
-            const submitBtn = document.getElementById('submit-btn');
-            const statusMsg = document.getElementById('submit-status');
 
             document.addEventListener('submit', async (e) => {
                 if (e.target && e.target.id === 'feedback-form') {
