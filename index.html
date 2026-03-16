@@ -299,11 +299,10 @@
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
                     <p class="last-update">版本： test | 最後更新： 2026/03/16</p>
-                    <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
-                        <input type="hidden" name="_next" value="https://https://formspree.io/thanks?language=zh">
+                    <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                         <div class="input-group">
-                            <label for="message"><strong>意見回應</strong></label>
-                            <textarea name="message" id="message" placeholder="輸入任何想法、建議或回應！" required></textarea>
+                            <label for="feedback-text"><strong>意見回應</strong></label>
+                            <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <span id="submit-status" style="font-size: 0.8em; color: #4CAF50; display: none;">✓ 成功送出回應！</span>
