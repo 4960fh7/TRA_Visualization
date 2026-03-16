@@ -178,6 +178,9 @@
             .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
             .last-update { font-style: italic; color: #888; }
+            .modal::-webkit-scrollbar { width: 6px; }
+            .modal::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+            .modal::-webkit-scrollbar-track { background: transparent; }
 
             .orbitron { font-family: "Orbitron", sans-serif; font-optical-sizing: auto; font-weight: 500; font-style: normal; }
 
@@ -188,8 +191,8 @@
 
             .feedback-form textarea {
                 width: 100%; height: 60px; padding: 5px; outline: none; resize: none;
-                border: 1px solid var(--border-color); border-radius: 8px; transition: border-color 0.3s ease;
-                color: var(--text-color); font-family: inherit; font-size: 0.8em; background-color: transparent;
+                border: 1px solid var(--border-color); border-radius: 15px; transition: border-color 0.3s ease;
+                color: var(--text-color); font-family: inherit; font-size: 0.8em; background-color: var(--panel-bg);
             }
             .feedback-form textarea:focus { border-color: var(--text-color); background-color: var(--bg-color); }
 
@@ -285,7 +288,7 @@
                     <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                         <div class="input-group">
                             <!-- <label for="feedback-text"><strong></strong></label> -->
-                            <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea>
+                            <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea><br>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <button type="submit" class="pill submit-btn">傳送</button>
