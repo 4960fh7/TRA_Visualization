@@ -178,9 +178,9 @@
             .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
             .last-update { font-style: italic; color: #888; }
-            .modal::-webkit-scrollbar { width: 6px; }
-            .modal::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
-            .modal::-webkit-scrollbar-track { background: transparent; }
+            .modal-body::-webkit-scrollbar { width: 6px; }
+            .modal-body::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+            .modal-body::-webkit-scrollbar-track { background: transparent; }
 
             .orbitron { font-family: "Orbitron", sans-serif; font-optical-sizing: auto; font-weight: 500; font-style: normal; }
 
@@ -194,7 +194,7 @@
                 border: 1px solid var(--border-color); border-radius: 15px; transition: border-color 0.3s ease;
                 color: var(--text-color); font-family: inherit; font-size: 0.8em; background-color: var(--panel-bg);
             }
-            .feedback-form textarea:focus { border-color: var(--text-color); background-color: var(--bg-color); }
+            .feedback-form textarea:focus { border-color: var(--text-color); background-color: var(--bg-color); box-shadow: 0 0 15px var(--text-color); }
 
             .submit-btn {
                 align-self: flex-end; padding: 10px 30px; background-color: var(--panel-bg);
