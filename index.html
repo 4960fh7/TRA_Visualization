@@ -442,42 +442,47 @@
             const submitBtn = document.getElementById('submit-btn');
             const statusMsg = document.getElementById('submit-status');
 
-            feedbackForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); 
-                submitBtn.innerText = "SENDING...";
-                submitBtn.style.opacity = "0.5";
-                submitBtn.disabled = true;
+            document.addEventListener('submit', async (e) => {
+                if (e.target && e.target.id === 'feedback-form') {
+                    e.preventDefault();
+                    
+                    const feedbackForm = e.target;
+                    const submitBtn = feedbackForm.querySelector('.submit-btn');
+                    const statusMsg = feedbackForm.querySelector('#submit-status');
+                    const feedbackText = feedbackForm.querySelector('#feedback-text');
 
-                const formData = new FormData(feedbackForm);
+                    submitBtn.innerText = "SENDING...";
+                    submitBtn.disabled = true;
 
-                try {
-                    const response = await fetch(feedbackForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 'Accept': 'application/json' }
-                    });
+                    const formData = new FormData(feedbackForm);
 
-                    if (response.ok) {
-                        // Success!
-                        statusMsg.style.display = "block"; // Show the "Successfully submitted" text
-                        feedbackForm.reset(); // Clear the textarea
-                        submitBtn.innerText = "TRANSMIT";
-                        
-                        // Hide the success message after 5 seconds
-                        setTimeout(() => {
-                            statusMsg.style.display = "none";
-                            submitBtn.style.opacity = "1";
-                            submitBtn.disabled = false;
-                        }, 5000);
-                    } else {
-                        throw new Error();
+                    try {
+                        const response = await fetch(feedbackForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'Accept': 'application/json' }
+                        });
+
+                        if (response.ok) {
+                            if (statusMsg) statusMsg.style.display = "block";
+                            if (feedbackText) feedbackText.style.boxShadow = "0 0 15px #4CAF50";
+                            
+                            feedbackForm.reset();
+                            submitBtn.innerText = "TRANSMIT";
+                            
+                            setTimeout(() => {
+                                if (statusMsg) statusMsg.style.display = "none";
+                                if (feedbackText) feedbackText.style.boxShadow = "none";
+                                submitBtn.disabled = false;
+                            }, 5000);
+                        } else {
+                            throw new Error();
+                        }
+                    } catch (error) {
+                        alert("Transmission failed.");
+                        submitBtn.innerText = "RETRY";
+                        submitBtn.disabled = false;
                     }
-                } catch (error) {
-                    // Error handling
-                    alert("Transmission failed. Please check your connection.");
-                    submitBtn.innerText = "RETRY";
-                    submitBtn.disabled = false;
-                    submitBtn.style.opacity = "1";
                 }
             });
             
