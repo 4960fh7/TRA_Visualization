@@ -189,58 +189,34 @@
                 background-color: var(--panel-bg);
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
-                font-family: "Orbitron", sans-serif;
+                font-family: "GlowSansSCCom-Compressed", sans-serif;
             }
 
-            .input-group {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .input-group label {
-                font-size: 0.8em;
-                color: var(--text-color); /* Using a cyan accent if you have one */
-                letter-spacing: 2px;
-                text-transform: uppercase;
-            }
+            .input-group { display: flex; flex-direction: column; gap: 8px; }
+            .input-group label { font-size: 1em; color: var(--text-color); letter-spacing: 2px; text-transform: uppercase; }
 
             .feedback-form textarea {
                 width: 100%;
-                height: 120px;
-                padding: 12px;
+                height: 60px;
+                padding: 5px;
                 background-color: rgba(255, 255, 255, 0.05); /* Slight transparency */
                 border: 1px solid var(--border-color);
                 border-radius: 8px;
                 color: var(--text-color);
                 font-family: inherit; /* Inherits Orbitron */
-                font-size: 14px;
+                font-size: 0.8em;
                 outline: none;
                 resize: none;
                 transition: border-color 0.3s ease;
             }
-
-            .feedback-form textarea:focus {
-                border-color: var(--accent-color, #00f2ff);
-                background-color: rgba(255, 255, 255, 0.1);
-            }
+            .feedback-form textarea:focus { border-color: var(--text-color); background-color: rgba(255, 255, 255, 0.1); }
 
             .submit-btn {
-                align-self: flex-end;
-                padding: 10px 30px;
-                background-color: transparent;
-                color: var(--text-color);
-                border: 1px solid var(--border-color);
-                cursor: pointer;
-                transition: all 0.3s ease;
-                letter-spacing: 2px;
+                align-self: flex-end; padding: 10px 30px; background-color: transparent;
+                color: var(--text-color); border: 1px solid var(--border-color);
+                cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px;
             }
-
-            .submit-btn:hover {
-                background-color: var(--text-color);
-                color: var(--panel-bg);
-                box-shadow: 0 0 15px var(--border-color);
-            }
+            .submit-btn:hover { background-color: var(--text-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
             
             /* .biz-udgothic-regular { font-family: "BIZ UDGothic", sans-serif; font-weight: 400; font-style: normal; } */
         </style>
@@ -323,20 +299,18 @@
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
                     <p class="last-update">版本： test | 最後更新： 2026/03/16</p>
+                    <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
+                        <input type="hidden" name="_next" value="https://https://formspree.io/thanks?language=zh">
+                        <div class="input-group">
+                            <label for="message">意見回應</label>
+                            <textarea name="message" id="message" placeholder="輸入任何想法、建議或回應！" required></textarea>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span id="submit-status" style="font-size: 0.8em; color: #4CAF50; display: none;">✓ 成功送出回應！</span>
+                            <button type="submit" class="pill submit-btn">傳送</button>
+                        </div>
+                    </form>
                 </div>
-                <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
-                    <input type="hidden" name="_next" value="https://https://formspree.io/thanks?language=zh">
-                    <div class="input-group">
-                        <label for="message">意見回應</label>
-                        <textarea 
-                            name="message" 
-                            id="message" 
-                            placeholder="輸入任何想法、建議或回應！" 
-                            required
-                        ></textarea>
-                    </div>
-                    <button type="submit" class="pill submit-btn">傳送</button>
-                </form>
             </div>
         </div>
         <div id="question-modal" class="modal">
@@ -463,6 +437,49 @@
                     nullView.classList.remove('hidden');
                 }
             }
+
+            const feedbackForm = document.getElementById('feedback-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const statusMsg = document.getElementById('submit-status');
+
+            feedbackForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                submitBtn.innerText = "SENDING...";
+                submitBtn.style.opacity = "0.5";
+                submitBtn.disabled = true;
+
+                const formData = new FormData(feedbackForm);
+
+                try {
+                    const response = await fetch(feedbackForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (response.ok) {
+                        // Success!
+                        statusMsg.style.display = "block"; // Show the "Successfully submitted" text
+                        feedbackForm.reset(); // Clear the textarea
+                        submitBtn.innerText = "TRANSMIT";
+                        
+                        // Hide the success message after 5 seconds
+                        setTimeout(() => {
+                            statusMsg.style.display = "none";
+                            submitBtn.style.opacity = "1";
+                            submitBtn.disabled = false;
+                        }, 5000);
+                    } else {
+                        throw new Error();
+                    }
+                } catch (error) {
+                    // Error handling
+                    alert("Transmission failed. Please check your connection.");
+                    submitBtn.innerText = "RETRY";
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = "1";
+                }
+            });
             
             async function initMap() {
                 const DOM = {
