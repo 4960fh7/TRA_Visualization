@@ -181,6 +181,67 @@
 
             .orbitron { font-family: "Orbitron", sans-serif; font-optical-sizing: auto; font-weight: 500; font-style: normal; }
 
+            .feedback-form {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                background-color: var(--panel-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                font-family: "Orbitron", sans-serif;
+            }
+
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .input-group label {
+                font-size: 0.8em;
+                color: var(--accent-color, #00f2ff); /* Using a cyan accent if you have one */
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+
+            .feedback-form textarea {
+                width: 100%;
+                height: 120px;
+                padding: 12px;
+                background-color: rgba(255, 255, 255, 0.05); /* Slight transparency */
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                color: var(--text-color);
+                font-family: inherit; /* Inherits Orbitron */
+                font-size: 14px;
+                outline: none;
+                resize: none;
+                transition: border-color 0.3s ease;
+            }
+
+            .feedback-form textarea:focus {
+                border-color: var(--accent-color, #00f2ff);
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .submit-btn {
+                align-self: flex-end;
+                padding: 10px 30px;
+                background-color: transparent;
+                color: var(--text-color);
+                border: 1px solid var(--border-color);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                letter-spacing: 2px;
+            }
+
+            .submit-btn:hover {
+                background-color: var(--text-color);
+                color: var(--panel-bg);
+                box-shadow: 0 0 15px var(--border-color);
+            }
+            
             /* .biz-udgothic-regular { font-family: "BIZ UDGothic", sans-serif; font-weight: 400; font-style: normal; } */
         </style>
     </head>
@@ -263,16 +324,17 @@
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
                     <p class="last-update">版本： test | 最後更新： 2026/03/16</p>
                 </div>
-                <form action="https://formspree.io/f/xqeyyqke" method="POST">
-                    <label>
-                        Your email:
-                        <input type="email" name="email">
-                    </label>
-                    <label>
-                        Your message:
-                        <textarea name="message"></textarea>
-                    </label>
-                    <button type="submit">Send</button>
+                <form action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
+                    <div class="input-group">
+                        <label for="message">COMM_ENCRYPTED_FEEDBACK</label>
+                        <textarea 
+                            name="message" 
+                            id="message" 
+                            placeholder="Enter your advice or comments here..." 
+                            required
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="pill submit-btn">TRANSMIT</button>
                 </form>
             </div>
         </div>
