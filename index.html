@@ -528,7 +528,7 @@
                     views: [new deck.OrthographicView({id: 'ortho'})],
                     initialViewState: { 
                         target: [state.currentTimeMinutes * 3 + 180, state.initialY, 0], 
-                        zoom: 0, minZoom: -3.75, maxZoom: 0.5 
+                        zoom: 0, minZoom: -3.75, maxZoom: 1.5 
                     },
                     controller: true,
                     pickingRadius: 10,
@@ -544,7 +544,7 @@
                             DOM.valY.innerText = Math.round(viewState.target[1]);
                         }
 
-                        const clampedZoom = Math.min(Math.max(viewState.zoom, -3.75), 3.25);
+                        const clampedZoom = Math.min(Math.max(viewState.zoom, -3.75), 1.5);
                         const nextViewState = {...viewState, zoom: clampedZoom};
                         deckInstance.setProps({viewState: nextViewState});
                         renderLayers();
