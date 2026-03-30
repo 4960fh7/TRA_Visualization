@@ -491,9 +491,9 @@
                     viewMonitor: document.getElementById('view-monitor')
                 };
 
-                const response = await fetch(`data/${dateSelector.value.replace(/-/g, '')}.json`);
+                const response = await fetch(realtime ? `data/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data/${dateSelector.value.replace(/-/g, '')}.json`);
                 let rawData = await response.json();
-                const yresponse = await fetch(`data/${yesterday.replace(/-/g, '')}.json`);
+                const yresponse = await fetch(realtime ? `data/${yesterday.replace(/-/g, '')}_realtime.json` : `data/${yesterday.replace(/-/g, '')}.json`);
                 let yrawData = await yresponse.json();
                 let todaySegments = [];
                 let yesterdaySegments = [];
@@ -508,6 +508,7 @@
                         renderLayers();
                     } catch (err) {
                         alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/10");
+                        console.error(err);
                         // console.error("Error loading date file:", err);
                     }
                     try {
@@ -517,6 +518,7 @@
                         updateInfoBox();
                         renderLayers();
                     } catch (err) {
+                        console.error(err);
                         // console.error("Error loading date file:", err);
                     }
                     if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || yrawData.find(t => t.number === state.selectedLine.number) || null; }
