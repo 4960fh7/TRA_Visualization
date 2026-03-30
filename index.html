@@ -282,7 +282,7 @@
                     <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
                     <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                     <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                    <p class="last-update">版本： test | 最後更新： 2026/03/20</p>
+                    <p class="last-update">版本： test | 最後更新： 2026/03/30</p>
                     <h3>意見回應</h3>
                     <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                         <div class="input-group">
@@ -344,6 +344,7 @@
             let isLight = false;
             let colorPalette = darkcolorPalette;
             let deckInstance = null;
+            let realtime = false;
             let rawData = [];
             let yrawData = [];
             let state = {
@@ -365,12 +366,12 @@
             today.setDate(today.getDate() - 1);
             const yesterday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-            function getSelectedDateFilename() { return `data/${dateSelector.value.replace(/-/g, '')}.json`; }
+            function getSelectedDateFilename() { return realtime ? `data/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data/${dateSelector.value.replace(/-/g, '')}.json`; }
             function getYesterdayFilename() { 
                 const selectedDate = new Date(dateSelector.value + 'T00:00:00');
                 selectedDate.setDate(selectedDate.getDate() - 1);
                 const yesterday = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-                return `data/${yesterday.replace(/-/g, '')}.json`;
+                return realtime ? `data/${yesterday.replace(/-/g, '')}_realtime.json` : `data/${yesterday.replace(/-/g, '')}.json`;
             }
 
             // const serviceIcons = { "腳踏車設施": "🚲", "自由座": "💺", "騰雲座艙": "✨", "哺乳室": "🍼", "輪椅座": "♿", "訂便當服務": "🍱", "桌型座": "🪑", "跨日列車": "🌙" };
@@ -859,6 +860,10 @@
                     if (key === 'm') {
                         DOM.viewMonitor.style.display = (DOM.viewMonitor.style.display === 'block') ? 'none' : 'block';
                     }
+                    if (key === 'r') {
+                        realtime = !realtime;
+                        loadData();
+                    }
                     if (key === "escape" || e.keyCode === 27) {
                         state.focusedStation = null;
                         state.selectedLine = null;
@@ -888,6 +893,9 @@
                             let cumulativeOffset = 0;
                             for (let i = 0; i < train.data.length; i++) {
                                 const p = train.data[i];
+                                if (p.y == -1) {
+                                    continue;
+                                }
                                 if (p.y >= 1560) {
                                     if (currentSegment.length > 0) {
                                         const prevPoint = currentSegment[currentSegment.length - 1];
