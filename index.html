@@ -504,8 +504,6 @@
                     try {
                         const response = await fetch(filename);
                         rawData = await response.json();
-                        updateInfoBox();
-                        renderLayers();
                     } catch (err) {
                         alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/10");
                         console.error(err);
@@ -515,13 +513,13 @@
                         const yresponse = await fetch(yfilename);
                         yrawData = await yresponse.json();
                         // if (state.selectedLine) { state.selectedLine = yrawData.find(t => t.number === state.selectedLine.number) || null; }
-                        updateInfoBox();
-                        renderLayers();
                     } catch (err) {
                         console.error(err);
                         // console.error("Error loading date file:", err);
                     }
                     if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || yrawData.find(t => t.number === state.selectedLine.number) || null; }
+                    updateInfoBox();
+                    renderLayers();
                 }
 
                 state.currentTimeMinutes = today.getHours() * 60 + today.getMinutes();
