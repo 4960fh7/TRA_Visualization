@@ -552,12 +552,12 @@
                     pickingRadius: 10,
                     getTooltip: ({object}) => {
                         if (object) {
-                            try {
+                            if (object.number !== undefined) {
                                 const testn = parseInt(object.number);
                                 return {
                                     text: `${object.train} ${object.number}`
                                 };
-                            } catch (err) {
+                            } else {
                                 return {
                                     text: `${object}`
                                 }
