@@ -214,6 +214,13 @@
                 cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px; font-family: inherit;
             }
             .submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
+
+            .deck-tooltip {
+                font-family: "GlowSansSCCom-Compressed", sans-serif !important;
+                background: var(--panel-bg) !important; letter-spacing: 1px;
+                border: 1px solid var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
         </style>
     </head>
     <body>
@@ -1125,6 +1132,7 @@
                             data: processedSegments,
                             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                             pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
+                            getTooltip: ({object}) => object && `${object.train} ${object.number}`,
                             getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
                             getColor: d => { 
                                 const hexcolor = colorPalette[d.train];
