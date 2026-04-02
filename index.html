@@ -76,12 +76,12 @@
             }
             #sidebar.collapsed { transform: translateX(100%); }
             #sidebar.collapsed + .toggle-btn, .collapsed ~ #sidebar-toggle { right: 0; }
-            #sidebar.collapsed .icon, #sidebar.collapsed + #sidebar-toggle .icon { display: inline-block; transform: rotate(180deg); }
+            /* #sidebar.collapsed .icon, #sidebar.collapsed + #sidebar-toggle .icon { display: inline-block; transform: rotate(180deg); } */
 
             #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
             .pill, .rev-pill { 
                 border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; 
-                cursor: pointer; font-size: 13px; transition: all 0.3s ease-in-out; 
+                cursor: pointer; font-size: 13px; transition: all 0.3s ease-in-out; font-family: inherit;
             }
             .pill { background-color: var(--panel-bg); color: var(--subtext-color); }
             .rev-pill { background-color: var(--subtext-color); color: var(--panel-bg); }
@@ -211,7 +211,7 @@
             .submit-btn {
                 align-self: flex-end; padding: 10px 30px; background-color: var(--panel-bg);
                 color: var(--text-color); border: 1px solid var(--border-color);
-                cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px;
+                cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px; font-family: inherit;
             }
             .submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
         </style>
