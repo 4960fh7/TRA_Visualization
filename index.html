@@ -556,7 +556,7 @@
                                 return {
                                     text: `${object.train} ${object.number}`
                                 };
-                            } else {
+                            } else if (object.text === undefined) {
                                 return {
                                     text: `${String(object).split(',')[0]}`
                                 }
