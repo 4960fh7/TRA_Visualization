@@ -550,7 +550,7 @@
                     },
                     controller: true,
                     pickingRadius: 10,
-                    getTooltip: ({object}) => object && `${object.train} ${object.number}`,
+                    getTooltip: ({object}) => object.train ? `${object.train} ${object.number}` : `${object}`,
                     
                     onViewStateChange: ({viewState}) => { 
                         if (viewState.target[1] > state.period) viewState.target[1] -= state.period;
