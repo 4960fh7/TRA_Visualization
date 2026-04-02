@@ -8,8 +8,8 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap" rel="stylesheet">
         <style>
-            /* @import url("https://font.emtech.cc/css/LXGWHeartSerifMN"); */
             @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+            
             @font-face {
                 font-family: 'GlowSansSCCom-Compressed';
                 src: url('fonts/GlowSansSC-Compressed-Regular.otf') format('opentype');
@@ -20,23 +20,26 @@
                 src: url('fonts/GlowSansTC-Extended-Regular.otf') format('opentype');
                 font-weight: normal; font-style: normal;
             }
+            
             :root {
                 --bg-color: #000; --sidebar-bg: #444; --text-color: #ddd;
                 --border-color: #555; --panel-bg: #222; --subtext-color: #bbb;
                 --cursor-color: white; --monitor-color: #0f0; --icon-invert: 100%;
-            }
-            body { 
-                margin: 0; padding: 0; display: flex; background-color: var(--bg-color);
-                font-family: "GlowSansSCCom-Compressed", sans-serif; height: 100vh; width: 100vw; overflow: hidden;
-                transition: all 0.3s ease-in-out; cursor: auto;
             }
             body.light-theme {
                 --bg-color: #fff; --sidebar-bg: #bbb; --text-color: #222;
                 --border-color: #aaa; --panel-bg: #ddd; --subtext-color: #444;
                 --cursor-color: black; --monitor-color: #080; --icon-invert: 0%;
             }
+            body { 
+                margin: 0; padding: 0; display: flex; background-color: var(--bg-color);
+                font-family: "GlowSansSCCom-Compressed", sans-serif; height: 100vh; width: 100vw; 
+                overflow: hidden; transition: all 0.3s ease-in-out; cursor: auto;
+            }
+            
             #main-wrapper { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-            #container { width: 100%; height: 85vh; position: relative; font-family: "GlowSansSCCom-Compressed", sans-serif !important; }
+            #container { width: 100%; height: 85vh; position: relative; }
+            
             #bottompanel {
                 width: 100%; height: 15vh; background-color: var(--panel-bg); color: var(--text-color);
                 padding: 0 15px; box-sizing: border-box; border-top: 1px solid var(--border-color);
@@ -45,18 +48,27 @@
                 scroll-behavior: smooth; font-size: 1.3em; -webkit-overflow-scrolling: touch;
             }
             #bottompanel > * { flex: 0 0 auto; }
-            #bottompanel::-webkit-scrollbar { height: 6px; }
-            #bottompanel::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
-            #bottompanel::-webkit-scrollbar-track { background: transparent; }
+            
+            /* Consolidated Scrollbars */
+            #bottompanel::-webkit-scrollbar, .modal-body::-webkit-scrollbar { height: 6px; width: 6px; }
+            #bottompanel::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+            #bottompanel::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track { background: transparent; }
+            
             .panel-train-info { display: inline-block; width: 195px; white-space: nowrap; }
+            
+            /* Cleaned up tab views */
+            .tab-view { display: flex; align-items: center; width: 100%; gap: 20px; }
+            .tab-view h2 { margin: 0; white-space: nowrap; }
+            
             #sidebar { 
                 width: 25vw; height: 100vh; background-color: var(--sidebar-bg); color: var(--text-color);
                 padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color);
                 z-index: 2000; position: fixed; right: 0; top: 0; transition: all 0.3s ease-in-out;
-                box-shadow: -5px 0 15px rgba(0,0,0,0.3); font-family: 'GlowSansSCCom-Compressed';
+                box-shadow: -5px 0 15px rgba(0,0,0,0.3);
             }
             .placeholder { color: #888; font-style: italic; }
             #sidebar h2 { border-bottom: 1px solid var(--panel-bg); padding-bottom: 8px; }
+            
             .toggle-btn {
                 position: fixed; right: 25vw; top: 20px; z-index: 2100; background: var(--sidebar-bg);
                 color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px 0 0 4px; 
@@ -69,7 +81,7 @@
             #pill-container, #line-pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
             .pill, .rev-pill { 
                 border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; 
-                cursor: pointer; font-size: 13px; transition: all 0.3s ease-in-out; font-family: "GlowSansSCCom-Compressed"
+                cursor: pointer; font-size: 13px; transition: all 0.3s ease-in-out; 
             }
             .pill { background-color: var(--panel-bg); color: var(--subtext-color); }
             .rev-pill { background-color: var(--subtext-color); color: var(--panel-bg); }
@@ -82,21 +94,22 @@
             .date-input {
                 width: 60%; padding: 10px; background-color: var(--panel-bg); border: 1px solid var(--border-color);
                 color: var(--text-color); border-radius: 8px; font-size: 16px; margin-bottom: 20px;
-                outline: none; cursor: pointer; font-family: "Orbitron", "GlowSansSCCom-Compressed", sans-serif;
+                outline: none; cursor: pointer; font-family: "Orbitron", inherit;
             }
             .date-input:hover { filter: brightness(1.2); }
             .date-input::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(var(--icon-invert)); }
+            
             .date-input::-webkit-datetime-edit,
             .date-input::-webkit-datetime-edit-fields-wrapper,
             .date-input::-webkit-datetime-edit-text,
             .date-input::-webkit-datetime-edit-month-field,
             .date-input::-webkit-datetime-edit-day-field,
             .date-input::-webkit-datetime-edit-year-field {
-                font-family: "Orbitron", "GlowSansSCCom-Compressed", sans-serif;
+                font-family: "Orbitron", inherit;
             }
 
             #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; }
-            #info-content div , #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
+            #info-content div, #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
 
             #info-content .info-segment {
                 display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
@@ -139,13 +152,13 @@
                 justify-content: center; padding: 0 !important; flex: 0 0 18px !important;
                 font-size: 9px; border-radius: 4px; background-color: transparent; overflow: hidden;
             }
-            .service-box img { width: 18px; height: 18px; object-fit: contain; /* filter: brightness(0.8); */ }
+            .service-box img { width: 18px; height: 18px; object-fit: contain; }
             .service-box[title]:hover { background-color: transparent; }
             .hidden { display: none !important; }
 
             #btn-clear-selection { 
-                background: none; border: none; color: #888; 
-                cursor: pointer; font-size: 28px; line-height: 1; padding: 0;
+                display: none; background: none; border: none; color: var(--panel-bg); 
+                cursor: pointer; font-size: 24px; line-height: 1; padding: 0;
             }
 
             #view-monitor { 
@@ -160,31 +173,29 @@
                 display: none; position: fixed; z-index: 3000; 
                 left: 0; top: 0; width: 100%; height: 100%;
                 background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
-                display: none; justify-content: center; align-items: center;
+                justify-content: center; align-items: center;
             }
             .modal-content {
                 background-color: var(--sidebar-bg); color: var(--text-color);
                 padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; 
                 border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                animation: all 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85vh;
+                animation: modalFadeIn 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85vh;
             }
             .modal-header {
                 padding: 15px 20px; border-bottom: 1px solid var(--border-color); letter-spacing: 2px; 
                 display: flex; justify-content: space-between; align-items: center;
             }
             .modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; letter-spacing: 1px; }
+            
             .close-infomodal, .close-questionmodal { font-size: 28px; cursor: pointer; color: var(--text-color); opacity: 0.6; }
             .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
+            
             @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
             .last-update { font-style: italic; color: #888; }
-            .modal-body::-webkit-scrollbar { width: 6px; }
-            .modal-body::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
-            .modal-body::-webkit-scrollbar-track { background: transparent; }
-
+            
             .orbitron { font-family: "Orbitron", sans-serif; font-optical-sizing: auto; font-weight: 500; font-style: normal; }
 
-            .feedback-form { display: flex; flex-direction: column; font-family: "GlowSansSCCom-Compressed"; }
-
+            .feedback-form { display: flex; flex-direction: column; }
             .input-group { display: flex; flex-direction: column; gap: 8px; }
             .input-group label { font-size: 1em; color: var(--text-color); letter-spacing: 1px; text-transform: uppercase; }
 
@@ -195,14 +206,14 @@
             }
             .feedback-form textarea:focus { border-color: var(--text-color); background-color: var(--bg-color); box-shadow: 0 0 15px var(--text-color); }
 
+            .form-footer { display: flex; align-items: center; justify-content: space-between; }
+            
             .submit-btn {
                 align-self: flex-end; padding: 10px 30px; background-color: var(--panel-bg);
                 color: var(--text-color); border: 1px solid var(--border-color);
                 cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px;
             }
             .submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
-            
-            /* .biz-udgothic-regular { font-family: "BIZ UDGothic", sans-serif; font-weight: 400; font-style: normal; } */
         </style>
     </head>
     <body>
@@ -211,121 +222,120 @@
                 <div id="view-monitor">
                     Zoom: <span id="val-zoom">0</span> | Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
                 </div>
-                <div style="font-family: 'GlowSansSCCom-Compressed'; visibility: hidden; position: absolute;">
+                <div style="visibility: hidden; position: absolute;">
                     ## Test Message 載入字體 未来荧黑 ... ##
                 </div>
             </div>
             <div id="bottompanel" class="biz-udgothic-regular">
-                <div id="view-train" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
-                    <h2 style="margin: 0; white-space: nowrap;">列車資訊</h2>
+                <div id="view-train" class="tab-view hidden">
+                    <h2>列車資訊</h2>
                     <div id="info-content" class="scrollable"></div>
                 </div>
-                <div id="view-station" class="tab-view hidden" style="display: flex; align-items: center; width: 100%; gap: 20px;">
-                    <h2 style="margin: 0; white-space: nowrap;">車站資訊</h2>
+                <div id="view-station" class="tab-view hidden">
+                    <h2>車站資訊</h2>
                     <div id="station-info-content" class="scrollable"></div>
                 </div>
-                <div id="view-null" class="tab-view" style="display: flex; align-items: center; width: 100%; gap: 20px;">
-                    <h2 style="margin: 0; white-space: nowrap;">列車資訊</h2>
+                <div id="view-null" class="tab-view">
+                    <h2>列車資訊</h2>
                     <div>
                         <p class="placeholder">點選列車或車站以顯示資訊</p>
                     </div>
                 </div>
-                <button id="btn-clear-selection" style="display: none; background: none; color: var(--panel-bg); cursor: pointer; font-size: 24px; line-height: 1;"></button>
+                <button id="btn-clear-selection"></button>
             </div>
-        </div>
-        <button id="sidebar-toggle" class="toggle-btn">
-            <span class="icon">❯</span>
-        </button>
-        <div id="sidebar">
-            <button id="theme-toggle" class="rev-pill utility" title="切換深淺主題">
-                <span id="theme-icon">☀️</span>
+            <button id="sidebar-toggle" class="toggle-btn">
+                <span class="icon">❯</span>
             </button>
-            <button id="btn-info" class="pill" title="關於本站">
-                <span class="icon">ℹ️</span>
-            </button>
-            <button id="btn-question" class="pill" title="使用說明">
-                <span class="icon">❓</span>
-            </button>
-            <h2>日期</h2>
-            <div>
-                <input type="date" id="date-selector" class="date-input" title="選擇日期">
-            </div>
-            <h2>路線</h2>
-            <div id="line-pill-container">
-                <button class="pill line-pill mount-text active" data-line="mountain">山線</button>
-                <button class="pill line-pill sea-text" data-line="sea">海線</button>
-            </div>
-            <h2>車種</h2>
-            <div id="pill-container">
-                <button id="btn-select-all" class="pill utility">全選</button>
-                <button id="btn-deselect-all" class="pill utility">全部不選</button>
-                <button class="pill active" data-type="普悠瑪" checked> 普悠瑪</button>
-                <button class="pill active" data-type="太魯閣" checked> 太魯閣</button>
-                <button class="pill active" data-type="新自強" checked> 新自強</button>
-                <button class="pill active" data-type="自強" checked> 自強</button>
-                <button class="pill active" data-type="莒光" checked> 莒光</button>
-                <button class="pill active" data-type="區間快" checked> 區間快</button>
-                <button class="pill active" data-type="區間" checked> 區間</button>
-            </div>
-        </div>
-        <div id="info-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>關於本站</h2>
-                    <span class="close-infomodal">&times;</span>
+            <div id="sidebar">
+                <button id="theme-toggle" class="rev-pill utility" title="切換深淺主題">
+                    <span id="theme-icon">☀️</span>
+                </button>
+                <button id="btn-info" class="pill" title="關於本站">
+                    <span class="icon">ℹ️</span>
+                </button>
+                <button id="btn-question" class="pill" title="使用說明">
+                    <span class="icon">❓</span>
+                </button>
+                <h2>日期</h2>
+                <div>
+                    <input type="date" id="date-selector" class="date-input" title="選擇日期">
                 </div>
-                <div class="modal-body">
-                    <h3>網站介紹</h3>
-                    <p>本站提供每日鐵路運行圖與列車運行資訊，並可依需求選擇路線與篩選車種。</p>
-                    <h3>聲明</h3>
-                    <p>1. 本站所提供的資料，均取自 國營臺灣鐵路股份有限公司 官網。</p>
-                    <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
-                    <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
-                    <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                    <p class="last-update">版本： test | 最後更新： 2026/03/30</p>
-                    <h3>意見回應</h3>
-                    <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
-                        <div class="input-group">
-                            <!-- <label for="feedback-text"><strong></strong></label> -->
-                            <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea><br>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <button type="submit" class="pill submit-btn">傳送</button>
-                            <span id="submit-status" style="font-size: 0.8em; color: var(--text-color); display: none;">✓ 成功送出回應！</span>
-                        </div>
-                    </form>
+                <h2>路線</h2>
+                <div id="line-pill-container">
+                    <button class="pill line-pill mount-text active" data-line="mountain">山線</button>
+                    <button class="pill line-pill sea-text" data-line="sea">海線</button>
+                </div>
+                <h2>車種</h2>
+                <div id="pill-container">
+                    <button id="btn-select-all" class="pill utility">全選</button>
+                    <button id="btn-deselect-all" class="pill utility">全部不選</button>
+                    <button class="pill active" data-type="普悠瑪" checked> 普悠瑪</button>
+                    <button class="pill active" data-type="太魯閣" checked> 太魯閣</button>
+                    <button class="pill active" data-type="新自強" checked> 新自強</button>
+                    <button class="pill active" data-type="自強" checked> 自強</button>
+                    <button class="pill active" data-type="莒光" checked> 莒光</button>
+                    <button class="pill active" data-type="區間快" checked> 區間快</button>
+                    <button class="pill active" data-type="區間" checked> 區間</button>
                 </div>
             </div>
-        </div>
-        <div id="question-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>使用說明</h2>
-                    <span class="close-questionmodal">&times;</span>
+            
+            <div id="info-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>關於本站</h2>
+                        <span class="close-infomodal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <h3>網站介紹</h3>
+                        <p>本站提供每日鐵路運行圖與列車運行資訊，並可依需求選擇路線與篩選車種。</p>
+                        <h3>聲明</h3>
+                        <p>1. 本站所提供的資料，均取自 國營臺灣鐵路股份有限公司 官網。</p>
+                        <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
+                        <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
+                        <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
+                        <p class="last-update">版本： test | 最後更新： 2026/04/02</p>
+                        <h3>意見回應</h3>
+                        <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
+                            <div class="input-group">
+                                <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea><br>
+                            </div>
+                            <div class="form-footer">
+                                <button type="submit" class="pill submit-btn">傳送</button>
+                                <span id="submit-status" style="font-size: 0.8em; color: var(--text-color); display: none;">✓ 成功送出回應！</span>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <h3>座標軸與標記</h3>
-                    <p>橫軸：時間。天藍色鉛直線為現在時刻。</p>
-                    <p>縱軸：距離，其中畫線代表車站。沿著縱軸往上為順行，往下為逆行。</p>
-                    <p>彩色折線：列車行駛路線。折線與車站重疊的橫線段代表該列車會在該車站停留；無橫線段則代表不停留，與車站橫線交點為估計之通過時間（註：僅為推算，可能與真實有誤差）。
-                        路線的顏色依車種而不同，對應顏色見右方側邊欄。</p>
-                    <h3>側邊欄</h3>
-                    <p>☀️/🌙 切換淺色/深色主題。</p>
-                    <p>ℹ️ 關於此網站的介紹、版本與聲明。</p>
-                    <p>❓ 此網站的使用說明。（就是你正在讀的這段文字）</p>
-                    <p>日期：點擊行事曆圖形可以選擇日期，也可以點擊數字直接輸入。</p>
-                    <p>路線：點擊可切換顯示的路線，目前僅支援環島鐵路，可選擇經由山線或海線。</p>
-                    <p>車種：點擊可篩選特定車種。</p>
-                    <h3>列車與車站資訊</h3>
-                    <p>一、點擊列車會在圖中顯示其停靠站與停靠時間，並在下方顯示列車資訊。點擊空白處或按下 Esc 鍵可取消選取。</p>
-                    <p>1. 列車資訊由左至右分別為：車種、車次、經由路線、起訖站與時間、行駛日期、乘客服務與其他資訊。</p>
-                    <p>2. 滑鼠指標停留在行駛日期上，可顯示加班列車的行駛日期。</p>
-                    <p>3. 滑鼠指標停留在乘客服務上，可顯示各圖示所對應的資訊。</p>
-                    <p>4. 點擊車站會顯示其資訊，同下方 二、，並將該車站置中。</p>
-                    <p>二、點擊車站（橫線）會篩選有停靠該車站的列車，並在下方顯示車站資訊。點擊空白處或按下 Esc 鍵可取消篩選。</p>
-                    <p>1. 車站資訊包含現在時間起今日所有停靠該車站的列車，依離站時間排序。</p>
-                    <p>2. 點擊列車會顯示其資訊，同上方 一、。</p>
-                    <p>註：由於目前僅支援環島鐵路，因此點擊非環島鐵路的車站（含基隆、三坑、蘇澳與各支線不在環島鐵路上的車站）暫無資訊。</p>
+            </div>
+            <div id="question-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>使用說明</h2>
+                        <span class="close-questionmodal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <h3>座標軸與標記</h3>
+                        <p>橫軸：時間。天藍色鉛直線為現在時刻。</p>
+                        <p>縱軸：距離，其中畫線代表車站。沿著縱軸往上為順行，往下為逆行。</p>
+                        <p>彩色折線：列車行駛路線。折線與車站重疊的橫線段代表該列車會在該車站停留；無橫線段則代表不停留，與車站橫線交點為估計之通過時間（註：僅為推算，可能與真實有誤差）。路線的顏色依車種而不同，對應顏色見右方側邊欄。</p>
+                        <h3>側邊欄</h3>
+                        <p>☀️/🌙 切換淺色/深色主題。</p>
+                        <p>ℹ️ 關於此網站的介紹、版本與聲明。</p>
+                        <p>❓ 此網站的使用說明。（就是你正在讀的這段文字）</p>
+                        <p>日期：點擊行事曆圖形可以選擇日期，也可以點擊數字直接輸入。</p>
+                        <p>路線：點擊可切換顯示的路線，目前僅支援環島鐵路，可選擇經由山線或海線。</p>
+                        <p>車種：點擊可篩選特定車種。</p>
+                        <h3>列車與車站資訊</h3>
+                        <p>一、點擊列車會在圖中顯示其停靠站與停靠時間，並在下方顯示列車資訊。點擊空白處或按下 Esc 鍵可取消選取。</p>
+                        <p>1. 列車資訊由左至右分別為：車種、車次、經由路線、起訖站與時間、行駛日期、乘客服務與其他資訊。</p>
+                        <p>2. 滑鼠指標停留在行駛日期上，可顯示加班列車的行駛日期。</p>
+                        <p>3. 滑鼠指標停留在乘客服務上，可顯示各圖示所對應的資訊。</p>
+                        <p>4. 點擊車站會顯示其資訊，同下方 二、，並將該車站置中。</p>
+                        <p>二、點擊車站（橫線）會篩選有停靠該車站的列車，並在下方顯示車站資訊。點擊空白處或按下 Esc 鍵可取消篩選。</p>
+                        <p>1. 車站資訊包含現在時間起今日所有停靠該車站的列車，依離站時間排序。</p>
+                        <p>2. 點擊列車會顯示其資訊，同上方 一、。</p>
+                        <p>註：由於目前僅支援環島鐵路，因此點擊非環島鐵路的車站（含基隆、三坑、蘇澳與各支線不在環島鐵路上的車站）暫無資訊。</p>
+                    </div>
                 </div>
             </div>
         </div>
