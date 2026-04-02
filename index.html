@@ -551,16 +551,19 @@
                     controller: true,
                     pickingRadius: 10,
                     getTooltip: ({object}) => {
-                        try {
-                            const testn = object.number * 1;
-                            return {
-                                text: `${object.train} ${object.number}`
-                            };
-                        } catch (err) {
-                            return {
-                                text: `${object}`
+                        if (object) {
+                            try {
+                                const testn = parseInt(object.number);
+                                return {
+                                    text: `${object.train} ${object.number}`
+                                };
+                            } catch (err) {
+                                return {
+                                    text: `${object}`
+                                }
                             }
-                        }},
+                        }
+                    },
                     
                     onViewStateChange: ({viewState}) => { 
                         if (viewState.target[1] > state.period) viewState.target[1] -= state.period;
