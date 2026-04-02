@@ -258,7 +258,7 @@
                 </button>
                 <h2>日期</h2>
                 <div>
-                    <input type="date" id="date-selector" class="date-input" title="選擇日期">
+                    <input type="date" id="date-selector" class="date-input" title="選擇日期" font-family="Orbitron">
                 </div>
                 <h2>路線</h2>
                 <div id="line-pill-container">
@@ -547,6 +547,7 @@
                     onViewStateChange: ({viewState}) => { 
                         if (viewState.target[1] > state.period) viewState.target[1] -= state.period;
                         else if (viewState.target[1] < 0) viewState.target[1] += state.period;
+                        viewState.target[0] = Math.min(Math.max(viewState.target[0], 20), 5020);
                         state.currentZoom = viewState.zoom;
                         
                         if (DOM.viewMonitor.style.display === 'block') {
