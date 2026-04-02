@@ -113,7 +113,7 @@
 
             #info-content .info-segment {
                 display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
-                padding: 0 10px; height: 1.2em; white-space: nowrap;
+                padding: 0 10px; height: 1.2em; white-space: nowrap; transition: all 0.3s ease-in-out;
             }
             .train-id { width: 70px; }
             .via-label { width: 30px; font-weight: bold; }
@@ -712,7 +712,7 @@
                             <div style="display: flex; align-items: stretch; gap: 15px;">
                                 <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
                                     font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
-                                    padding-left: 20px; padding-right: 20px; height: 15vh; transition: all 0.3s ease-in-out; ">
+                                    padding-left: 20px; padding-right: 20px; height: 15vh; ">
                                     <strong>${state.focusedStation}站</strong>
                                 </div>
                                 <div style="display: flex; flex-direction: row; gap: 15px; align-items: center; line-height: 1.4; font-size: 0.95em; padding-right: 30vw">
