@@ -553,13 +553,12 @@
                     getTooltip: ({object}) => {
                         if (object) {
                             if (object.number !== undefined) {
-                                const testn = parseInt(object.number);
                                 return {
                                     text: `${object.train} ${object.number}`
                                 };
                             } else {
                                 return {
-                                    text: `${object}`
+                                    text: `${object.split(',')[0]}`
                                 }
                             }
                         }
