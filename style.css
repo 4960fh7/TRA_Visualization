@@ -23,15 +23,15 @@ body.light-theme {
 }
 body { 
     margin: 0; padding: 0; display: flex; background-color: var(--bg-color);
-    font-family: "GlowSansSCCom-Compressed", sans-serif; height: 100vh; width: 100vw; 
+    font-family: "GlowSansSCCom-Compressed", sans-serif; height: 100dvh; width: 100vw; 
     overflow: hidden; transition: all 0.3s ease-in-out; cursor: auto;
 }
 
-#main-wrapper { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-#container { width: 100%; height: 85vh; position: relative; }
+#main-wrapper { display: flex; flex-direction: column; width: 100vw; height: 100dvh; position: relative; overflow: hidden; }
+#container { width: 100%; height: 85dvh; position: relative; }
 
 #bottompanel {
-    width: 100%; height: 15vh; background-color: var(--panel-bg); color: var(--text-color);
+    width: 100%; height: 15dvh; background-color: var(--panel-bg); color: var(--text-color);
     padding: 0 15px; box-sizing: border-box; border-top: 1px solid var(--border-color);
     display: flex; flex-direction: row; align-items: center; transition: all 0.3s ease-in-out;
     justify-content: flex-start; gap: 20px; overflow: auto hidden; white-space: nowrap;
@@ -51,7 +51,7 @@ body {
 .tab-view h2 { margin: 0; white-space: nowrap; }
 
 #sidebar { 
-    width: 25vw; height: 100vh; background-color: var(--sidebar-bg); color: var(--text-color);
+    width: 25vw; height: 100dvh; background-color: var(--sidebar-bg); color: var(--text-color);
     padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color);
     z-index: 2000; position: fixed; right: 0; top: 0; transition: all 0.3s ease-in-out;
     box-shadow: -5px 0 15px rgba(0,0,0,0.3);
@@ -75,9 +75,11 @@ body {
 }
 .pill { background-color: var(--panel-bg); color: var(--subtext-color); }
 .rev-pill { background-color: var(--subtext-color); color: var(--panel-bg); }
-.pill:hover, .rev-pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
+@media (hover: hover) {
+    .pill:hover, .rev-pill:hover { transform: translateY(-1px); filter: brightness(1.2); }
+    .pill.utility:hover { background-color: var(--panel-bg); color: var(--text-color); }
+}
 .pill.active { color: var(--panel-bg); border-color: transparent; }
-.pill.utility:hover { background-color: var(--panel-bg); color: var(--text-color); }
 .mount-text.active { background-color: #4CAF50; color: var(--text-color); }
 .sea-text.active { background-color: #2196F3; color: var(--text-color); }
 
@@ -86,7 +88,9 @@ body {
     color: var(--text-color); border-radius: 8px; font-size: 16px; margin-bottom: 20px;
     outline: none; cursor: pointer; font-family: "Orbitron", inherit;
 }
-.date-input:hover { filter: brightness(1.2); }
+@media (hover: hover) {
+    .date-input:hover { filter: brightness(1.2); }
+}
 .date-input::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(var(--icon-invert)); }
 
 .date-input::-webkit-datetime-edit,
@@ -169,13 +173,13 @@ body {
     background-color: var(--sidebar-bg); color: var(--text-color);
     padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; 
     border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    animation: modalFadeIn 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85vh;
+    animation: modalFadeIn 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85dvh;
 }
 .modal-header {
     padding: 15px 20px; border-bottom: 1px solid var(--border-color); letter-spacing: 2px; 
     display: flex; justify-content: space-between; align-items: center;
 }
-.modal-body { padding: 20px; line-height: 1.6; max-height: 60vh; overflow-y: auto; letter-spacing: 1px; }
+.modal-body { padding: 20px; line-height: 1.6; max-height: 60dvh; overflow-y: auto; letter-spacing: 1px; }
 
 .close-infomodal, .close-questionmodal { font-size: 28px; cursor: pointer; color: var(--text-color); opacity: 0.6; }
 .close-infomodal:hover, .close-questionmodal:hover { opacity: 1; }
@@ -203,11 +207,27 @@ body {
     color: var(--text-color); border: 1px solid var(--border-color);
     cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px; font-family: inherit;
 }
-.submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
+@media (hover: hover) {
+    .submit-btn:hover { background-color: var(--subtext-color); color: var(--panel-bg); box-shadow: 0 0 15px var(--border-color); }
+}
 
 .deck-tooltip {
     font-family: "GlowSansSCCom-Compressed", sans-serif !important;
     background: var(--panel-bg) !important; letter-spacing: 1px;
     border: 1px solid var(--border-color) !important;
     color: var(--text-color) !important;
+}
+
+@media screen and (max-width: 768px) {
+    /* Make the sidebar take up most of the screen when open */
+    #sidebar { width: 85vw; }
+    
+    /* Move the toggle button to match the new sidebar width */
+    .toggle-btn { right: 85vw; }
+    
+    /* Ensure the toggle button goes back to the edge when closed */
+    #sidebar.collapsed + .toggle-btn, .collapsed ~ #sidebar-toggle { right: 0; }
+    
+    /* Stack the bottom panel items better or allow easier scrolling */
+    #bottompanel { font-size: 1.1em; }
 }
