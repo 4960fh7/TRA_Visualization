@@ -219,19 +219,13 @@ body {
 }
 
 @media screen and (max-width: 768px) {
-    /* Make the sidebar take up most of the screen when open */
     #sidebar {
         width: 85vw;
-        background-color: color-mix(in srgb, var(--sidebar-bg), transparent 25%);
-        backdrop-filter: blur(10px); 
-        -webkit-backdrop-filter: blur(10px);
+        background-color: color-mix(in srgb, var(--sidebar-bg), transparent 30%);
+        backdrop-filter: blur(5px); 
+        -webkit-backdrop-filter: blur(5px);
     }
-    
-    /* Move the toggle button to match the new sidebar width */
-    #sidebar:not(.collapsed) + .toggle-btn, #sidebar:not(.collapsed) ~ #sidebar-toggle { right: 85vw !important; }    
-    /* Ensure the toggle button goes back to the edge when closed */
-    #sidebar.collapsed + .toggle-btn, .collapsed ~ #sidebar-toggle { right: 0 !important; }
-    
-    /* Stack the bottom panel items better or allow easier scrolling */
+    .toggle-btn { right: 85vw !important; }
+    #sidebar.collapsed + #sidebar-toggle, #sidebar.collapsed + .toggle-btn { right: 0 !important; }    
     #bottompanel { font-size: 1.1em; }
 }
