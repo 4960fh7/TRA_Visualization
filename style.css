@@ -228,8 +228,7 @@ body {
     }
     
     /* Move the toggle button to match the new sidebar width */
-    .toggle-btn { right: 85vw !important; }
-    
+    #sidebar:not(.collapsed) + .toggle-btn, #sidebar:not(.collapsed) ~ #sidebar-toggle { right: 85vw !important; }    
     /* Ensure the toggle button goes back to the edge when closed */
     #sidebar.collapsed + .toggle-btn, .collapsed ~ #sidebar-toggle { right: 0 !important; }
     
