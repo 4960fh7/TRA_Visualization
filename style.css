@@ -226,6 +226,6 @@ body {
         -webkit-backdrop-filter: blur(5px);
     }
     .toggle-btn { right: 85vw !important; }
-    #sidebar.collapsed + #sidebar-toggle, #sidebar.collapsed + .toggle-btn { right: 0 !important; }    
+    #main-wrapper.sidebar-collapsed .toggle-btn { right: 0 !important; }
     #bottompanel { font-size: 1.1em; }
 }

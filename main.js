@@ -56,12 +56,14 @@ const serviceIcons = {
 };
 
 const sidebar = document.getElementById('sidebar');
+const wrapper = document.getElementById('main-wrapper');
 const toggleBtn = document.getElementById('sidebar-toggle');
 const toggleIcon = toggleBtn.querySelector('.icon');
 toggleBtn.addEventListener('click', () => {
     const isCollapsed = sidebar.classList.toggle('collapsed');
     toggleBtn.style.right = isCollapsed ? '0px' : '25vw'; 
     toggleIcon.textContent = isCollapsed ? '❮' : '❯'; 
+    wrapper.classList.toggle('sidebar-collapsed');
 });
 
 const themeToggle = document.getElementById('theme-toggle');
