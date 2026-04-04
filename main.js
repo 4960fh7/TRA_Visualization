@@ -173,7 +173,7 @@ async function initMap() {
             const response = await fetch(filename);
             rawData = await response.json();
         } catch (err) {
-            alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/10");
+            alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/13");
             console.error(err);
             // console.error("Error loading date file:", err);
         }
