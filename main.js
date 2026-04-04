@@ -175,15 +175,12 @@ async function initMap() {
         } catch (err) {
             alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/30");
             console.error(err);
-            // console.error("Error loading date file:", err);
         }
         try {
             const yresponse = await fetch(yfilename);
             yrawData = await yresponse.json();
-            // if (state.selectedLine) { state.selectedLine = yrawData.find(t => t.number === state.selectedLine.number) || null; }
         } catch (err) {
             console.error(err);
-            // console.error("Error loading date file:", err);
         }
         if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || yrawData.find(t => t.number === state.selectedLine.number) || null; }
         updateInfoBox();
@@ -340,7 +337,6 @@ async function initMap() {
                     <span style="display: flex; flex-direction: row; align-items: center; padding-left: 20px; padding-right: 50vw;">${stationsHtml}</span>
                 </div>
             `;
-            // <span style="color: #888; font-size: 0.9em;">${processedNote.trim()}</span>
         }
         else if (state.focusedStation) {
             const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
