@@ -886,10 +886,10 @@ async function initMap() {
             }),
             new deck.ScatterplotLayer({
                 id: 'json-layer',
-                data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
+                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 1 : 0.0001, radiusMaxPixels: 2, radiusMinPixels: 0.00001
+                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 2 : 0.0001, radiusMaxPixels: 3, radiusMinPixels: 0.00001
             })
         ];
 
