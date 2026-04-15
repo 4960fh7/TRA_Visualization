@@ -567,6 +567,7 @@ async function initMap() {
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
                 const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
+                const startingStation = (notime && state.focusedStation) ? train.data[0].x === state.focusedStation : true;
                 return isEnabled && passesStation;
             })
             .flatMap(train => {
@@ -880,7 +881,7 @@ async function initMap() {
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => d.position, getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif', 
-                getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
+                getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                 getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
             }),
@@ -898,7 +899,7 @@ async function initMap() {
                 id: 'current-time-line',
                 data: [{ path: [[state.currentTimeMinutes * 3, gridData.minDistance - state.period], [state.currentTimeMinutes * 3, gridData.maxDistance + state.period]] }],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                getPath: d => d.path, getColor: isLight ? [0, 172, 193] : [0, 225, 255], getWidth: 3.5, widthMaxPixels: 4.5, widthMinPixels: 0
+                getPath: d => d.path, getColor: isLight ? [0, 172, 193] : [0, 225, 255], getWidth: notime ? 0.001 : 3.5, widthMaxPixels: 4.5, widthMinPixels: 0
             })
         ];
 
