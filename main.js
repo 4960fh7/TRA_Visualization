@@ -822,7 +822,7 @@ async function initMap() {
                     const b = parseInt(hexcolor.substring(5, 7), 16);
                     return [r, g, b]; 
                 },
-                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 4, widthMinPixels: 0
+                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 2, widthMinPixels: 0
             })
         ]);
         
@@ -890,7 +890,7 @@ async function initMap() {
                 data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 2 : 0.0001, radiusMaxPixels: 3, radiusMinPixels: 0.00001
+                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
             })
         ];
 
