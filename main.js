@@ -11,6 +11,7 @@ let isLight = false;
 let colorPalette = darkcolorPalette;
 let deckInstance = null;
 let realtime = false;
+let notime = false;
 let rawData = [];
 let yrawData = [];
 let state = {
@@ -539,8 +540,11 @@ async function initMap() {
             DOM.viewMonitor.style.display = (DOM.viewMonitor.style.display === 'block') ? 'none' : 'block';
         }
         if (key === 'r') {
-            realtime = !realtime;
-            loadData();
+            // realtime = !realtime;
+            // loadData();
+        }
+        if (key === 't') {
+            notime = !notime;
         }
         if (key === "escape" || e.keyCode === 27) {
             state.focusedStation = null;
@@ -566,6 +570,26 @@ async function initMap() {
                 return isEnabled && passesStation;
             })
             .flatMap(train => {
+                // --- NEW LOGIC FOR NOTIME ---
+                if (notime) {
+                    if (!train.data || train.data.length === 0) return [];
+                    
+                    // Get the y value of the first point to use as the base offset
+                    const firstY = train.data[0].y;
+                    
+                    // Return the train with all y values adjusted relative to the start
+                    return [{
+                        ...train,
+                        data: train.data.map(p => ({
+                            ...p,
+                            y: p.y - firstY,
+                            // We include adjustedDist to maintain schema consistency with the other branch
+                            adjustedDist: state.stationDistances[p.x] 
+                        }))
+                    }];
+                }
+
+                // --- EXISTING FLATMAP LOGIC (notime === false) ---
                 const segments = [];
                 let currentSegment = [];
                 let cumulativeOffset = 0;
@@ -800,7 +824,7 @@ async function initMap() {
                     const b = parseInt(hexcolor.substring(5, 7), 16);
                     return [r, g, b]; 
                 },
-                getWidth: 1.5, widthMaxPixels: 2, widthMinPixels: 0
+                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 2, widthMinPixels: 0
             })
         ]);
         
@@ -868,7 +892,7 @@ async function initMap() {
                 data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: 0.0001, radiusMaxPixels: 0.001, radiusMinPixels: 0.00001
+                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 1 : 0.0001, radiusMaxPixels: 0.001, radiusMinPixels: 0.00001
             })
         ];
 
