@@ -822,7 +822,7 @@ async function initMap() {
                     const b = parseInt(hexcolor.substring(5, 7), 16);
                     return [r, g, b]; 
                 },
-                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 2, widthMinPixels: 0
+                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 4, widthMinPixels: 0
             })
         ]);
         
