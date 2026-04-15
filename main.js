@@ -795,7 +795,8 @@ async function initMap() {
                 id: `station-labels-${offset}`,
                 data: state.currentZoom >  0.8 ? gridData.denseLabelData : 
                         state.currentZoom > -0.4 ? gridData.normalLabelData : 
-                        state.currentZoom > -1.8 ? gridData.mainLabelData : [],
+                        state.currentZoom > -1.8 ? gridData.mainLabelData : 
+                        notime ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, 
                 pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                 getPosition: d => [d.position[0], d.position[1] + offset],
