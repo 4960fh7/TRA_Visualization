@@ -582,7 +582,7 @@ async function initMap() {
                         data: filteredData.map(p => ({
                             ...p,
                             y: p.y - firstY + 120,
-                            adjustedDist: state.stationDistances[p.x] + cumulativeOffset
+                            adjustedDist: state.stationDistances[p.x]
                         }))
                     }];
                 }
