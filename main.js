@@ -571,24 +571,21 @@ async function initMap() {
             })
             .flatMap(train => {
                 // --- NEW LOGIC FOR NOTIME ---
+                const filteredData = train.data.filter((_, index) => index % 2 === 0);
+
                 if (notime) {
-                    if (!train.data || train.data.length === 0) return [];
-                    
-                    // Get the y value of the first point to use as the base offset
-                    const firstY = train.data[0].y;
-                    
-                    // Return the train with all y values adjusted relative to the start
+                    if (filteredData.length === 0) return [];
+                    const firstY = filteredData[0].y;
                     return [{
                         ...train,
-                        data: train.data.map(p => ({
+                        data: filteredData.map(p => ({
                             ...p,
-                            y: p.y - firstY,
-                            // We include adjustedDist to maintain schema consistency with the other branch
+                            y: p.y - firstY + 120,
                             adjustedDist: state.stationDistances[p.x] 
                         }))
                     }];
                 }
-
+                    
                 // --- EXISTING FLATMAP LOGIC (notime === false) ---
                 const segments = [];
                 let currentSegment = [];
@@ -892,7 +889,7 @@ async function initMap() {
                 data: rawData.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 1 : 0.0001, radiusMaxPixels: 0.001, radiusMinPixels: 0.00001
+                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 1 : 0.0001, radiusMaxPixels: 2, radiusMinPixels: 0.00001
             })
         ];
 
