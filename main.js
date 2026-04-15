@@ -582,7 +582,7 @@ async function initMap() {
                         data: filteredData.map(p => ({
                             ...p,
                             y: p.y - firstY + 120,
-                            adjustedDist: state.stationDistances[p.x] 
+                            adjustedDist: state.stationDistances[p.x] + cumulativeOffset
                         }))
                     }];
                 }
@@ -749,7 +749,7 @@ async function initMap() {
             })
             .filter(train => train.data.length > 1);
 
-        const processedSegments = [...todaySegments, ...yesterdaySegments];
+        let processedSegments = [...todaySegments, ...yesterdaySegments];
 
         let scheduleData = [];
         if (state.showSchedule && state.selectedLine) {
