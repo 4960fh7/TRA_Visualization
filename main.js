@@ -568,7 +568,7 @@ async function initMap() {
                 const isEnabled = state.enabledTypes.has(train.train);
                 const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
                 const startingStation = (notime && state.focusedStation) ? train.data[0].x === state.focusedStation : true;
-                return isEnabled && passesStation;
+                return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
                 // --- NEW LOGIC FOR NOTIME ---
