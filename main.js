@@ -24,7 +24,7 @@ let state = {
 let gridData = {
     denseLabels: [], normalLabels: [], sparseLabels: [], simpleLabels: [],
     thickLines: [], thinLines: [],
-    denseLabelData: [], normalLabelData: [], sparseLabelData: [], mainLabelData: [],
+    denseLabelData: [], normalLabelData: [], sparseLabelData: [], mainLabelData: [], leftonlyLabelData: [],
     minDistance: 0, maxDistance: 0
 };
 const dateSelector = document.getElementById('date-selector');
@@ -401,13 +401,15 @@ async function initMap() {
             if (state.stationList.has(name)) {
                 for (let x = 120; x <= 1560; x += 120) {
                     const entry = { text: name, position: [x * 3, yValue], y: yValue };
-                    if (x % 480 === 0) {
+                    if ((x-120) % 480 === 0) {
                         if (mainStationList.has(name)) gridData.mainLabelData.push(entry);
                         gridData.sparseLabelData.push(entry);
                     }
-                    if (x % 240 === 0) gridData.normalLabelData.push(entry);
+                    if ((x-120) % 240 === 0) gridData.normalLabelData.push(entry);
                     gridData.denseLabelData.push(entry);
                 }
+                const entry = { text: name, position: [330, yValue], y: yValue };
+                if (mainStationList.has(name)) gridData.leftonlyLabelData.push(entry);
             }
         });
 
@@ -545,12 +547,29 @@ async function initMap() {
             // loadData();
         }
         if (key === 's') {
-            notime = !notime;
-            onlystart = !onlystart;
+            if (!notime) {
+                notime = true;
+                onlystart = true;
+            } else if (!onlystart) {
+                onlystart = true;
+            } else {
+                notime = false;
+                onlystart = false;
+            }
+            state.showSchedule = false;
             renderLayers();
         }
         if (key === 't') {
-            notime = !notime;
+            if (!notime) {
+                notime = true;
+                onlystart = false;
+            } else if (onlystart) {
+                onlystart = false;
+            } else {
+                notime = false;
+                onlystart = false;
+            }
+            state.showSchedule = false;
             renderLayers();
         }
         if (key === "escape" || e.keyCode === 27) {
@@ -832,10 +851,10 @@ async function initMap() {
             }),
             new deck.TextLayer({
                 id: `station-labels-${offset}`,
-                data: state.currentZoom >  0.8 ? gridData.denseLabelData : 
-                        state.currentZoom > -0.4 ? gridData.normalLabelData : 
-                        state.currentZoom > -1.8 ? gridData.mainLabelData : 
-                        notime ? gridData.mainLabelData : [],
+                data: notime ? gridData.leftonlyLabelData : 
+                      state.currentZoom >  0.8 ? gridData.denseLabelData : 
+                      state.currentZoom > -0.4 ? gridData.normalLabelData : 
+                      state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, 
                 pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                 getPosition: d => [d.position[0], d.position[1] + offset],
