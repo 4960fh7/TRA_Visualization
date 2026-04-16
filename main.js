@@ -546,25 +546,33 @@ async function initMap() {
             // realtime = !realtime;
             // loadData();
         }
+        if (key === 'o') {
+            notime = false;
+            onlystart = false;
+            renderLayers();
+        }
         if (key === 's') {
             if (!notime) {
                 notime = true;
                 onlystart = true;
+                state.showSchedule = false;
             } else if (!onlystart) {
                 onlystart = true;
+                state.showSchedule = false;
             } else {
                 notime = false;
                 onlystart = false;
             }
-            state.showSchedule = false;
             renderLayers();
         }
         if (key === 't') {
             if (!notime) {
                 notime = true;
                 onlystart = false;
+                state.showSchedule = false;
             } else if (onlystart) {
                 onlystart = false;
+                state.showSchedule = false;
             } else {
                 notime = false;
                 onlystart = false;
