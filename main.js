@@ -590,7 +590,7 @@ async function initMap() {
                     const firstValidPoint = filteredData.find(p => p.y !== -1);
                     if (!firstValidPoint) return [];
                     const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : [];
-                    const firstY = state.focusedStation ? firstValidPoint.y : currentStation.y;
+                    const firstY = state.focusedStation ? currentStation.y : firstValidPoint.y;
                     
                     return [{
                         ...train,
