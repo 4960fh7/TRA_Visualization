@@ -8,18 +8,9 @@ Stable release: [https://4960fh7.github.io/TRA_Diagram/](https://4960fh7.github.
 
 #### Usage
 
-The website will be automatically built by github according to file `index.html`.
-
-Data can be fetched by
-```bash
-python ../fetch.py {YYYY}/{MM}/{DD}
-```
-under `data/`. For example,
-```bash
-python ../fetch.py 2026/04/16
-```
-
-The existing files in `data/` and `fonts/` will be used in the website and shouldn't be modified.
+- The website will be automatically built by github according to file `index.html`.
+- Execute `python fetch.py {YYYY}/{MM}/{DD}` to fetch data.
+- The existing files in `data/` and `fonts/` will be used in the website and shouldn't be modified.
 
 #### Experimental Functions
 
@@ -27,7 +18,8 @@ The existing files in `data/` and `fonts/` will be used in the website and shoul
 - Press key `s` or `t` to enter delta-time view.
     - If `s` is pressed, only the trains starting at that station is shown when a station is clicked.
     - If `t` is pressed, all trains passing that station is shown when a station is clicked.
+    - Press the same key again or press key `o` to return to original view.
 
-#### Developing Functions
+#### Development Functions
 
 - Press key `m` to see the current viewstate center and zoom.
