@@ -908,7 +908,7 @@ async function initMap() {
         const scatterLayers = yOffsets.flatMap(offset => [
             new deck.ScatterplotLayer({
                 id: `json-layer-${offset}`,
-                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
+                data: processedSegments,
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: notime, 
                 getPosition: d => [d.y*3, state.stationDistances[d.x] + offset], 
                 getFillColor: d => { 
