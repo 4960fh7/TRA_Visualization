@@ -545,6 +545,7 @@ async function initMap() {
         }
         if (key === 't') {
             notime = !notime;
+            renderLayers();
         }
         if (key === "escape" || e.keyCode === 27) {
             state.focusedStation = null;
@@ -885,15 +886,25 @@ async function initMap() {
                 getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                 getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
-            }),
-            new deck.ScatterplotLayer({
-                id: 'json-layer',
-                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                getPosition: d => [d.y*3, state.stationDistances[d.x]], 
-                getFillColor: isLight? [50, 50, 50] : [200, 200, 200], getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
             })
         ];
+
+        const scatterLayers = yOffsets.flatMap(offset => [
+            new deck.ScatterplotLayer({
+                id: `json-layer-${offset}`,
+                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                getPosition: d => [d.y*3, state.stationDistances[d.x] + offset], 
+                getFillColor: d => { 
+                    const hexcolor = colorPalette[d.train];
+                    const r = parseInt(hexcolor.substring(1, 3), 16);
+                    const g = parseInt(hexcolor.substring(3, 5), 16);
+                    const b = parseInt(hexcolor.substring(5, 7), 16);
+                    return [r, g, b]; 
+                },
+                getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
+            })
+        ]);
 
         const currentTimeLayers = [
             new deck.PathLayer({
@@ -904,7 +915,7 @@ async function initMap() {
             })
         ];
 
-        deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers, ...mainPlotLayers, ...currentTimeLayers, ...selectionLayers] });
+        deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers, ...mainPlotLayers, ...currentTimeLayers, ...scatterLayers, ...selectionLayers] });
     }
 
     function updateMapTheme(isLight) {
