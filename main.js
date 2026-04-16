@@ -236,7 +236,7 @@ async function initMap() {
             state.selectedLine = null;
             state.showSchedule = false;
             state.focusedStation = null;
-            if (info.object && info.layer.id.includes('main-path-layer')) {
+            if (info.object && (info.layer.id.includes('main-path-layer') || info.layer.id.includes('json-layer'))) {
                 const trainNumber = info.object.number;
                 state.selectedLine = rawData.find(t => t.number === trainNumber) || yrawData.find(t => t.number === trainNumber);
                 state.showSchedule = true; 
@@ -831,7 +831,7 @@ async function initMap() {
                 id: `main-path-layer-${offset}`,
                 data: processedSegments,
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
+                pickable: !notime, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                 getPath: d => d.data.map(p => [p.y * 3, p.adjustedDist + offset]),
                 getColor: d => { 
                     const hexcolor = colorPalette[d.train];
@@ -909,7 +909,7 @@ async function initMap() {
             new deck.ScatterplotLayer({
                 id: `json-layer-${offset}`,
                 data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train}))),
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: notime, 
                 getPosition: d => [d.y*3, state.stationDistances[d.x] + offset], 
                 getFillColor: d => { 
                     const hexcolor = colorPalette[d.train];
