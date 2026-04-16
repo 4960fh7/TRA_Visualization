@@ -12,6 +12,7 @@ let colorPalette = darkcolorPalette;
 let deckInstance = null;
 let realtime = false;
 let notime = false;
+let onlystart = false;
 let rawData = [];
 let yrawData = [];
 let state = {
@@ -543,6 +544,11 @@ async function initMap() {
             // realtime = !realtime;
             // loadData();
         }
+        if (key === 's') {
+            notime = !notime;
+            onlystart = !onlystart;
+            renderLayers();
+        }
         if (key === 't') {
             notime = !notime;
             renderLayers();
@@ -568,7 +574,7 @@ async function initMap() {
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
                 const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
-                const startingStation = (notime && state.focusedStation) ? train.data[0].x === state.focusedStation : true;
+                const startingStation = (notime && state.focusedStation && onlystart) ? train.data[0].x === state.focusedStation : true;
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
@@ -583,8 +589,8 @@ async function initMap() {
                     // Find the first y that isn't -1 to use as the baseline
                     const firstValidPoint = filteredData.find(p => p.y !== -1);
                     if (!firstValidPoint) return [];
-                    
-                    const firstY = firstValidPoint.y;
+                    const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : [];
+                    const firstY = state.focusedStation ? firstValidPoint.y : currentStation.y;
                     
                     return [{
                         ...train,
