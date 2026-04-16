@@ -574,7 +574,7 @@ async function initMap() {
             .flatMap(train => {
                 // --- NEW LOGIC FOR NOTIME ---
                 const filteredData = train.data.filter((p, index) => 
-                    index % 2 === 0 && state.stationList.includes(p.x)
+                    index % 2 === 0 && state.stationList.has(p.x)
                 );
 
                 if (notime) {
