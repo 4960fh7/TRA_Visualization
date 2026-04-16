@@ -573,18 +573,28 @@ async function initMap() {
             })
             .flatMap(train => {
                 // --- NEW LOGIC FOR NOTIME ---
-                const filteredData = train.data.filter((_, index) => index % 2 === 0);
+                const filteredData = train.data.filter((p, index) => 
+                    index % 2 === 0 && state.stationList.includes(p.x)
+                );
 
                 if (notime) {
                     if (filteredData.length === 0) return [];
-                    const firstY = filteredData[0].y;
+                    
+                    // Find the first y that isn't -1 to use as the baseline
+                    const firstValidPoint = filteredData.find(p => p.y !== -1);
+                    if (!firstValidPoint) return [];
+                    
+                    const firstY = firstValidPoint.y;
+                    
                     return [{
                         ...train,
-                        data: filteredData.map(p => ({
-                            ...p,
-                            y: p.y - firstY + 120,
-                            adjustedDist: state.stationDistances[p.x]
-                        }))
+                        data: filteredData
+                            .filter(p => p.y !== -1) // Usually best to remove -1s in "notime" mode
+                            .map(p => ({
+                                ...p,
+                                y: p.y - firstY + 120,
+                                adjustedDist: state.stationDistances[p.x] 
+                            }))
                     }];
                 }
                     
