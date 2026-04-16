@@ -408,7 +408,7 @@ async function initMap() {
                     if ((x-120) % 240 === 0) gridData.normalLabelData.push(entry);
                     gridData.denseLabelData.push(entry);
                 }
-                const entry = { text: name, position: [330, yValue], y: yValue };
+                const entry = { text: name, position: [270, yValue], y: yValue };
                 if (mainStationList.has(name)) gridData.leftonlyLabelData.push(entry);
             }
         });
@@ -549,6 +549,7 @@ async function initMap() {
         if (key === 'o') {
             notime = false;
             onlystart = false;
+            state.showSchedule = true;
             renderLayers();
         }
         if (key === 's') {
@@ -562,6 +563,7 @@ async function initMap() {
             } else {
                 notime = false;
                 onlystart = false;
+                state.showSchedule = true;
             }
             renderLayers();
         }
@@ -576,6 +578,7 @@ async function initMap() {
             } else {
                 notime = false;
                 onlystart = false;
+                state.showSchedule = true;
             }
             state.showSchedule = false;
             renderLayers();
