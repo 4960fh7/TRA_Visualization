@@ -585,22 +585,44 @@ async function initMap() {
 
                 if (notime) {
                     if (filteredData.length === 0) return [];
-                    
-                    // Find the first y that isn't -1 to use as the baseline
+
+                    // Find the baseline point (either focused station or first valid point)
                     const firstValidPoint = filteredData.find(p => p.y !== -1);
                     if (!firstValidPoint) return [];
-                    const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : [];
-                    const firstY = state.focusedStation ? currentStation.y : firstValidPoint.y;
                     
+                    const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : null;
+                    const firstY = currentStation ? currentStation.y : firstValidPoint.y;
+
+                    let cumulativeOffset = 0;
+                    const processedData = [];
+
+                    for (let i = 0; i < filteredData.length; i++) {
+                        const p = filteredData[i];
+                        if (p.y === -1) continue;
+
+                        const currentRawDist = state.stationDistances[p.x];
+
+                        // Cumulative Offset Calculation
+                        if (processedData.length > 0) {
+                            const prevPoint = processedData[processedData.length - 1];
+                            const prevRawDist = state.stationDistances[prevPoint.x];
+
+                            // Logic: Detect if the train crossed the start/end of the line 
+                            // and adjust the physical vertical position accordingly
+                            if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
+                            else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
+                        }
+
+                        processedData.push({
+                            ...p,
+                            y: p.y - firstY + 120, // Relative time adjustment
+                            adjustedDist: currentRawDist + cumulativeOffset // Offset distance adjustment
+                        });
+                    }
+
                     return [{
                         ...train,
-                        data: filteredData
-                            .filter(p => p.y !== -1) // Usually best to remove -1s in "notime" mode
-                            .map(p => ({
-                                ...p,
-                                y: p.y - firstY + 120,
-                                adjustedDist: state.stationDistances[p.x] 
-                            }))
+                        data: processedData
                     }];
                 }
                     
@@ -875,7 +897,7 @@ async function initMap() {
                 getPosition: d => [d.position[0], d.position[1] + offset],
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif', 
-                getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
+                getSize: notime ? 0.0001 : 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 characterSet: 'auto',
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10],
