@@ -1090,7 +1090,7 @@ function handleSearch() {
         return;
     }
     const allTrainsSource = [...rawData, ...yrawData];
-    const foundTrain = allTrainsSource.find(t => String(t.number) === query);
+    const foundTrain = allTrainsSource.find(t => String(t.number) == String(query));
     if (foundTrain) {
         window.selectTrain(foundTrain.number);
         searchInput.value = '';
