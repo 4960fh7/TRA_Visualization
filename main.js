@@ -895,6 +895,15 @@ async function initMap() {
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10],
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 180] : [20, 20, 20, 180],
                 updateTriggers: { data: [state.currentZoom, state.focusedStation] }
+            }),
+            new deck.PathLayer({
+                id: `station-layer-highlight-${offset}`,
+                data: Object.entries(state.stationDistances).filter(([name]) => name === state.focusedStation),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
+                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
+                getColor: isLight ? [189, 146, 8] : [232, 252, 13],
+                getWidth: 3, widthMaxPixels: 2, widthMinPixels: 0
             })
         ]);
 
@@ -1066,21 +1075,20 @@ function handleSearch() {
     let query = searchInput.value.trim();
     if (!query) return;
     if (query.endsWith('站')) query = query.slice(0, -1);
+    query = query.replace(/台/g, '臺');
     console.log(query);
 
     searchError.style.display = 'none';
 
-    if (state.stationDistances[query] !== undefined) {
+    if (mountStationDistances[query] !== undefined || seaStationDistances[query] !== undefined) {
         window.selectStation(query);
         searchInput.value = '';
         return;
     }
     const allTrainsSource = [...rawData, ...yrawData];
-    const foundTrain = allTrainsSource.find(t => 
-        t.info && (t.number === query || t.train === query)
-    );
+    const foundTrain = allTrainsSource.find(t => t.number === query || t.train === query);
     if (foundTrain) {
-        window.selectTrain(foundTrain.number || foundTrain.train);
+        window.selectTrain(foundTrain.number);
         searchInput.value = '';
         return;
     }
