@@ -71,8 +71,10 @@
                 <h2>搜尋</h2>
                 <div id="search-container">
                     <div class="search-box">
-                        <input type="text" id="global-search" placeholder="搜尋車站或車次" autocomplete="off">
-                        <span id="clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--border-color); display: none;">&times;</span>
+                        <div style="position: relative; flex: 1; display: flex;">
+                            <input type="text" id="global-search" placeholder="搜尋車站或車次" autocomplete="off">
+                            <span id="clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--border-color); display: none;">&times;</span>
+                        </div>
                         <button id="search-btn" class="pill">🔍</button>
                     </div>
                     <div id="search-error" class="search-error" style="display: none;">找不到該車站或車次</div>
