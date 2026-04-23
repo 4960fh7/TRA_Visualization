@@ -30,6 +30,9 @@ let gridData = {
 let layers = {
     baseLayers: [], offsetLayers: [], mainPlotLayers: [], currentTimeLayers: [], scatterLayers: [], selectionLayers: []
 };
+const searchInput = document.getElementById('global-search');
+const searchBtn = document.getElementById('search-btn');
+const searchError = document.getElementById('search-error');
 const dateSelector = document.getElementById('date-selector');
 let today = new Date();
 if (today.getHours() < 2) { today.setDate(today.getDate() - 1); }
@@ -837,7 +840,6 @@ async function initMap() {
                     state.currentZoom > -0.4 ? gridData.normalLabelData : 
                     state.currentZoom > -1.8 ? gridData.sparseLabelData : [];
 
-
         layers.mainPlotLayers = yOffsets.flatMap(offset => [
             new deck.PathLayer({
                 id: `main-path-layer-${offset}`,
@@ -1059,6 +1061,46 @@ async function initMap() {
 }
 
 initMap();
+
+function handleSearch() {
+    let query = searchInput.value.trim();
+    if (!query) return;
+    if (query.endsWith('站')) query = query.slice(0, -1);
+    console.log(query);
+
+    searchError.style.display = 'none';
+
+    if (state.stationDistances[query] !== undefined) {
+        window.selectStation(query);
+        searchInput.value = '';
+        return;
+    }
+    const allTrainsSource = [...rawData, ...yrawData];
+    const foundTrain = allTrainsSource.find(t => 
+        t.info && (t.number === query || t.train === query)
+    );
+    if (foundTrain) {
+        window.selectTrain(foundTrain.number || foundTrain.train);
+        searchInput.value = '';
+        return;
+    }
+
+    searchError.innerText = `找不到: ${query}`;
+    searchError.style.display = 'block';
+}
+
+searchBtn.addEventListener('click', handleSearch);
+
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent accidental form submissions
+        handleSearch();
+    }
+});
+
+searchInput.addEventListener('input', () => {
+    searchError.style.display = 'none';
+});
 
 const infoModal = document.getElementById('info-modal');
 const infoBtn = document.getElementById('btn-info');

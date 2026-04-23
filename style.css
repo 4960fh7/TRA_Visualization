@@ -102,6 +102,22 @@ body {
     font-family: "Orbitron", inherit;
 }
 
+.search-container {
+    padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+    display: flex; flex-direction: column; gap: 8px;
+}
+.search-box { display: flex; gap: 10px; align-items: center; }
+
+#global-search {
+    flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+    color: var(--text-color); padding: 8px 12px; border-radius: 6px; font-size: 1em;
+    outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#global-search:focus { border-color: var(--accent-color, #00f2ff); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+.search-error { color: #ff4a4a; font-size: 0.85em; letter-spacing: 1px; animation: fadeIn 0.3s ease-in-out; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
 #info-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; }
 #info-content div, #info-content p { margin: 0; display: flex; flex-direction: row; align-items: center; white-space: nowrap; padding: 0 15px; }
 
