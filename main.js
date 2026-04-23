@@ -193,6 +193,7 @@ async function initMap() {
         if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || yrawData.find(t => t.number === state.selectedLine.number) || null; }
         updateInfoBox();
         renderDataLayers();
+        renderBaseLayers(); 
     }
 
     state.currentTimeMinutes = today.getHours() * 60 + today.getMinutes();
@@ -252,6 +253,7 @@ async function initMap() {
             }
             updateBottomPanel();
             renderDataLayers();
+            renderBaseLayers(); 
             updateInfoBox();
         }
     });
@@ -768,7 +770,6 @@ async function initMap() {
                             const prevDist = state.stationDistances[prevPoint.x];
                             const currentDist = state.stationDistances[p.x];
                             currentSegment.push({ ...p, y: 120, adjustedDist: prevDist + (currentDist - prevDist) * (1560 - prevPoint.y) / (p.y - prevPoint.y) + cumulativeOffset});
-
                         }
                     }
                     if (i > 0 && currentRawDist !== undefined) {
@@ -1021,6 +1022,7 @@ async function initMap() {
             state.focusedStation = null; 
             updateBottomPanel();
             renderDataLayers(); 
+            renderBaseLayers(); 
             updateInfoBox(); 
         }
     };
@@ -1060,6 +1062,7 @@ async function initMap() {
             deckInstance.setProps({ viewState: updatedViewState });
             updateBottomPanel();
             renderDataLayers(); 
+            renderBaseLayers(); 
             updateInfoBox(); 
         }
     };
@@ -1076,6 +1079,7 @@ function handleSearch() {
     if (!query) return;
     if (query.endsWith('站')) query = query.slice(0, -1);
     query = query.replace(/台/g, '臺');
+    if (/\d/.test(query)) { query = query.replace(/^[^\d]+/, '').trim(); }
     console.log(query);
 
     searchError.style.display = 'none';
@@ -1086,7 +1090,7 @@ function handleSearch() {
         return;
     }
     const allTrainsSource = [...rawData, ...yrawData];
-    const foundTrain = allTrainsSource.find(t => t.number === query || t.train === query);
+    const foundTrain = allTrainsSource.find(t => String(t.number) === query);
     if (foundTrain) {
         window.selectTrain(foundTrain.number);
         searchInput.value = '';
