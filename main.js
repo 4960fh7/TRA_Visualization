@@ -1036,6 +1036,8 @@ async function initMap() {
                 return state.stationDistances[p.x] !== undefined ? state.stationDistances[p.x] : 0;
             });
             const yValues = selected.data.map(p => p.y);
+            const minY = Math.min(...yValues);
+            const maxY = Math.max(...yValues);
             const first = selected.data[0];
             const last = selected.data[selected.data.length - 1];
             const xStart = state.stationDistances[first.x] || 0;
