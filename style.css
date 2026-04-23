@@ -109,7 +109,7 @@ body {
 .search-box { display: flex; gap: 10px; align-items: center; }
 
 #global-search {
-    flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+    flex: 1; background-color: var(--bg-color); border: 1px solid var(--border-color);
     color: var(--text-color); padding: 8px 30px 8px 12px; border-radius: 6px; font-size: 1em;
     outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; font-family: inherit;
 }
