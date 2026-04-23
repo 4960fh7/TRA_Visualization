@@ -1066,6 +1066,47 @@ async function initMap() {
             updateInfoBox(); 
         }
     };
+
+    function handleSearch() {
+        let query = searchInput.value.trim();
+        if (!query) return;
+        if (query.endsWith('站')) query = query.slice(0, -1);
+        query = query.replace(/台/g, '臺');
+        if (/\d/.test(query)) { query = query.replace(/^[^\d]+/, '').trim(); }
+        console.log(query);
+
+        searchError.style.display = 'none';
+
+        if (mountStationDistances[query] !== undefined || seaStationDistances[query] !== undefined) {
+            window.selectStation(query);
+            searchInput.value = '';
+            return;
+        }
+        const allTrainsSource = [...rawData, ...yrawData];
+        console.log(allTrainsSource[0]);
+        const foundTrain = allTrainsSource.find(t => String(t.number) == String(query));
+        console.log(foundTrain);
+        if (foundTrain) {
+            window.selectTrain(foundTrain.number);
+            searchInput.value = '';
+            return;
+        }
+
+        searchError.innerText = `找不到: ${query}`;
+        searchError.style.display = 'block';
+    }
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            handleSearch();
+        }
+    });
+    searchInput.addEventListener('input', () => {
+        searchError.style.display = 'none';
+    });
+
     syncPillStyles();
     updateStationGridData();
     renderDataLayers();
@@ -1073,48 +1114,6 @@ async function initMap() {
 }
 
 initMap();
-
-function handleSearch() {
-    let query = searchInput.value.trim();
-    if (!query) return;
-    if (query.endsWith('站')) query = query.slice(0, -1);
-    query = query.replace(/台/g, '臺');
-    if (/\d/.test(query)) { query = query.replace(/^[^\d]+/, '').trim(); }
-    console.log(query);
-
-    searchError.style.display = 'none';
-
-    if (mountStationDistances[query] !== undefined || seaStationDistances[query] !== undefined) {
-        window.selectStation(query);
-        searchInput.value = '';
-        return;
-    }
-    const allTrainsSource = [...rawData, ...yrawData];
-    console.log(allTrainsSource[0]);
-    const foundTrain = allTrainsSource.find(t => String(t.number) == String(query));
-    console.log(foundTrain);
-    if (foundTrain) {
-        window.selectTrain(foundTrain.number);
-        searchInput.value = '';
-        return;
-    }
-
-    searchError.innerText = `找不到: ${query}`;
-    searchError.style.display = 'block';
-}
-
-searchBtn.addEventListener('click', handleSearch);
-
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // Prevent accidental form submissions
-        handleSearch();
-    }
-});
-
-searchInput.addEventListener('input', () => {
-    searchError.style.display = 'none';
-});
 
 const infoModal = document.getElementById('info-modal');
 const infoBtn = document.getElementById('btn-info');
