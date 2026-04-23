@@ -1036,14 +1036,16 @@ async function initMap() {
                 return state.stationDistances[p.x] !== undefined ? state.stationDistances[p.x] : 0;
             });
             const yValues = selected.data.map(p => p.y);
-
-            const minX = Math.min(...xValues);
-            const maxX = Math.max(...xValues);
-            const minY = Math.min(...yValues);
-            const maxY = Math.max(...yValues);
-
-            let targetX = (minX + maxX) / 2;
-            let targetY = (minY + maxY) / 2;
+            const first = selected.data[0];
+            const last = selected.data[selected.data.length - 1];
+            const xStart = state.stationDistances[first.x] || 0;
+            const xEnd = state.stationDistances[last.x] || 0;
+            
+            let targetX = (Math.max(...xValues) - Math.min(...xValues) > 6000) ? (xStart + xEnd - state.period) / 2 : (xStart + xEnd) / 2;
+            if (targetX < 0) {
+                targetX = targetX + state.period;
+            }
+            let targetY = (first.y + last.y) / 2;
             const currentX = state.currentTimeMinutes; 
             if (currentX >= minY && currentX <= maxY) {
                 targetY = currentX; 
@@ -1051,7 +1053,10 @@ async function initMap() {
                     const p1 = selected.data[i];
                     const p2 = selected.data[i+1];
                     if (currentX >= p1.y && currentX <= p2.y) {
-                        targetX = (state.stationDistances[p1.x] + state.stationDistances[p2.x]) / 2;
+                        targetX = (Math.abs(state.stationDistances[p1.x] - state.stationDistances[p2.x]) > 6000) ?
+                            (state.stationDistances[p1.x] + state.stationDistances[p2.x] - state.period) / 2 :
+                            (state.stationDistances[p1.x] + state.stationDistances[p2.x]) / 2 ;
+                        if (targetX < 0) { targetX = targetX + state.period; }
                         break;
                     }
                 }
