@@ -1064,7 +1064,7 @@ async function initMap() {
                 }
             }
 
-            const dx = maxX - minX;
+            const dx = Math.abs(xStart - xEnd);
             let targetZoom = Math.max(-1.5, Math.min(0, (600 - dx) / 500));
 
             const currentVS = deckInstance.props.viewState || state.viewState || {};
