@@ -182,7 +182,7 @@ async function initMap() {
             const response = await fetch(filename);
             rawData = await response.json();
         } catch (err) {
-            alert("可選擇日期範圍: 2026/02/19 ~ 2026/04/30");
+            alert("可選擇日期範圍: 2026/02/19 ~ 2026/05/31");
             console.error(err);
         }
         try {
@@ -1146,8 +1146,14 @@ async function initMap() {
             return;
         }
         allTrainsSource = [...rawData, ...yrawData];
+        const switchLine = (type) => {
+            const targetPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === type);
+            if (targetPill) targetPill.click();
+        };
         const foundTrain = allTrainsSource.find(t => String(t.number) == String(query));
         if (foundTrain) {
+            if (foundTrain.info.via === "山") { switchLine('mountain'); }
+            else if (foundTrain.info.via === "海") { switchLine('sea'); }
             window.selectTrain(foundTrain.number);
             searchInput.value = '';
             return;
