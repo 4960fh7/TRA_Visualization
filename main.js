@@ -1044,34 +1044,26 @@ async function initMap() {
 
             let targetX = (minX + maxX) / 2;
             let targetY = (minY + maxY) / 2;
-
-            const currentX = state.currentTimeMinutes * 3 + 180; 
-            
+            const currentX = state.currentTimeMinutes; 
             if (currentX >= minY && currentX <= maxY) {
                 targetY = currentX; 
                 for (let i = 0; i < selected.data.length - 1; i++) {
                     const p1 = selected.data[i];
                     const p2 = selected.data[i+1];
                     if (currentX >= p1.y && currentX <= p2.y) {
-                        const t = (currentX - p1.y) / (p2.y - p1.y || 1);
-                        const d1 = state.stationDistances[p1.x] || 0;
-                        const d2 = state.stationDistances[p2.x] || 0;
-                        targetX = d1 + t * (d2 - d1);
+                        targetX = (state.stationDistances[p1.x] + state.stationDistances[p2.x]) / 2;
                         break;
                     }
                 }
             }
 
             const dx = maxX - minX;
-            const dy = maxY - minY;
-            const maxSpan = Math.max(dx, dy);
-            
-            let targetZoom = Math.max(-1.5, Math.min(0, 1 - Math.log2(maxSpan / 100)));
+            let targetZoom = Math.max(-1.5, Math.min(0, (600 - dx) / 500));
 
             const currentVS = deckInstance.props.viewState || state.viewState || {};
             const updatedViewState = {
                 ...currentVS,
-                target: [targetY, targetX, 0], // Note: check if your ortho logic uses [y, x] or [x, y]
+                target: [targetY * 3, targetX, 0], // Note: check if your ortho logic uses [y, x] or [x, y]
                 zoom: targetZoom,
                 transitionDuration: 600,
                 transitionInterpolator: new deck.LinearInterpolator(['target', 'zoom']),
