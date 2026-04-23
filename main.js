@@ -27,6 +27,9 @@ let gridData = {
     denseLabelData: [], normalLabelData: [], sparseLabelData: [], mainLabelData: [], leftonlyLabelData: [],
     minDistance: 0, maxDistance: 0
 };
+let layers = {
+    baseLayers: [], offsetLayers: [], mainPlotLayers: [], currentTimeLayers: [], scatterLayers: [], selectionLayers: []
+};
 const dateSelector = document.getElementById('date-selector');
 let today = new Date();
 if (today.getHours() < 2) { today.setDate(today.getDate() - 1); }
@@ -186,7 +189,7 @@ async function initMap() {
         }
         if (state.selectedLine) { state.selectedLine = rawData.find(t => t.number === state.selectedLine.number) || yrawData.find(t => t.number === state.selectedLine.number) || null; }
         updateInfoBox();
-        renderLayers();
+        renderDataLayers();
     }
 
     state.currentTimeMinutes = today.getHours() * 60 + today.getMinutes();
@@ -229,7 +232,7 @@ async function initMap() {
             const clampedZoom = Math.min(Math.max(viewState.zoom, -3.75), 1.5);
             const nextViewState = {...viewState, zoom: clampedZoom};
             deckInstance.setProps({viewState: nextViewState});
-            renderLayers();
+            renderBaseLayers();
         },
 
         onClick: (info) => {
@@ -245,7 +248,7 @@ async function initMap() {
                 state.focusedStation = stationName;
             }
             updateBottomPanel();
-            renderLayers();
+            renderDataLayers();
             updateInfoBox();
         }
     });
@@ -454,7 +457,7 @@ async function initMap() {
                 state.selectedLine = null;
                 updateInfoBox();
             }
-            renderLayers();
+            renderDataLayers();
         });
     });
 
@@ -470,7 +473,7 @@ async function initMap() {
                 state.enabledTypes.add(type);
             }
             syncPillStyles();
-            renderLayers();
+            renderDataLayers();
             updateInfoBox();
         });
     });
@@ -480,14 +483,14 @@ async function initMap() {
     DOM.btnSelectAll.addEventListener('click', () => {
         Object.keys(colorPalette).forEach(type => state.enabledTypes.add(type));
         syncPillStyles();
-        renderLayers();
+        renderDataLayers();
         updateInfoBox();
     });
     DOM.btnDeselectAll.addEventListener('click', () => {
         state.enabledTypes.clear();
         state.selectedLine = null;
         syncPillStyles();
-        renderLayers();
+        renderDataLayers();
         updateInfoBox();
     });
 
@@ -521,7 +524,7 @@ async function initMap() {
             }
             updateStationGridData();
             updateInfoBox();
-            renderLayers();
+            renderDataLayers();
         });
     });
 
@@ -530,14 +533,14 @@ async function initMap() {
         state.showSchedule = false;
         updateInfoBox();
         updateBottomPanel();
-        renderLayers();
+        renderDataLayers();
     };
 
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
         if (key === 'h' && state.selectedLine) {
             state.showSchedule = !state.showSchedule;
-            renderLayers();
+            renderDataLayers();
         }
         if (key === 'm') {
             DOM.viewMonitor.style.display = (DOM.viewMonitor.style.display === 'block') ? 'none' : 'block';
@@ -550,7 +553,7 @@ async function initMap() {
             notime = false;
             onlystart = false;
             state.showSchedule = true;
-            renderLayers();
+            renderDataLayers();
         }
         if (key === 's') {
             if (!notime) {
@@ -565,7 +568,7 @@ async function initMap() {
                 onlystart = false;
                 state.showSchedule = true;
             }
-            renderLayers();
+            renderDataLayers();
         }
         if (key === 't') {
             if (!notime) {
@@ -581,7 +584,7 @@ async function initMap() {
                 state.showSchedule = true;
             }
             state.showSchedule = false;
-            renderLayers();
+            renderDataLayers();
         }
         if (key === "escape" || e.keyCode === 27) {
             state.focusedStation = null;
@@ -593,11 +596,11 @@ async function initMap() {
             if (questionModal) questionModal.style.display = 'none';
             updateInfoBox();
             updateBottomPanel();
-            renderLayers();
+            renderDataLayers();
         }
     });
 
-    function renderLayers() {
+    function renderDataLayers() {
         const yOffsets = [-state.period, 0, state.period];
         
         todaySegments = rawData
@@ -608,55 +611,39 @@ async function initMap() {
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
-                // --- NEW LOGIC FOR NOTIME ---
                 const filteredData = train.data.filter((p, index) => 
                     index % 2 === 0 && state.stationList.has(p.x)
                 );
 
                 if (notime) {
                     if (filteredData.length === 0) return [];
-
-                    // Find the baseline point (either focused station or first valid point)
                     const firstValidPoint = filteredData.find(p => p.y !== -1);
                     if (!firstValidPoint) return [];
-                    
                     const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : null;
                     const firstY = currentStation ? currentStation.y : firstValidPoint.y;
-
                     let cumulativeOffset = 0;
                     const processedData = [];
-
                     for (let i = 0; i < filteredData.length; i++) {
                         const p = filteredData[i];
                         if (p.y === -1) continue;
-
                         const currentRawDist = state.stationDistances[p.x];
-
-                        // Cumulative Offset Calculation
                         if (processedData.length > 0) {
                             const prevPoint = processedData[processedData.length - 1];
                             const prevRawDist = state.stationDistances[prevPoint.x];
-
-                            // Logic: Detect if the train crossed the start/end of the line 
-                            // and adjust the physical vertical position accordingly
                             if (prevRawDist < 1000 && currentRawDist > 6000) cumulativeOffset -= state.period;
                             else if (prevRawDist > 6000 && currentRawDist < 1000) cumulativeOffset += state.period;
                         }
 
                         processedData.push({
                             ...p,
-                            y: p.y - firstY + 120, // Relative time adjustment
-                            adjustedDist: currentRawDist + cumulativeOffset // Offset distance adjustment
+                            y: p.y - firstY + 120,
+                            adjustedDist: currentRawDist + cumulativeOffset
                         });
                     }
 
-                    return [{
-                        ...train,
-                        data: processedData
-                    }];
+                    return [{ ...train, data: processedData }];
                 }
-                    
-                // --- EXISTING FLATMAP LOGIC (notime === false) ---
+
                 const segments = [];
                 let currentSegment = [];
                 let cumulativeOffset = 0;
@@ -818,7 +805,7 @@ async function initMap() {
             })
             .filter(train => train.data.length > 1);
 
-        let processedSegments = [...todaySegments, ...yesterdaySegments];
+        const processedSegments = [...todaySegments, ...yesterdaySegments];
 
         let scheduleData = [];
         if (state.showSchedule && state.selectedLine) {
@@ -850,35 +837,8 @@ async function initMap() {
                     state.currentZoom > -0.4 ? gridData.normalLabelData : 
                     state.currentZoom > -1.8 ? gridData.sparseLabelData : [];
 
-        const offsetLayers = yOffsets.flatMap(offset => [
-            new deck.PathLayer({
-                id: `station-layer-${offset}`,
-                data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
-                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
-                getColor: d => d[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
-                getWidth: d => d[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
-            }),
-            new deck.TextLayer({
-                id: `station-labels-${offset}`,
-                data: notime ? gridData.leftonlyLabelData : 
-                      state.currentZoom >  0.8 ? gridData.denseLabelData : 
-                      state.currentZoom > -0.4 ? gridData.normalLabelData : 
-                      state.currentZoom > -1.8 ? gridData.mainLabelData : [],
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, 
-                pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
-                getPosition: d => [d.position[0], d.position[1] + offset],
-                getText: d => d.text,
-                fontFamily: 'GlowSansSCCom-Compressed, sans-serif', 
-                getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
-                getColor: isLight ? [60, 60, 60] : [210, 210, 210],
-                characterSet: 'auto',
-                getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10]
-            })
-        ]);
 
-        const mainPlotLayers = yOffsets.flatMap(offset => [
+        layers.mainPlotLayers = yOffsets.flatMap(offset => [
             new deck.PathLayer({
                 id: `main-path-layer-${offset}`,
                 data: processedSegments,
@@ -896,7 +856,7 @@ async function initMap() {
             })
         ]);
         
-        const selectionLayers = yOffsets.flatMap(offset => [
+        layers.selectionLayers = yOffsets.flatMap(offset => [
             new deck.PathLayer({
                 id: `selection-layer-${offset}`,
                 data: state.selectedLine && state.enabledTypes.has(state.selectedLine.train) ? processedSegments.filter(s => s.number === state.selectedLine.number) : [],
@@ -936,7 +896,58 @@ async function initMap() {
             })
         ]);
 
-        const baseLayers = [
+        layers.scatterLayers = yOffsets.flatMap(offset => [
+            new deck.ScatterplotLayer({
+                id: `json-layer-${offset}`,
+                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train, number: g.number}))),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: notime, 
+                getPosition: d => [d.y*3, state.stationDistances[d.x] + offset], 
+                getFillColor: d => { 
+                    const hexcolor = colorPalette[d.train];
+                    const r = parseInt(hexcolor.substring(1, 3), 16);
+                    const g = parseInt(hexcolor.substring(3, 5), 16);
+                    const b = parseInt(hexcolor.substring(5, 7), 16);
+                    return [r, g, b]; 
+                },
+                getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
+            })
+        ]);
+
+        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers] });
+    }
+
+    function renderBaseLayers() {
+        const yOffsets = [-state.period, 0, state.period];
+        
+        layers.offsetLayers = yOffsets.flatMap(offset => [
+            new deck.PathLayer({
+                id: `station-layer-${offset}`,
+                data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
+                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
+                getColor: d => d[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
+                getWidth: d => d[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
+            }),
+            new deck.TextLayer({
+                id: `station-labels-${offset}`,
+                data: notime ? gridData.leftonlyLabelData : 
+                      state.currentZoom >  0.8 ? gridData.denseLabelData : 
+                      state.currentZoom > -0.4 ? gridData.normalLabelData : 
+                      state.currentZoom > -1.8 ? gridData.mainLabelData : [],
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, 
+                pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
+                getPosition: d => [d.position[0], d.position[1] + offset],
+                getText: d => d.text,
+                fontFamily: 'GlowSansSCCom-Compressed, sans-serif', 
+                getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
+                getColor: isLight ? [60, 60, 60] : [210, 210, 210],
+                characterSet: 'auto',
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10]
+            })
+        ]);
+        
+        layers.baseLayers = [
             new deck.PathLayer({
                 id: 'thin-time-lines', data: gridData.thinLines, coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPath: d => d.path, getColor: isLight ? [200, 200, 200] : [50, 50, 50], getWidth: 1, widthMaxPixels: 2, widthMinPixels: 0
@@ -957,24 +968,7 @@ async function initMap() {
             })
         ];
 
-        const scatterLayers = yOffsets.flatMap(offset => [
-            new deck.ScatterplotLayer({
-                id: `json-layer-${offset}`,
-                data: processedSegments.flatMap(g => g.data.map(p => ({...p, train: g.train, number: g.number}))),
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: notime, 
-                getPosition: d => [d.y*3, state.stationDistances[d.x] + offset], 
-                getFillColor: d => { 
-                    const hexcolor = colorPalette[d.train];
-                    const r = parseInt(hexcolor.substring(1, 3), 16);
-                    const g = parseInt(hexcolor.substring(3, 5), 16);
-                    const b = parseInt(hexcolor.substring(5, 7), 16);
-                    return [r, g, b]; 
-                },
-                getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
-            })
-        ]);
-
-        const currentTimeLayers = [
+        layers.currentTimeLayers = [
             new deck.PathLayer({
                 id: 'current-time-line',
                 data: [{ path: [[state.currentTimeMinutes * 3, gridData.minDistance - state.period], [state.currentTimeMinutes * 3, gridData.maxDistance + state.period]] }],
@@ -983,7 +977,7 @@ async function initMap() {
             })
         ];
 
-        deckInstance.setProps({ layers: [...baseLayers, ...offsetLayers, ...mainPlotLayers, ...currentTimeLayers, ...scatterLayers, ...selectionLayers] });
+        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers] });
     }
 
     function updateMapTheme(isLight) {
@@ -991,7 +985,8 @@ async function initMap() {
         colorPalette = isLight ? lightcolorPalette : darkcolorPalette;
         updateStationGridData();
         syncPillStyles();
-        renderLayers(); 
+        renderDataLayers(); 
+        renderBaseLayers(); 
     }
     themeToggle.addEventListener('click', () => {
         body.classList.toggle('light-theme');
@@ -1014,7 +1009,7 @@ async function initMap() {
             state.showSchedule = true; 
             state.focusedStation = null; 
             updateBottomPanel();
-            renderLayers(); 
+            renderDataLayers(); 
             updateInfoBox(); 
         }
     };
@@ -1053,13 +1048,14 @@ async function initMap() {
             state.viewState = updatedViewState;
             deckInstance.setProps({ viewState: updatedViewState });
             updateBottomPanel();
-            renderLayers(); 
+            renderDataLayers(); 
             updateInfoBox(); 
         }
     };
     syncPillStyles();
     updateStationGridData();
-    renderLayers();
+    renderDataLayers();
+    renderBaseLayers();
 }
 
 initMap();
