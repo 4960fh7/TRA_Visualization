@@ -1152,8 +1152,8 @@ async function initMap() {
         };
         const foundTrain = allTrainsSource.find(t => String(t.number) == String(query));
         if (foundTrain) {
-            if (foundTrain.info.via === "山") { switchLine('mountain'); }
-            else if (foundTrain.info.via === "海") { switchLine('sea'); }
+            if (foundTrain.info.via.includes("山")) { switchLine('mountain'); }
+            else if (foundTrain.info.via.includes("海")) { switchLine('sea'); }
             window.selectTrain(foundTrain.number);
             searchInput.value = '';
             return;
