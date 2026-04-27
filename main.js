@@ -1204,8 +1204,7 @@ async function initMap() {
                 const distA = state.stationDistances[a] ?? 99999;
                 const distB = state.stationDistances[b] ?? 99999;
                 return distA - distB;
-            })
-            .slice(0, 6);
+            });
 
         // 2. Filter and Sort Trains by Number
         const allTrainsSource = [...rawData, ...yrawData];
@@ -1256,7 +1255,7 @@ async function initMap() {
         trains.forEach(t => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            div.innerHTML = `<span style="color: ${colorPalette[t.train]}>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
+            div.innerHTML = `<span style="color: ${colorPalette[t.train]};">${t.train} ${t.number}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
             div.onclick = () => {
                 searchInput.value = t.number;
                 searchResults.style.display = 'none';
