@@ -1127,7 +1127,10 @@ async function initMap() {
         }
     };
 
+    const searchResults = document.getElementById('search-results');
+
     function handleSearch() {
+        searchResults.style.display = 'none';
         let query = searchInput.value.trim();
         if (!query) return;
         if (query.endsWith('站')) query = query.slice(0, -1);
@@ -1168,15 +1171,14 @@ async function initMap() {
         if (e.key === 'Enter') {
             e.preventDefault(); 
             handleSearch();
+        } else if (e.key === 'Escape') {
+            searchResults.style.display = 'none';
         }
     });
     searchInput.addEventListener('input', () => {
         searchError.style.display = 'none';
     });
 
-    const searchResults = document.getElementById('search-results');
-
-    // Combine all possible station names into a unique list
     const allStations = Array.from(new Set([
         ...Object.keys(mountStationDistances || {}),
         ...Object.keys(seaStationDistances || {}),
@@ -1228,6 +1230,7 @@ async function initMap() {
 
     function showSuggestions(stations, trains) {
         searchResults.innerHTML = '';
+        searchResults.scrollTop = 0;
         
         if (stations.length === 0 && trains.length === 0) {
             searchResults.style.display = 'none';
