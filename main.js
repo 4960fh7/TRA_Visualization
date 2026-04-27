@@ -1192,33 +1192,39 @@ async function initMap() {
             return;
         }
 
-        // Standardize query for matching
         let query = rawValue.replace(/台/g, '臺');
         if (query.endsWith('站')) query = query.slice(0, -1);
         let numericQuery = (/\d/.test(query)) ? query.replace(/^[^\d]+/, '').trim() : null;
 
-        // 1. Filter Stations
+        // 1. Filter and Sort Stations by Distance
         const matchedStations = allStations
             .filter(s => s.includes(query))
-            .slice(0, 5); // Limit results for performance
+            .sort((a, b) => {
+                // Get distances (default to a high number if distance is unknown)
+                const distA = state.stationDistances[a] ?? 99999;
+                const distB = state.stationDistances[b] ?? 99999;
+                return distA - distB;
+            })
+            .slice(0, 6);
 
-        // 2. Filter Trains (from your source)
+        // 2. Filter and Sort Trains by Number
         const allTrainsSource = [...rawData, ...yrawData];
         const matchedTrains = [];
         if (numericQuery) {
-            // Use a Set to avoid duplicate train numbers if found in both rawData and yrawData
             const seenNumbers = new Set();
+            // First, collect matches
             for (const t of allTrainsSource) {
                 const numStr = String(t.number);
                 if (numStr.startsWith(numericQuery) && !seenNumbers.has(numStr)) {
                     matchedTrains.push(t);
                     seenNumbers.add(numStr);
-                    if (matchedTrains.length >= 5) break; 
                 }
             }
+            // Then, sort numerically
+            matchedTrains.sort((a, b) => Number(a.number) - Number(b.number));
         }
 
-        showSuggestions(matchedStations, matchedTrains);
+        showSuggestions(matchedStations, matchedTrains.slice(0, 6));
     });
 
     function showSuggestions(stations, trains) {
@@ -1229,11 +1235,15 @@ async function initMap() {
             return;
         }
 
-        // Add Station headers/items
+        // Render Stations
         stations.forEach(s => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            div.innerHTML = `<span>${s}</span><span class="suggestion-type">車站</span>`;
+            
+            // Requirement 3: Check mainStationDict for custom label
+            const typeLabel = mainStationDict[s] ? mainStationDict[s] : "";
+            
+            div.innerHTML = `<span>${s}</span><span class="suggestion-type">${typeLabel}</span>`;
             div.onclick = () => {
                 searchInput.value = s;
                 searchResults.style.display = 'none';
@@ -1242,12 +1252,11 @@ async function initMap() {
             searchResults.appendChild(div);
         });
 
-        // Add Train headers/items
+        // Render Trains
         trains.forEach(t => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            // Display both number and type/via for clarity
-            div.innerHTML = `<span>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.via}</span>`;
+            div.innerHTML = `<span>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.via.replace(/-/g, '') || ''}</span>`;
             div.onclick = () => {
                 searchInput.value = t.number;
                 searchResults.style.display = 'none';
