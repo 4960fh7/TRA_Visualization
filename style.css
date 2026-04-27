@@ -14,12 +14,12 @@
 :root {
     --bg-color: #000; --sidebar-bg: #444; --text-color: #ddd;
     --border-color: #555; --panel-bg: #222; --subtext-color: #bbb;
-    --cursor-color: white; --monitor-color: #0f0; --icon-invert: 100%;
+    --cursor-color: white; --monitor-color: #0f0; --icon-invert: 100%; --accent-color: #0ef;
 }
 body.light-theme {
     --bg-color: #fff; --sidebar-bg: #bbb; --text-color: #222;
     --border-color: #aaa; --panel-bg: #ddd; --subtext-color: #444;
-    --cursor-color: black; --monitor-color: #080; --icon-invert: 0%;
+    --cursor-color: black; --monitor-color: #080; --icon-invert: 0%; --accent-color: #067;
 }
 body { 
     margin: 0; padding: 0; display: flex; background-color: var(--bg-color);
@@ -104,10 +104,10 @@ body {
 }
 
 .search-container {
-    position: relative; width: 80%; padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+    width: 60%; padding: 15px 20px; border-bottom: 1px solid var(--border-color); min-height: 200px;
     background-color: var(--bg-color); display: flex; flex-direction: column; gap: 8px;
 }
-.search-box { display: flex; gap: 10px; align-items: center; }
+.search-box { width: 80%; display: flex; gap: 10px; align-items: center; }
 
 #global-search {
     flex: 1; background-color: var(--bg-color); border: 1px solid var(--border-color);
@@ -118,7 +118,7 @@ body {
 .search-error { color: #ff4a4a; font-size: 0.85em; letter-spacing: 1px; animation: fadeIn 0.3s ease-in-out; }
 
 .autocomplete-list {
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; background: var(--panel-bg);
+    position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg);
     border: 1px solid var(--border-color); border-top: none; max-height: 200px; overflow-y: auto;
     z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; 
 }
