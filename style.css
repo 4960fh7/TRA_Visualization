@@ -40,9 +40,9 @@ body {
 #bottompanel > * { flex: 0 0 auto; }
 
 /* Consolidated Scrollbars */
-#bottompanel::-webkit-scrollbar, .modal-body::-webkit-scrollbar { height: 6px; width: 6px; }
-#bottompanel::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
-#bottompanel::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track { background: transparent; }
+#bottompanel::-webkit-scrollbar, #sidebar::-webkit-scrollbar, .modal-body::-webkit-scrollbar { height: 6px; width: 6px; }
+#bottompanel::-webkit-scrollbar-thumb, #sidebar::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+#bottompanel::-webkit-scrollbar-track, #sidebar::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track { background: transparent; }
 
 .panel-train-info { display: inline-block; width: 195px; white-space: nowrap; }
 
@@ -118,7 +118,7 @@ body {
 
 .autocomplete-list {
     position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg);
-    border: 1px solid var(--border-color); border-top: none; max-height: 250px; overflow-y: auto;
+    border: 1px solid var(--border-color); border-top: none; max-height: 200px; overflow-y: auto;
     z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; 
 }
 

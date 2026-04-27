@@ -1224,7 +1224,7 @@ async function initMap() {
             matchedTrains.sort((a, b) => Number(a.number) - Number(b.number));
         }
 
-        showSuggestions(matchedStations, matchedTrains.slice(0, 6));
+        showSuggestions(matchedStations, matchedTrains);
     });
 
     function showSuggestions(stations, trains) {
@@ -1256,7 +1256,7 @@ async function initMap() {
         trains.forEach(t => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            div.innerHTML = `<span>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.via.replace(/-/g, '') || ''}</span>`;
+            div.innerHTML = `<span style="color: ${colorPalette[t.train]}>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
             div.onclick = () => {
                 searchInput.value = t.number;
                 searchResults.style.display = 'none';
