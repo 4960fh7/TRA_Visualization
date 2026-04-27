@@ -1174,6 +1174,98 @@ async function initMap() {
         searchError.style.display = 'none';
     });
 
+    const searchResults = document.getElementById('search-results');
+
+    // Combine all possible station names into a unique list
+    const allStations = Array.from(new Set([
+        ...Object.keys(mountStationDistances || {}),
+        ...Object.keys(seaStationDistances || {}),
+        ...Object.keys(mainStationDict || {})
+    ]));
+
+    searchInput.addEventListener('input', () => {
+        let rawValue = searchInput.value.trim();
+        searchError.style.display = 'none';
+        
+        if (rawValue.length < 1) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        // Standardize query for matching
+        let query = rawValue.replace(/台/g, '臺');
+        if (query.endsWith('站')) query = query.slice(0, -1);
+        let numericQuery = (/\d/.test(query)) ? query.replace(/^[^\d]+/, '').trim() : null;
+
+        // 1. Filter Stations
+        const matchedStations = allStations
+            .filter(s => s.includes(query))
+            .slice(0, 5); // Limit results for performance
+
+        // 2. Filter Trains (from your source)
+        const allTrainsSource = [...rawData, ...yrawData];
+        const matchedTrains = [];
+        if (numericQuery) {
+            // Use a Set to avoid duplicate train numbers if found in both rawData and yrawData
+            const seenNumbers = new Set();
+            for (const t of allTrainsSource) {
+                const numStr = String(t.number);
+                if (numStr.startsWith(numericQuery) && !seenNumbers.has(numStr)) {
+                    matchedTrains.push(t);
+                    seenNumbers.add(numStr);
+                    if (matchedTrains.length >= 5) break; 
+                }
+            }
+        }
+
+        showSuggestions(matchedStations, matchedTrains);
+    });
+
+    function showSuggestions(stations, trains) {
+        searchResults.innerHTML = '';
+        
+        if (stations.length === 0 && trains.length === 0) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        // Add Station headers/items
+        stations.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `<span>${s}</span><span class="suggestion-type">車站</span>`;
+            div.onclick = () => {
+                searchInput.value = s;
+                searchResults.style.display = 'none';
+                handleSearch();
+            };
+            searchResults.appendChild(div);
+        });
+
+        // Add Train headers/items
+        trains.forEach(t => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            // Display both number and type/via for clarity
+            div.innerHTML = `<span>${t.train} ${t.number}</span><span class="suggestion-type">${t.info.via}</span>`;
+            div.onclick = () => {
+                searchInput.value = t.number;
+                searchResults.style.display = 'none';
+                handleSearch();
+            };
+            searchResults.appendChild(div);
+        });
+
+        searchResults.style.display = 'block';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#search-container')) {
+            searchResults.style.display = 'none';
+        }
+    });
+
     syncPillStyles();
     updateStationGridData();
     renderDataLayers();

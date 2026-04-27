@@ -73,6 +73,7 @@
                     <div class="search-box">
                         <div style="position: relative; flex: 1; display: flex;">
                             <input type="text" id="global-search" placeholder="搜尋車站或車次" autocomplete="off">
+                            <div id="search-results" class="autocomplete-list"></div>
                             <span id="clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--border-color); display: none;">&times;</span>
                         </div>
                         <button id="search-btn" class="pill">🔍</button>
@@ -98,7 +99,7 @@
                         <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
                         <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
                         <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                        <p class="last-update">版本： pre-1.1 | 最後更新： 2026/04/23</p>
+                        <p class="last-update">版本： pre-1.1 | 最後更新： 2026/04/27</p>
                         <h3>意見回應</h3>
                         <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
                             <div class="input-group">
