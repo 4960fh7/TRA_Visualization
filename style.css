@@ -14,12 +14,14 @@
 :root {
     --bg-color: #000; --sidebar-bg: #444; --text-color: #ddd;
     --border-color: #555; --panel-bg: #222; --subtext-color: #bbb;
-    --cursor-color: white; --monitor-color: #0f0; --icon-invert: 100%; --accent-color: #0ef;
+    --cursor-color: white; --monitor-color: #0f0; --icon-invert: 100%;
+    --accent-color: #0ef; --transparent-bg-color: rgba(255,255,255,0.1);
 }
 body.light-theme {
     --bg-color: #fff; --sidebar-bg: #bbb; --text-color: #222;
     --border-color: #aaa; --panel-bg: #ddd; --subtext-color: #444;
-    --cursor-color: black; --monitor-color: #080; --icon-invert: 0%; --accent-color: #067;
+    --cursor-color: black; --monitor-color: #080; --icon-invert: 0%;
+    --accent-color: #067; --transparent-bg-color: rgba(0,0,0,0.1);
 }
 body { 
     margin: 0; padding: 0; display: flex; background-color: var(--bg-color);
@@ -104,10 +106,10 @@ body {
 }
 
 .search-container {
-    width: 60%; padding: 15px 20px; border-bottom: 1px solid var(--border-color); min-height: 200px;
+    width: 45%; padding: 15px 20px; border-bottom: 1px solid var(--border-color); min-height: 200px;
     background-color: var(--bg-color); display: flex; flex-direction: column; gap: 8px; position: relative;
 }
-.search-box { width: 80%; display: flex; gap: 10px; align-items: center; }
+.search-box { width: 100%; display: flex; gap: 10px; align-items: center; }
 
 #global-search {
     flex: 1; background-color: var(--bg-color); border: 1px solid var(--border-color);
@@ -120,15 +122,15 @@ body {
 .autocomplete-list {
     position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg);
     border: 1px solid var(--border-color); border-top: none; max-height: 200px; overflow-y: auto;
-    z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; 
+    z-index: 1000; box-shadow: 0 4px 12px var(--transparent-bg-color); display: none; 
 }
 
 .suggestion-item {
-    padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--transparent-bg-color);
     display: flex; justify-content: space-between; align-items: center; font-family: inherit;
 }
 .suggestion-item:hover, .suggestion-item.active { background: rgba(0, 242, 255, 0.1); color: var(--accent-color, #00f2ff); }
-.suggestion-type { font-size: 0.75em; opacity: 0.6; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
+.suggestion-type { font-size: 0.75em; opacity: 0.6; background: var(--transparent-bg-color); padding: 2px 6px; border-radius: 4px; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -206,7 +208,7 @@ input, button, textarea, select {
 .modal-content {
     background-color: var(--sidebar-bg); color: var(--text-color);
     padding: 0; width: 90%; max-width: 85vw; border-radius: 8px; 
-    border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid var(--border-color); box-shadow: 0 4px 20px var(--transparent-bg-color);
     animation: modalFadeIn 0.3s ease-in-out; display: flex; flex-direction: column; max-height: 85dvh;
 }
 .modal-header {
@@ -262,4 +264,8 @@ input, button, textarea, select {
     .toggle-btn { right: 85vw !important; }
     #main-wrapper.sidebar-collapsed .toggle-btn { right: 0 !important; }
     #bottompanel { font-size: 1.1em; }
+    .search-container {
+        width: 40%; 
+        padding: 10px 15px; 
+    }
 }
