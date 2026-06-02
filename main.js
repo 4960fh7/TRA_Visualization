@@ -1259,8 +1259,19 @@ async function initMap() {
         // Render Trains
         trains.forEach(t => {
             const div = document.createElement('div');
+            const future_numbers = [6094, 6011, 6006, 6007, 6022, 6010, 6081, 6057, 6088, 6090, 6099, 6050, 6075];
+            const haifeng_numbers = [6629, 6630, 6637, 6638, 6652, 6655];
+            const shanlan_numbers = [6631, 6632, 6633, 6676, 6677];
+            const formosa_numbers = [1, 2];
+            const hueideng_numbers = [6611, 6615, 6616];
+            const type_num = future_numbers.includes(t.number) ? `鳴日號 ${t.number}` 
+            : haifeng_numbers.includes(t.number) ? `海風號 ${t.number}` 
+            : shanlan_numbers.includes(t.number) ? `山嵐號 ${t.number}` 
+            : formosa_numbers.includes(t.number) ? `環島之星 ${t.number}` 
+            : hueideng_numbers.includes(t.number) ? `慧燈專車 ${t.number}` 
+            : `${t.train} ${t.number}`;
             div.className = 'suggestion-item';
-            div.innerHTML = `<span style="color: ${colorPalette[t.train]};">${t.train} ${t.number}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
+            div.innerHTML = `<span style="color: ${colorPalette[t.train]};">${type_num}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
             div.onclick = () => {
                 searchInput.value = t.number;
                 searchResults.style.display = 'none';
