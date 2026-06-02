@@ -43,12 +43,12 @@ dateSelector.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padS
 today.setDate(today.getDate() - 1);
 const yesterday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-function getSelectedDateFilename() { return realtime ? `data/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data/${dateSelector.value.replace(/-/g, '')}.json`; }
+function getSelectedDateFilename() { return realtime ? `data_new/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data_new/${dateSelector.value.replace(/-/g, '')}.json`; }
 function getYesterdayFilename() { 
     const selectedDate = new Date(dateSelector.value + 'T00:00:00');
     selectedDate.setDate(selectedDate.getDate() - 1);
     const yesterday = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-    return realtime ? `data/${yesterday.replace(/-/g, '')}_realtime.json` : `data/${yesterday.replace(/-/g, '')}.json`;
+    return realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`;
 }
 
 // const serviceIcons = { "腳踏車設施": "🚲", "自由座": "💺", "騰雲座艙": "✨", "哺乳室": "🍼", "輪椅座": "♿", "訂便當服務": "🍱", "桌型座": "🪑", "跨日列車": "🌙" };
@@ -170,9 +170,9 @@ async function initMap() {
         viewMonitor: document.getElementById('view-monitor')
     };
 
-    const response = await fetch(realtime ? `data/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data/${dateSelector.value.replace(/-/g, '')}.json`);
+    const response = await fetch(realtime ? `data_new/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data_new/${dateSelector.value.replace(/-/g, '')}.json`);
     let rawData = await response.json();
-    const yresponse = await fetch(realtime ? `data/${yesterday.replace(/-/g, '')}_realtime.json` : `data/${yesterday.replace(/-/g, '')}.json`);
+    const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
     let todaySegments = [];
     let yesterdaySegments = [];
