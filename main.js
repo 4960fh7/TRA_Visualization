@@ -177,6 +177,24 @@ async function initMap() {
     let todaySegments = [];
     let yesterdaySegments = [];
 
+    function getTrainTypeName(train, number) {
+        const trainMapping = {
+            6094: '鳴日號', 6011: '鳴日號', 6006: '鳴日號', 6007: '鳴日號', 6022: '鳴日號', 
+            6010: '鳴日號', 6081: '鳴日號', 6057: '鳴日號', 6088: '鳴日號', 6090: '鳴日號', 
+            6099: '鳴日號', 6050: '鳴日號', 6075: '鳴日號',
+            5898: '藍皮解憂', 5899: '藍皮解憂',
+            6629: '海風號', 6630: '海風號', 6637: '海風號', 6638: '海風號', 6652: '海風號', 6655: '海風號',
+            6631: '山嵐號', 6632: '山嵐號', 6633: '山嵐號', 6676: '山嵐號', 6677: '山嵐號',
+            1: '環島之星', 2: '環島之星',
+            6611: '慧燈專車', 6615: '慧燈專車', 6616: '慧燈專車'
+        };
+        const numKey = Number(number);
+        if (trainMapping[numKey]) {
+            return `${trainMapping[numKey]} ${numKey}`;
+        }
+        return `${train} ${numKey}`;
+    }
+
     async function loadData() {
         const filename = getSelectedDateFilename();
         const yfilename = getYesterdayFilename();
@@ -214,7 +232,7 @@ async function initMap() {
             if (object) {
                 if (object.number !== undefined) {
                     return {
-                        text: `${object.train} ${object.number}`
+                        text: `${getTrainTypeName(object.train, object.number)}`
                     };
                 } else if (object.text === undefined) {
                     return {
@@ -339,7 +357,7 @@ async function initMap() {
                     <span class="info-segment train-id" style="color: ${colorPalette[state.selectedLine.train]}; 
                         position: sticky; left: -15px; z-index: 25; gap: 15px; background: var(--panel-bg); 
                         border-right: 1px solid var(--border-color); padding: 0 20px; height: 15vh; white-space: nowrap; ">
-                        <strong>${state.selectedLine.train} ${state.selectedLine.number}</strong>
+                        <strong>${getTrainTypeName(state.selectedLine.train, state.selectedLine.number)}</strong>
                     </span>
                     <span style="display: flex; align-items: center;">
                         <span class="info-segment via-label" style="color: ${viaColor}">${viaText}</span>
@@ -373,14 +391,14 @@ async function initMap() {
             <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                 style="cursor: pointer; transition: opacity 0.2s;"
                 onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
-                <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${t.type} ${t.number}</span>
+                <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${getTrainTypeName(t.type, t.number)}</span>
                 <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
             </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
             const ccwtext = nextTrains.length > 0 ? ccwTrains.map(t => `
             <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                 style="cursor: pointer; transition: opacity 0.2s;"
                 onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
-                <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${t.type} ${t.number}</span>
+                <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${getTrainTypeName(t.type, t.number)}</span>
                 <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
             </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
             let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
@@ -1259,19 +1277,8 @@ async function initMap() {
         // Render Trains
         trains.forEach(t => {
             const div = document.createElement('div');
-            const future_numbers = [6094, 6011, 6006, 6007, 6022, 6010, 6081, 6057, 6088, 6090, 6099, 6050, 6075];
-            const haifeng_numbers = [6629, 6630, 6637, 6638, 6652, 6655];
-            const shanlan_numbers = [6631, 6632, 6633, 6676, 6677];
-            const formosa_numbers = [1, 2];
-            const hueideng_numbers = [6611, 6615, 6616];
-            const type_num = future_numbers.includes(t.number) ? `鳴日號 ${t.number}` 
-            : haifeng_numbers.includes(t.number) ? `海風號 ${t.number}` 
-            : shanlan_numbers.includes(t.number) ? `山嵐號 ${t.number}` 
-            : formosa_numbers.includes(t.number) ? `環島之星 ${t.number}` 
-            : hueideng_numbers.includes(t.number) ? `慧燈專車 ${t.number}` 
-            : `${t.train} ${t.number}`;
             div.className = 'suggestion-item';
-            div.innerHTML = `<span style="color: ${colorPalette[t.train]};">${type_num}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
+            div.innerHTML = `<span style="color: ${colorPalette[t.train]};">${getTrainTypeName(t.train, t.number)}</span><span class="suggestion-type">${t.info.start.slice(6)} -> ${t.info.end.slice(6)}</span>`;
             div.onclick = () => {
                 searchInput.value = t.number;
                 searchResults.style.display = 'none';
