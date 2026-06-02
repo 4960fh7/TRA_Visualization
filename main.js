@@ -409,7 +409,7 @@ async function initMap() {
     function updateStationGridData() {
         Object.keys(gridData).forEach(key => Array.isArray(gridData[key]) ? gridData[key] = [] : null);
         Object.entries(state.stationDistances).forEach(([name, yValue]) => {
-            if (state.stationList.has(name)) {
+            if (state.stationList.has(name) && name !== "臺北_環島") {
                 for (let x = 120; x <= 1560; x += 120) {
                     const entry = { text: name, position: [x * 3, yValue], y: yValue };
                     if ((x-120) % 480 === 0) {
