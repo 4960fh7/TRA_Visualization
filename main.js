@@ -385,6 +385,10 @@ async function initMap() {
             assignBranchCoords(so.branch, newDistances[junc], '');
         });
 
+        let totalNormalShift = shiftOffsets.reduce((sum, so) => sum + so.shift, 0);
+        currentPeriod = basePeriod + totalNormalShift;
+        newDistances['八堵_top'] = currentPeriod;
+
         if (state.activeBranches.has('keelung')) {
             const config = branchConfigs['keelung'];
             const gap = config.gap;
@@ -452,9 +456,17 @@ async function initMap() {
                         const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
                         const junc = isNested ? config.parentJunction : config.junction;
                         const junc_d = allStationDistances[junc];
-                        const branchStations = getBranchAndChildrenExclusiveStations(branch);
-                        const isD1Branch = branchStations.includes(p1.x);
-                        const isD2Branch = branchStations.includes(p2.x);
+                        
+                        let physicalStations;
+                        if (isNested) {
+                            let idx = config.stations.indexOf(junc);
+                            physicalStations = config.stations.slice(0, idx);
+                        } else {
+                            physicalStations = config.stations.slice(0, -1);
+                        }
+                        
+                        const isD1Branch = physicalStations.includes(p1.x);
+                        const isD2Branch = physicalStations.includes(p2.x);
 
                         if ((isD1Branch && !isD2Branch) || (!isD1Branch && isD2Branch)) {
                             let dist1, dist2;
@@ -586,21 +598,26 @@ async function initMap() {
 
         normalBranches.forEach(branch => {
             const config = branchConfigs[branch];
-            const junc = config.junction;
-            const j_d = allStationDistances[junc];
-            const j_visual = state.stationDistances[junc + '_bottom'] || j_d;
-            const branchStations = config.stations.slice(0, -1);
+            const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
+            const junc = isNested ? config.parentJunction : config.junction;
+            const branchAndChildExclusive = getBranchAndChildrenExclusiveStations(branch);
             
             let currentSegments = [];
             finalSegments.forEach(seg => {
-                let hasBranch = seg.some(p => branchStations.includes(p.x.split('_')[0]));
+                let hasBranch = seg.some(p => branchAndChildExclusive.includes(p.x.split('_')[0]));
                 let comesFromSouth = false;
+                
                 if (hasBranch) {
-                    for (let p of seg) {
-                        let base = p.x.split('_')[0];
-                        if (!branchStations.includes(base) && base !== junc) {
-                            if (getVisualDist(p.x) > j_visual) {
-                                comesFromSouth = true;
+                    let branchJuncIndex = seg.findIndex(p => p.x.split('_')[0] === junc);
+                    if (branchJuncIndex !== -1) {
+                        let current_j_visual = getVisualDist(seg[branchJuncIndex].x);
+                        for (let i = 0; i < seg.length; i++) {
+                            let base = seg[i].x.split('_')[0];
+                            if (!branchAndChildExclusive.includes(base) && base !== junc) {
+                                if (getVisualDist(seg[i].x) > current_j_visual) {
+                                    comesFromSouth = true;
+                                }
+                                break;
                             }
                         }
                     }
@@ -612,12 +629,21 @@ async function initMap() {
                     for (let i = 0; i < seg.length; i++) {
                         let p = seg[i];
                         let base = p.x.split('_')[0];
-                        if (branchStations.includes(base)) {
-                            newSeg.push({ ...p, x: base + (comesFromSouth ? '_top' : '_bottom') });
-                            duplicateSeg.push({ ...p, x: base + (comesFromSouth ? '_bottom' : '_top') });
+                        
+                        let isInsideBranch = false;
+                        if (isNested) {
+                            let idx = config.stations.indexOf(junc);
+                            isInsideBranch = config.stations.slice(0, idx).includes(base);
+                        } else {
+                            isInsideBranch = config.stations.slice(0, -1).includes(base);
+                        }
+                        
+                        if (isInsideBranch) {
+                            newSeg.push({ ...p, x: p.x + (comesFromSouth ? '_top' : '_bottom') });
+                            duplicateSeg.push({ ...p, x: p.x + (comesFromSouth ? '_bottom' : '_top') });
                         } else if (base === junc) {
-                            newSeg.push({ ...p, x: junc + (comesFromSouth ? '_top' : '_bottom') });
-                            duplicateSeg.push({ ...p, x: junc + (comesFromSouth ? '_bottom' : '_top') });
+                            newSeg.push({ ...p, x: p.x + (comesFromSouth ? '_top' : '_bottom') });
+                            duplicateSeg.push({ ...p, x: p.x + (comesFromSouth ? '_bottom' : '_top') });
                         } else {
                             newSeg.push(p);
                         }
@@ -634,26 +660,28 @@ async function initMap() {
                         let firstJunc = juncIndices[0];
                         let lastJunc = juncIndices[juncIndices.length - 1];
                         
-                        let isPrevSouth = firstJunc > 0 ? getVisualDist(seg[firstJunc - 1].x) > j_visual : false;
-                        let isNextSouth = lastJunc < seg.length - 1 ? getVisualDist(seg[lastJunc + 1].x) > j_visual : false;
+                        let current_j_visual = getVisualDist(seg[firstJunc].x);
+                        let isPrevSouth = firstJunc > 0 ? getVisualDist(seg[firstJunc - 1].x) > current_j_visual : false;
+                        let last_j_visual = getVisualDist(seg[lastJunc].x);
+                        let isNextSouth = lastJunc < seg.length - 1 ? getVisualDist(seg[lastJunc + 1].x) > last_j_visual : false;
                         
                         if (firstJunc === 0) isPrevSouth = !isNextSouth;
                         if (lastJunc === seg.length - 1) isNextSouth = !isPrevSouth;
                         
                         if (isPrevSouth !== isNextSouth) {
                             let seg1 = seg.slice(0, lastJunc + 1).map(p => {
-                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isPrevSouth ? '_top' : '_bottom') };
+                                if (p.x.split('_')[0] === junc) return { ...p, x: p.x + (isPrevSouth ? '_top' : '_bottom') };
                                 return p;
                             });
                             let seg2 = seg.slice(firstJunc).map(p => {
-                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isNextSouth ? '_top' : '_bottom') };
+                                if (p.x.split('_')[0] === junc) return { ...p, x: p.x + (isNextSouth ? '_top' : '_bottom') };
                                 return p;
                             });
                             currentSegments.push(seg1);
                             currentSegments.push(seg2);
                         } else {
                             let newSeg = seg.map(p => {
-                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isPrevSouth ? '_top' : '_bottom') };
+                                if (p.x.split('_')[0] === junc) return { ...p, x: p.x + (isPrevSouth ? '_top' : '_bottom') };
                                 return p;
                             });
                             currentSegments.push(newSeg);
