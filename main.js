@@ -395,6 +395,12 @@ async function initMap() {
                         const isD2Branch = physicalStations.includes(p2.x);
 
                         if ((isD1Branch && !isD2Branch) || (!isD1Branch && isD2Branch)) {
+                            const baseList = isMountain ? mountStationList : seaStationList;
+                            const isP1Visible = baseList.has(p1.x) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(p1.x));
+                            const isP2Visible = baseList.has(p2.x) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(p2.x));
+                            
+                            if (!isP1Visible || !isP2Visible) return;
+                            
                             let dist1, dist2;
                             if (branch === 'keelung') {
                                 if (isD1Branch && d2 > 6000) {
