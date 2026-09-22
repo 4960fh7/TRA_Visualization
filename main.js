@@ -857,6 +857,7 @@ async function initMap() {
         const width = container ? container.clientWidth : window.innerWidth;
         const scale = Math.pow(2, currentVS.zoom);
         const leftX = currentVS.target[0] - (width / 2) / scale;
+        const rightX = currentVS.target[0] + (width / 2) / scale;
 
         const yOffsets = [-state.period, 0, state.period];
 
@@ -1166,18 +1167,34 @@ async function initMap() {
                 background: true, getBackgroundColor: isLight ? [255, 255, 255, 180] : [0, 0, 0, 180]
             }),
             new deck.TextLayer({
-                id: `station-labels-highlight-${offset}`,
+                id: `station-labels-highlight-left-${offset}`,
                 data: activeLabelData.filter(d => d.text === state.focusedStation),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
                 getPosition: d => [leftX, d.y + offset],
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
                 getSize: notime ? 0.0001 : 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 characterSet: 'auto',
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [10, -10],
-                background: true, getBackgroundColor: isLight ? [235, 235, 235, 180] : [20, 20, 20, 180],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
                 updateTriggers: { data: [state.currentZoom, state.focusedStation], getPosition: [leftX] }
+            }),
+            new deck.TextLayer({
+                id: `station-labels-highlight-right-${offset}`,
+                data: activeLabelData.filter(d => d.text === state.focusedStation),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
+                getPosition: d => [rightX, d.y + offset],
+                getText: d => d.text,
+                fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
+                getSize: notime ? 0.0001 : 16, sizeMaxPixels: 16, sizeMinPixels: 0,
+                getColor: isLight ? [189, 146, 8] : [232, 252, 13],
+                characterSet: 'auto',
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'end', pixelOffset: [-10, -10],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
+                updateTriggers: { data: [state.currentZoom, state.focusedStation], getPosition: [rightX] }
             }),
             new deck.PathLayer({
                 id: `station-layer-highlight-${offset}`,
@@ -1218,6 +1235,8 @@ async function initMap() {
         const scale = Math.pow(2, currentVS.zoom);
         const leftX = currentVS.target[0] - (width / 2) / scale;
         const topY = currentVS.target[1] - (height / 2) / scale;
+        const rightX = currentVS.target[0] + (width / 2) / scale;
+        const bottomY = currentVS.target[1] + (height / 2) / scale;
 
         const yOffsets = [-state.period, 0, state.period];
 
@@ -1232,7 +1251,7 @@ async function initMap() {
                 getWidth: d => d[0].split('_')[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
             }),
             new deck.TextLayer({
-                id: `station-labels-${offset}`,
+                id: `station-labels-left-${offset}`,
                 data: notime ? gridData.leftonlyLabelData :
                     state.currentZoom > 0.8 ? gridData.denseLabelData :
                         state.currentZoom > -0.4 ? gridData.normalLabelData :
@@ -1242,11 +1261,32 @@ async function initMap() {
                 getPosition: d => [leftX, d.y + offset],
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
                 getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [60, 60, 60] : [210, 210, 210],
                 characterSet: 'auto',
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [10, -10],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
                 updateTriggers: { getPosition: [leftX] }
+            }),
+            new deck.TextLayer({
+                id: `station-labels-right-${offset}`,
+                data: notime ? gridData.leftonlyLabelData :
+                    state.currentZoom > 0.8 ? gridData.denseLabelData :
+                        state.currentZoom > -0.4 ? gridData.normalLabelData :
+                            state.currentZoom > -1.8 ? gridData.mainLabelData : [],
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
+                getPosition: d => [rightX, d.y + offset],
+                getText: d => d.text,
+                fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
+                getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
+                getColor: isLight ? [60, 60, 60] : [210, 210, 210],
+                characterSet: 'auto',
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'end', pixelOffset: [-10, -10],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
+                updateTriggers: { getPosition: [rightX] }
             })
         ]);
 
@@ -1260,15 +1300,30 @@ async function initMap() {
                 getPath: d => d.path, getColor: isLight ? [180, 180, 180] : [80, 80, 80], getWidth: 2, widthMaxPixels: 3, widthMinPixels: 0
             }),
             new deck.TextLayer({
-                id: 'vertical-labels',
+                id: 'vertical-labels-top',
                 data: state.currentZoom > 0.8 ? gridData.denseLabels : state.currentZoom > -0.4 ? gridData.normalLabels : state.currentZoom > -1.6 ? gridData.sparseLabels : state.currentZoom > -2 ? gridData.simpleLabels : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [d.x, topY], getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
                 getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                 getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 10],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
                 updateTriggers: { getPosition: [topY] }
+            }),
+            new deck.TextLayer({
+                id: 'vertical-labels-bottom',
+                data: state.currentZoom > 0.8 ? gridData.denseLabels : state.currentZoom > -0.4 ? gridData.normalLabels : state.currentZoom > -1.6 ? gridData.sparseLabels : state.currentZoom > -2 ? gridData.simpleLabels : [],
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                getPosition: d => [d.x, bottomY], getText: d => d.text,
+                fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
+                fontWeight: 'bold',
+                getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
+                getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [5, -10],
+                background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
+                updateTriggers: { getPosition: [bottomY] }
             })
         ];
 
