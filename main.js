@@ -327,15 +327,61 @@ async function initMap() {
                 const d1 = allStationDistances[p1.x];
                 const d2 = allStationDistances[p2.x];
                 if (d1 !== undefined && d2 !== undefined) {
+                    let insertedJunctions = [];
                     let crossesEastWest = (d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000);
                     if (crossesEastWest) {
                         let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
                         let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
                         let ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
                         if (p1.x !== '八堵' && p2.x !== '八堵') {
-                            interpolated.push({ x: '八堵', y: p1.y + ratio * (p2.y - p1.y), isSeam: true });
+                            insertedJunctions.push({ x: '八堵', y: p1.y + ratio * (p2.y - p1.y), isSeam: true });
                         }
                     }
+
+                    state.activeBranches.forEach(branch => {
+                        const config = branchConfigs[branch];
+                        const junc_d = allStationDistances[config.junction];
+                        const branchStations = config.stations.slice(0, -1);
+                        const isD1Branch = branchStations.includes(p1.x);
+                        const isD2Branch = branchStations.includes(p2.x);
+
+                        if ((isD1Branch && !isD2Branch) || (!isD1Branch && isD2Branch)) {
+                            let dist1, dist2;
+                            if (branch === 'keelung') {
+                                if (isD1Branch && d2 > 6000) {
+                                    dist1 = Math.abs(d1);
+                                    dist2 = Math.abs(d2 - 8759);
+                                } else if (d1 > 6000 && isD2Branch) {
+                                    dist1 = Math.abs(d1 - 8759);
+                                    dist2 = Math.abs(d2);
+                                } else {
+                                    dist1 = Math.abs(d1);
+                                    dist2 = Math.abs(d2);
+                                }
+                            } else {
+                                dist1 = Math.abs(d1 - junc_d);
+                                dist2 = Math.abs(d2 - junc_d);
+                            }
+                            let ratio = dist1 / (dist1 + dist2);
+                            if (!(branch === 'keelung' && crossesEastWest)) {
+                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
+                            }
+                        } else if (!isD1Branch && !isD2Branch) {
+                            if ((d1 < junc_d && d2 > junc_d) || (d1 > junc_d && d2 < junc_d)) {
+                                let dist1 = Math.abs(d1 - junc_d);
+                                let dist2 = Math.abs(d2 - junc_d);
+                                let ratio = dist1 / (dist1 + dist2);
+                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
+                            }
+                        }
+                    });
+
+                    insertedJunctions.sort((a, b) => a.y - b.y);
+                    insertedJunctions.forEach(j => {
+                        if (p1.x !== j.x && p2.x !== j.x) {
+                            interpolated.push({ x: j.x, y: j.y });
+                        }
+                    });
                 }
             }
         }
