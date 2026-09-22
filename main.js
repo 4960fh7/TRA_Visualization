@@ -600,11 +600,18 @@ async function initMap() {
             const config = branchConfigs[branch];
             const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
             const junc = isNested ? config.parentJunction : config.junction;
-            const branchAndChildExclusive = getBranchAndChildrenExclusiveStations(branch);
+            
+            let physicalStations;
+            if (isNested) {
+                let idx = config.stations.indexOf(junc);
+                physicalStations = config.stations.slice(0, idx);
+            } else {
+                physicalStations = config.stations.slice(0, -1);
+            }
             
             let currentSegments = [];
             finalSegments.forEach(seg => {
-                let hasBranch = seg.some(p => branchAndChildExclusive.includes(p.x.split('_')[0]));
+                let hasBranch = seg.some(p => physicalStations.includes(p.x.split('_')[0]));
                 let comesFromSouth = false;
                 
                 if (hasBranch) {
@@ -613,7 +620,7 @@ async function initMap() {
                         let current_j_visual = getVisualDist(seg[branchJuncIndex].x);
                         for (let i = 0; i < seg.length; i++) {
                             let base = seg[i].x.split('_')[0];
-                            if (!branchAndChildExclusive.includes(base) && base !== junc) {
+                            if (!physicalStations.includes(base) && base !== junc) {
                                 if (getVisualDist(seg[i].x) > current_j_visual) {
                                     comesFromSouth = true;
                                 }
