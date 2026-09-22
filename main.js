@@ -293,6 +293,14 @@ async function initMap() {
             newDistances[s] = s_d + cumulativeOffset;
         });
 
+        let getVisualDist = (name) => {
+            let d = state.stationDistances[name];
+            if (d !== undefined) return d;
+            d = state.stationDistances[name + '_bottom'];
+            if (d !== undefined) return d;
+            return allStationDistances[name.split('_')[0]] || 0;
+        };
+
         function assignBranchCoords(branch, startY, suffixPrefix) {
             const config = branchConfigs[branch];
             const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
@@ -326,7 +334,14 @@ async function initMap() {
                 
                 children.forEach(child => {
                     if (branchConfigs[child].parentJunction === s) {
+                        newList.delete(finalName);
+                        newDistances[finalName + '_bottom'] = currentY;
+                        newList.add(finalName + '_bottom');
+                        
                         currentY = assignBranchCoords(child, currentY, suffixPrefix + '_bottom');
+                        
+                        newDistances[finalName + '_top'] = currentY;
+                        newList.add(finalName + '_top');
                     }
                 });
             });
@@ -340,7 +355,14 @@ async function initMap() {
                 
                 children.forEach(child => {
                     if (branchConfigs[child].parentJunction === s) {
+                        newList.delete(finalName);
+                        newDistances[finalName + '_bottom'] = currentY;
+                        newList.add(finalName + '_bottom');
+                        
                         currentY = assignBranchCoords(child, currentY, suffixPrefix + '_top');
+                        
+                        newDistances[finalName + '_top'] = currentY;
+                        newList.add(finalName + '_top');
                     }
                 });
                 
@@ -354,7 +376,13 @@ async function initMap() {
         }
 
         shiftOffsets.forEach(so => {
-            assignBranchCoords(so.branch, newDistances[so.junction], '');
+            let junc = so.junction;
+            newList.add(junc + '_bottom');
+            newList.add(junc + '_top');
+            newDistances[junc + '_bottom'] = newDistances[junc];
+            newDistances[junc + '_top'] = newDistances[junc] + so.shift;
+            
+            assignBranchCoords(so.branch, newDistances[junc], '');
         });
 
         if (state.activeBranches.has('keelung')) {
@@ -550,6 +578,8 @@ async function initMap() {
 
         let getVisualDist = (name) => {
             let d = state.stationDistances[name];
+            if (d !== undefined) return d;
+            d = state.stationDistances[name + '_bottom'];
             if (d !== undefined) return d;
             return allStationDistances[name.split('_')[0]] || 0;
         };
