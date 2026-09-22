@@ -470,21 +470,20 @@ async function initMap() {
         },
 
         onClick: (info) => {
-            state.selectedLine = null;
-            state.showSchedule = false;
-            state.focusedStation = null;
             if (info.object && (info.layer.id.includes('main-path-layer') || info.layer.id.includes('json-layer'))) {
-                const trainNumber = info.object.number;
-                state.selectedLine = rawData.find(t => t.number === trainNumber) || yrawData.find(t => t.number === trainNumber);
-                state.showSchedule = true;
+                window.selectTrain(info.object.number);
             } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                 const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                state.focusedStation = stationName.split('_')[0];
+                window.selectStation(stationName.split('_')[0]);
+            } else {
+                state.selectedLine = null;
+                state.showSchedule = false;
+                state.focusedStation = null;
+                updateBottomPanel();
+                renderDataLayers();
+                renderBaseLayers();
+                updateInfoBox();
             }
-            updateBottomPanel();
-            renderDataLayers();
-            renderBaseLayers();
-            updateInfoBox();
         }
     });
 
@@ -580,6 +579,7 @@ async function initMap() {
         }
         else if (state.focusedStation) {
             const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
+            const seenTrainNumbers = new Set();
             const nextTrains = allAvailableTrains
                 .map(train => {
                     const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
@@ -592,7 +592,13 @@ async function initMap() {
                         isClockwise: (allStationDistances[train.info.start.slice(6)] > allStationDistances[train.info.end.slice(6)]) ^ (Math.max(...stopDistances) - Math.min(...stopDistances) > 6000)
                     } : null;
                 })
-                .filter(t => t !== null && t.time >= state.currentTimeMinutes)
+                .filter(t => {
+                    if (t !== null && t.time >= state.currentTimeMinutes && !seenTrainNumbers.has(t.number)) {
+                        seenTrainNumbers.add(t.number);
+                        return true;
+                    }
+                    return false;
+                })
                 .sort((a, b) => a.time - b.time);
             const cwTrains = nextTrains.filter(t => t.isClockwise);
             const ccwTrains = nextTrains.filter(t => !t.isClockwise);
@@ -1153,8 +1159,7 @@ async function initMap() {
                 getPosition: d => [(d.renderX + 1.5) * 3, d.yCoord + offset, 0],
                 getText: d => {
                     const format = (val) => `${Math.floor(val / 60).toString().padStart(2, '0')}${(val % 60).toString().padStart(2, '0')}`;
-                    if (d.arr === d.dep) return `${format(d.arr)} ${d.station}`;
-                    return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
+                    return `${format(d.arr)}-${format(d.dep)} ${d.station}`;
                 },
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 getSize: 13, getColor: isLight ? [0, 0, 0] : [255, 255, 255], characterSet: 'auto',
@@ -1295,9 +1300,15 @@ async function initMap() {
         const allTrainsSource = [...rawData, ...yrawData];
         const found = allTrainsSource.find(t => t.number == trainNumber);
         if (found) {
+            if (found.data.some(p => p.x === '基隆' || p.x === '三坑')) {
+                const keelungPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === 'keelung');
+                if (keelungPill && !keelungPill.classList.contains('active')) {
+                    keelungPill.click();
+                }
+            }
+
             const selected = {
-                ...found,
-                data: found.data.filter(point => state.stationList.has(point.x))
+                ...found
             };
 
             if (selected.data.length < 2) {
@@ -1366,24 +1377,37 @@ async function initMap() {
 
     window.selectStation = function (stationName) {
         if (!stationName) return;
+        
         const switchLine = (type) => {
             const targetPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === type);
             if (targetPill) targetPill.click();
         };
 
-        const targetName = state.stationDistances[stationName] !== undefined ? stationName : 
-                           state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+        const checkTarget = () => state.stationDistances[stationName] !== undefined ? stationName : 
+                                  state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+
+        let targetName = checkTarget();
 
         if (targetName === null) {
-            if (mountStationDistances[stationName] !== undefined || mountStationDistances[stationName + '_top'] !== undefined) {
-                switchLine('mountain');
-            } else if (seaStationDistances[stationName] !== undefined || seaStationDistances[stationName + '_top'] !== undefined) {
-                switchLine('sea');
+            if (['基隆', '三坑'].includes(stationName)) {
+                const keelungPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === 'keelung');
+                if (keelungPill && !keelungPill.classList.contains('active')) {
+                    keelungPill.click();
+                }
+            }
+
+            targetName = checkTarget();
+
+            if (targetName === null) {
+                if (mountStationDistances[stationName] !== undefined || mountStationDistances[stationName + '_top'] !== undefined) {
+                    switchLine('mountain');
+                } else if (seaStationDistances[stationName] !== undefined || seaStationDistances[stationName + '_top'] !== undefined) {
+                    switchLine('sea');
+                }
             }
         }
         
-        const finalTargetName = state.stationDistances[stationName] !== undefined ? stationName : 
-                                state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+        const finalTargetName = checkTarget();
 
         if (finalTargetName !== null) {
             state.selectedLine = null;
@@ -1423,7 +1447,7 @@ async function initMap() {
         if (/\d/.test(query)) { query = query.replace(/^[^\d]+/, '').trim(); }
         searchError.style.display = 'none';
 
-        if (mountStationDistances[query] !== undefined || seaStationDistances[query] !== undefined) {
+        if (allStationDistances[query] !== undefined) {
             window.selectStation(query);
             searchInput.value = '';
             return;
@@ -1465,8 +1489,7 @@ async function initMap() {
     });
 
     const allStations = Array.from(new Set([
-        ...Object.keys(mountStationDistances || {}),
-        ...Object.keys(seaStationDistances || {}),
+        ...Object.keys(allStationDistances || {}),
         ...Object.keys(mainStationDict || {})
     ]));
 
