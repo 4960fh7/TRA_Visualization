@@ -41,7 +41,7 @@ let gridData = {
     minDistance: 0, maxDistance: 0
 };
 let layers = {
-    baseLayers: [], offsetLayers: [], mainPlotLayers: [], currentTimeLayers: [], scatterLayers: [], selectionLayers: []
+    baseLayers: [], offsetLayers: [], mainPlotLayers: [], currentTimeLayers: [], scatterLayers: [], selectionLayers: [], axisLabels: [], axisLabelsHighlight: []
 };
 const searchInput = document.getElementById('global-search');
 const searchBtn = document.getElementById('search-btn');
@@ -85,6 +85,7 @@ toggleBtn.addEventListener('click', () => {
     toggleBtn.style.right = isCollapsed ? '0px' : '25vw';
     toggleIcon.textContent = isCollapsed ? '❮' : '❯';
     wrapper.classList.toggle('sidebar-collapsed');
+    if (window.triggerRender) window.triggerRender();
 });
 
 const themeToggle = document.getElementById('theme-toggle');
@@ -851,13 +852,21 @@ async function initMap() {
         }
     });
 
+    window.triggerRender = function() {
+        renderDataLayers();
+        renderBaseLayers();
+    };
+
     function renderDataLayers() {
         const currentVS = deckInstance.props.viewState || state.viewState || { target: [state.currentTimeMinutes * 3 + 180, state.initialY, 0], zoom: 0 };
         const container = document.getElementById('container');
         const width = container ? container.clientWidth : window.innerWidth;
         const scale = Math.pow(2, currentVS.zoom);
+        const isCollapsed = document.getElementById('sidebar').classList.contains('collapsed');
+        const visibleRightOffset = isCollapsed ? width / 2 : width * 0.25;
+
         const leftX = currentVS.target[0] - (width / 2) / scale;
-        const rightX = currentVS.target[0] + (width / 2) / scale;
+        const rightX = currentVS.target[0] + visibleRightOffset / scale;
 
         const yOffsets = [-state.period, 0, state.period];
 
@@ -1166,6 +1175,18 @@ async function initMap() {
                 getTextAnchor: 'start', getAlignmentBaseline: 'center', pixelOffset: [15, 0],
                 background: true, getBackgroundColor: isLight ? [255, 255, 255, 180] : [0, 0, 0, 180]
             }),
+            new deck.PathLayer({
+                id: `station-layer-highlight-${offset}`,
+                data: Object.entries(state.stationDistances).filter(([name]) => name === state.focusedStation),
+                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
+                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
+                getColor: isLight ? [189, 146, 8] : [232, 252, 13],
+                getWidth: 3, widthMaxPixels: 2, widthMinPixels: 0
+            })
+        ]);
+
+        layers.axisLabelsHighlight = yOffsets.flatMap(offset => [
             new deck.TextLayer({
                 id: `station-labels-highlight-left-${offset}`,
                 data: activeLabelData.filter(d => d.text === state.focusedStation),
@@ -1195,15 +1216,6 @@ async function initMap() {
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'end', pixelOffset: [-10, -10],
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
                 updateTriggers: { data: [state.currentZoom, state.focusedStation], getPosition: [rightX] }
-            }),
-            new deck.PathLayer({
-                id: `station-layer-highlight-${offset}`,
-                data: Object.entries(state.stationDistances).filter(([name]) => name === state.focusedStation),
-                coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
-                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
-                getColor: isLight ? [189, 146, 8] : [232, 252, 13],
-                getWidth: 3, widthMaxPixels: 2, widthMinPixels: 0
             })
         ]);
 
@@ -1224,7 +1236,7 @@ async function initMap() {
             })
         ]);
 
-        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers] });
+        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers, ...layers.axisLabels, ...layers.axisLabelsHighlight] });
     }
 
     function renderBaseLayers() {
@@ -1233,9 +1245,12 @@ async function initMap() {
         const width = container ? container.clientWidth : window.innerWidth;
         const height = container ? container.clientHeight : window.innerHeight;
         const scale = Math.pow(2, currentVS.zoom);
+        const isCollapsed = document.getElementById('sidebar').classList.contains('collapsed');
+        const visibleRightOffset = isCollapsed ? width / 2 : width * 0.25;
+
         const leftX = currentVS.target[0] - (width / 2) / scale;
         const topY = currentVS.target[1] - (height / 2) / scale;
-        const rightX = currentVS.target[0] + (width / 2) / scale;
+        const rightX = currentVS.target[0] + visibleRightOffset / scale;
         const bottomY = currentVS.target[1] + (height / 2) / scale;
 
         const yOffsets = [-state.period, 0, state.period];
@@ -1249,7 +1264,10 @@ async function initMap() {
                 getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
                 getColor: d => d[0].split('_')[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
                 getWidth: d => d[0].split('_')[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
-            }),
+            })
+        ]);
+
+        layers.axisLabels = yOffsets.flatMap(offset => [
             new deck.TextLayer({
                 id: `station-labels-left-${offset}`,
                 data: notime ? gridData.leftonlyLabelData :
@@ -1298,7 +1316,10 @@ async function initMap() {
             new deck.PathLayer({
                 id: 'thick-time-lines', data: gridData.thickLines, coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPath: d => d.path, getColor: isLight ? [180, 180, 180] : [80, 80, 80], getWidth: 2, widthMaxPixels: 3, widthMinPixels: 0
-            }),
+            })
+        ];
+
+        layers.axisLabels.push(
             new deck.TextLayer({
                 id: 'vertical-labels-top',
                 data: state.currentZoom > 0.8 ? gridData.denseLabels : state.currentZoom > -0.4 ? gridData.normalLabels : state.currentZoom > -1.6 ? gridData.sparseLabels : state.currentZoom > -2 ? gridData.simpleLabels : [],
@@ -1325,7 +1346,7 @@ async function initMap() {
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
                 updateTriggers: { getPosition: [bottomY] }
             })
-        ];
+        );
 
         layers.currentTimeLayers = [
             new deck.PathLayer({
@@ -1336,7 +1357,7 @@ async function initMap() {
             })
         ];
 
-        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers] });
+        deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers, ...layers.axisLabels, ...layers.axisLabelsHighlight] });
     }
 
     function updateMapTheme(isLight) {
