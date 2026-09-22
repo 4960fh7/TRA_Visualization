@@ -36,12 +36,16 @@ const branchConfigs = {
     'liujia': {
         name: '六家線',
         junction: '北新竹',
+        parentBranch: 'neiwan',
+        parentJunction: '竹中',
+        exclusiveStations: ['六家'],
         stations: ['六家', '竹中', '新莊', '千甲', '北新竹'],
         gap: 40
     },
     'neiwan': {
         name: '內灣線',
         junction: '北新竹',
+        exclusiveStations: ['內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員'],
         stations: ['內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員', '竹中', '新莊', '千甲', '北新竹'],
         gap: 40
     },
@@ -239,56 +243,118 @@ async function initMap() {
 
         let activeBranchesArr = Array.from(state.activeBranches);
         let normalBranches = activeBranchesArr.filter(b => b !== 'keelung').sort((a, b) => {
+            let depthA = branchConfigs[a].parentBranch ? 1 : 0;
+            let depthB = branchConfigs[b].parentBranch ? 1 : 0;
+            if (depthA !== depthB) return depthA - depthB;
             return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
         });
+
+        let branchShifts = {};
+        function calculateBranchShift(branch) {
+            if (branchShifts[branch]) return branchShifts[branch];
+            const config = branchConfigs[branch];
+            const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
+            const junc = isNested ? config.parentJunction : config.junction;
+            
+            let len = Math.abs(allStationDistances[junc] - allStationDistances[config.stations[0]]);
+            let shift = config.gap + 2 * len;
+            
+            state.activeBranches.forEach(child => {
+                if (branchConfigs[child].parentBranch === branch) {
+                    shift += 2 * calculateBranchShift(child);
+                }
+            });
+            branchShifts[branch] = shift;
+            return shift;
+        }
 
         let shiftOffsets = [];
         normalBranches.forEach(branch => {
             const config = branchConfigs[branch];
-            const junc_d = allStationDistances[config.junction];
-            const end_d = allStationDistances[config.stations[0]];
-            const branchLen = Math.abs(junc_d - end_d);
-            const totalShift = config.gap + 2 * branchLen;
-            shiftOffsets.push({ junc_d: junc_d, shift: totalShift, branch: branch, branchLen: branchLen, gap: config.gap, end_d: end_d });
-        });
-
-        const getShiftedDist = (orig_d) => {
-            let shift = 0;
-            shiftOffsets.forEach(so => {
-                if (orig_d > so.junc_d) shift += so.shift;
+            if (config.parentBranch && state.activeBranches.has(config.parentBranch)) return;
+            shiftOffsets.push({
+                branch,
+                junction: config.junction,
+                junc_d: allStationDistances[config.junction],
+                shift: calculateBranchShift(branch)
             });
-            return orig_d + shift;
-        };
-
-        baseList.forEach(s => {
-            if (s === '八堵_top') return;
-            newDistances[s] = getShiftedDist(baseDistances[s]);
         });
-        
-        let totalNormalShift = shiftOffsets.reduce((sum, so) => sum + so.shift, 0);
-        currentPeriod += totalNormalShift;
-        newDistances['八堵_top'] = currentPeriod;
+
+        let cumulativeOffset = 0;
+        let sortedStations = Array.from(baseList).sort((a, b) => baseDistances[a] - baseDistances[b]);
+
+        let juncIndex = 0;
+        sortedStations.forEach(s => {
+            let s_d = baseDistances[s];
+            while (juncIndex < shiftOffsets.length && s_d > shiftOffsets[juncIndex].junc_d) {
+                cumulativeOffset += shiftOffsets[juncIndex].shift;
+                juncIndex++;
+            }
+            newDistances[s] = s_d + cumulativeOffset;
+        });
+
+        function assignBranchCoords(branch, startY, suffixPrefix) {
+            const config = branchConfigs[branch];
+            const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
+            const junc = isNested ? config.parentJunction : config.junction;
+            
+            let children = [];
+            state.activeBranches.forEach(child => {
+                if (branchConfigs[child].parentBranch === branch) children.push(child);
+            });
+            
+            let stations = [];
+            if (isNested) {
+                let idx = config.stations.indexOf(junc);
+                stations = config.stations.slice(0, idx).reverse();
+            } else {
+                stations = config.stations.slice(0, -1).reverse();
+            }
+            
+            let currentY = startY;
+            let prev_d = allStationDistances[junc];
+            
+            stations.forEach(s => {
+                let s_d = allStationDistances[s];
+                currentY += Math.abs(s_d - prev_d);
+                prev_d = s_d;
+                
+                let finalName = s + suffixPrefix + '_bottom';
+                newDistances[finalName] = currentY;
+                newList.add(finalName);
+                if (!suffixPrefix) newList.delete(s);
+                
+                children.forEach(child => {
+                    if (branchConfigs[child].parentJunction === s) {
+                        currentY = assignBranchCoords(child, currentY, suffixPrefix + '_bottom');
+                    }
+                });
+            });
+            
+            currentY += config.gap;
+            
+            stations.slice().reverse().forEach(s => {
+                let finalName = s + suffixPrefix + '_top';
+                newDistances[finalName] = currentY;
+                newList.add(finalName);
+                
+                children.forEach(child => {
+                    if (branchConfigs[child].parentJunction === s) {
+                        currentY = assignBranchCoords(child, currentY, suffixPrefix + '_top');
+                    }
+                });
+                
+                let s_d = allStationDistances[s];
+                let next_s = stations[stations.indexOf(s) - 1];
+                let next_d = next_s ? allStationDistances[next_s] : allStationDistances[junc];
+                currentY += Math.abs(s_d - next_d);
+            });
+            
+            return currentY;
+        }
 
         shiftOffsets.forEach(so => {
-            const config = branchConfigs[so.branch];
-            const branchStations = config.stations.slice(0, -1);
-            
-            newList.add(config.junction + '_top');
-            newList.add(config.junction + '_bottom');
-            
-            newDistances[config.junction + '_bottom'] = newDistances[config.junction];
-            newDistances[config.junction + '_top'] = newDistances[config.junction] + so.shift;
-
-            branchStations.forEach(s => {
-                newList.add(s + '_top');
-                newList.add(s + '_bottom');
-                
-                const orig_s_d = allStationDistances[s];
-                const dist_to_junc = Math.abs(so.junc_d - orig_s_d);
-                
-                newDistances[s + '_bottom'] = newDistances[config.junction] + dist_to_junc;
-                newDistances[s + '_top'] = newDistances[config.junction + '_top'] - dist_to_junc;
-            });
+            assignBranchCoords(so.branch, newDistances[so.junction], '');
         });
 
         if (state.activeBranches.has('keelung')) {
@@ -318,6 +384,21 @@ async function initMap() {
     function preprocessTrainData(trainData) {
         if (state.activeBranches.size === 0) return [trainData];
 
+        function getExclusiveStations(branch) {
+            if (branchConfigs[branch].exclusiveStations) return branchConfigs[branch].exclusiveStations;
+            return branchConfigs[branch].stations.slice(0, -1);
+        }
+
+        function getBranchAndChildrenExclusiveStations(branch) {
+            let stations = getExclusiveStations(branch);
+            state.activeBranches.forEach(child => {
+                if (branchConfigs[child].parentBranch === branch) {
+                    stations = stations.concat(getBranchAndChildrenExclusiveStations(child));
+                }
+            });
+            return stations;
+        }
+
         let interpolated = [];
         for (let i = 0; i < trainData.length; i++) {
             interpolated.push(trainData[i]);
@@ -340,8 +421,10 @@ async function initMap() {
 
                     state.activeBranches.forEach(branch => {
                         const config = branchConfigs[branch];
-                        const junc_d = allStationDistances[config.junction];
-                        const branchStations = config.stations.slice(0, -1);
+                        const isNested = config.parentBranch && state.activeBranches.has(config.parentBranch);
+                        const junc = isNested ? config.parentJunction : config.junction;
+                        const junc_d = allStationDistances[junc];
+                        const branchStations = getBranchAndChildrenExclusiveStations(branch);
                         const isD1Branch = branchStations.includes(p1.x);
                         const isD2Branch = branchStations.includes(p2.x);
 
@@ -364,7 +447,7 @@ async function initMap() {
                             }
                             let ratio = dist1 / (dist1 + dist2);
                             if (!(branch === 'keelung' && crossesEastWest)) {
-                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
+                                insertedJunctions.push({ x: junc, y: p1.y + ratio * (p2.y - p1.y) });
                             }
                         } else if (!isD1Branch && !isD2Branch) {
                             let min_d = Math.min(d1, d2);
@@ -403,7 +486,7 @@ async function initMap() {
                             
                             if (crossed) {
                                 let ratio = dist1 / (dist1 + dist2);
-                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
+                                insertedJunctions.push({ x: junc, y: p1.y + ratio * (p2.y - p1.y) });
                             }
                         }
                     });
