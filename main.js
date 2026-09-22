@@ -231,33 +231,84 @@ async function initMap() {
 
         let newList = new Set(baseList);
         let newDistances = { ...baseDistances };
+        
+        newList.add('八堵_top');
+        newDistances['八堵_top'] = basePeriod;
+        
         let currentPeriod = basePeriod;
 
-        state.activeBranches.forEach(branch => {
-            const config = branchConfigs[branch];
-            if (branch === 'keelung') {
-                const gap = config.gap;
-                newList.add('基隆_top');
-                newList.add('三坑_top');
-                newList.add('基隆_bottom');
-                newList.add('三坑_bottom');
-                newList.add('八堵_top');
-
-                newDistances['基隆_bottom'] = allStationDistances['基隆'];
-                newDistances['三坑_bottom'] = allStationDistances['三坑'];
-                newDistances['八堵_top'] = basePeriod;
-                newDistances['三坑_top'] = basePeriod + (0 - allStationDistances['三坑']);
-                newDistances['基隆_top'] = basePeriod + (0 - allStationDistances['基隆']);
-
-                const totalBranchLen = 0 - allStationDistances['基隆'];
-                currentPeriod = basePeriod + gap + 2 * totalBranchLen;
-            } else {
-                config.stations.forEach(s => {
-                    newList.add(s);
-                    newDistances[s] = allStationDistances[s];
-                });
-            }
+        let activeBranchesArr = Array.from(state.activeBranches);
+        let normalBranches = activeBranchesArr.filter(b => b !== 'keelung').sort((a, b) => {
+            return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
         });
+
+        let shiftOffsets = [];
+        normalBranches.forEach(branch => {
+            const config = branchConfigs[branch];
+            const junc_d = allStationDistances[config.junction];
+            const end_d = allStationDistances[config.stations[0]];
+            const branchLen = Math.abs(junc_d - end_d);
+            const totalShift = config.gap + 2 * branchLen;
+            shiftOffsets.push({ junc_d: junc_d, shift: totalShift, branch: branch, branchLen: branchLen, gap: config.gap, end_d: end_d });
+        });
+
+        const getShiftedDist = (orig_d) => {
+            let shift = 0;
+            shiftOffsets.forEach(so => {
+                if (orig_d > so.junc_d) shift += so.shift;
+            });
+            return orig_d + shift;
+        };
+
+        baseList.forEach(s => {
+            if (s === '八堵_top') return;
+            newDistances[s] = getShiftedDist(baseDistances[s]);
+        });
+        
+        let totalNormalShift = shiftOffsets.reduce((sum, so) => sum + so.shift, 0);
+        currentPeriod += totalNormalShift;
+        newDistances['八堵_top'] = currentPeriod;
+
+        shiftOffsets.forEach(so => {
+            const config = branchConfigs[so.branch];
+            const branchStations = config.stations.slice(0, -1);
+            
+            newList.add(config.junction + '_top');
+            newList.add(config.junction + '_bottom');
+            
+            newDistances[config.junction + '_bottom'] = newDistances[config.junction];
+            newDistances[config.junction + '_top'] = newDistances[config.junction] + so.shift;
+
+            branchStations.forEach(s => {
+                newList.add(s + '_top');
+                newList.add(s + '_bottom');
+                
+                const orig_s_d = allStationDistances[s];
+                const dist_to_junc = Math.abs(so.junc_d - orig_s_d);
+                
+                newDistances[s + '_bottom'] = newDistances[config.junction] + dist_to_junc;
+                newDistances[s + '_top'] = newDistances[config.junction + '_top'] - dist_to_junc;
+            });
+        });
+
+        if (state.activeBranches.has('keelung')) {
+            const config = branchConfigs['keelung'];
+            const gap = config.gap;
+            const branchLen = Math.abs(allStationDistances['基隆']);
+            
+            newList.add('基隆_top');
+            newList.add('三坑_top');
+            newList.add('基隆_bottom');
+            newList.add('三坑_bottom');
+            
+            newDistances['基隆_bottom'] = allStationDistances['基隆'];
+            newDistances['三坑_bottom'] = allStationDistances['三坑'];
+            
+            newDistances['三坑_top'] = currentPeriod + (0 - allStationDistances['三坑']);
+            newDistances['基隆_top'] = currentPeriod + (0 - allStationDistances['基隆']);
+            
+            currentPeriod += gap + 2 * branchLen;
+        }
 
         state.stationList = newList;
         state.stationDistances = newDistances;
@@ -276,140 +327,180 @@ async function initMap() {
                 const d1 = allStationDistances[p1.x];
                 const d2 = allStationDistances[p2.x];
                 if (d1 !== undefined && d2 !== undefined) {
-                    let insertedJunctions = [];
                     let crossesEastWest = (d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000);
-
                     if (crossesEastWest) {
                         let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
                         let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
                         let ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
-                        insertedJunctions.push({ x: '八堵', y: p1.y + ratio * (p2.y - p1.y), isSeam: true });
+                        if (p1.x !== '八堵' && p2.x !== '八堵') {
+                            interpolated.push({ x: '八堵', y: p1.y + ratio * (p2.y - p1.y), isSeam: true });
+                        }
                     }
-
-                    state.activeBranches.forEach(branch => {
-                        const config = branchConfigs[branch];
-                        const junc_d = allStationDistances[config.junction];
-                        const branchStations = config.stations.slice(0, -1);
-                        const isD1Branch = branchStations.includes(p1.x);
-                        const isD2Branch = branchStations.includes(p2.x);
-
-                        if ((isD1Branch && !isD2Branch) || (!isD1Branch && isD2Branch)) {
-                            let dist1, dist2;
-                            if (branch === 'keelung') {
-                                if (isD1Branch && d2 > 6000) {
-                                    dist1 = Math.abs(d1);
-                                    dist2 = Math.abs(d2 - 8759);
-                                } else if (d1 > 6000 && isD2Branch) {
-                                    dist1 = Math.abs(d1 - 8759);
-                                    dist2 = Math.abs(d2);
-                                } else {
-                                    dist1 = Math.abs(d1);
-                                    dist2 = Math.abs(d2);
-                                }
-                            } else {
-                                dist1 = Math.abs(d1 - junc_d);
-                                dist2 = Math.abs(d2 - junc_d);
-                            }
-                            let ratio = dist1 / (dist1 + dist2);
-                            if (!(branch === 'keelung' && crossesEastWest)) {
-                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
-                            }
-                        }
-                    });
-
-                    insertedJunctions.sort((a, b) => a.y - b.y);
-                    insertedJunctions.forEach(j => {
-                        if (p1.x !== j.x && p2.x !== j.x) {
-                            interpolated.push({ x: j.x, y: j.y });
-                        }
-                    });
                 }
             }
         }
 
-        let segments = [];
-        let currentSegment = [];
-        let duplicateSegment = null;
+        let finalSegments = [interpolated];
 
-        let hasBranch = interpolated.some(p => p.x === '基隆' || p.x === '三坑');
-        let comesFromEast = false;
-
-        if (hasBranch) {
-            for (let i = 0; i < interpolated.length; i++) {
-                if (interpolated[i].x !== '八堵' && interpolated[i].x !== '三坑' && interpolated[i].x !== '基隆') {
-                    if (allStationDistances[interpolated[i].x] > 6000) {
-                        comesFromEast = true;
-                    }
-                }
-            }
-
-            for (let i = 0; i < interpolated.length; i++) {
-                let p = interpolated[i];
-                if (p.x === '基隆' || p.x === '三坑') {
-                    if (comesFromEast) {
-                        currentSegment.push({ ...p, x: p.x + '_top' });
-                        if (!duplicateSegment) duplicateSegment = [];
-                        duplicateSegment.push({ ...p, x: p.x + '_bottom' });
-                    } else {
-                        currentSegment.push({ ...p, x: p.x + '_bottom' });
-                        if (!duplicateSegment) duplicateSegment = [];
-                        duplicateSegment.push({ ...p, x: p.x + '_top' });
-                    }
-                } else if (p.x === '八堵') {
-                    if (comesFromEast) {
-                        currentSegment.push({ ...p, x: '八堵_top' });
-                        if (!duplicateSegment) duplicateSegment = [];
-                        duplicateSegment.push({ ...p, x: '八堵' });
-                    } else {
-                        currentSegment.push({ ...p, x: '八堵' });
-                        if (!duplicateSegment) duplicateSegment = [];
-                        duplicateSegment.push({ ...p, x: '八堵_top' });
-                    }
-                } else {
-                    currentSegment.push(p);
-                }
-            }
-            if (currentSegment.length > 0) segments.push(currentSegment);
-            if (duplicateSegment && duplicateSegment.length > 0) segments.push(duplicateSegment);
-            return segments;
-        } else {
+        // Process Badu seam first
+        let nextSegments = [];
+        finalSegments.forEach(seg => {
             let baduIndices = [];
-            for (let i = 0; i < interpolated.length; i++) {
-                if (interpolated[i].x === '八堵') baduIndices.push(i);
+            for (let i = 0; i < seg.length; i++) {
+                if (seg[i].x === '八堵') baduIndices.push(i);
             }
             if (baduIndices.length > 0) {
                 let firstBadu = baduIndices[0];
                 let lastBadu = baduIndices[baduIndices.length - 1];
-                let isPrevEast = firstBadu > 0 ? allStationDistances[interpolated[firstBadu - 1].x] > 6000 : false;
-                let isNextEast = lastBadu < interpolated.length - 1 ? allStationDistances[interpolated[lastBadu + 1].x] > 6000 : false;
+                let isPrevEast = firstBadu > 0 ? allStationDistances[seg[firstBadu - 1].x.split('_')[0]] > 6000 : false;
+                let isNextEast = lastBadu < seg.length - 1 ? allStationDistances[seg[lastBadu + 1].x.split('_')[0]] > 6000 : false;
 
                 if (firstBadu === 0) isPrevEast = !isNextEast;
-                if (lastBadu === interpolated.length - 1) isNextEast = !isPrevEast;
+                if (lastBadu === seg.length - 1) isNextEast = !isPrevEast;
 
                 if (isPrevEast !== isNextEast) {
-                    let seg1 = interpolated.slice(0, lastBadu + 1).map(p => {
+                    let seg1 = seg.slice(0, lastBadu + 1).map(p => {
                         if (p.x === '八堵') return { ...p, x: isPrevEast ? '八堵_top' : '八堵' };
                         return p;
                     });
-                    let seg2 = interpolated.slice(firstBadu).map(p => {
+                    let seg2 = seg.slice(firstBadu).map(p => {
                         if (p.x === '八堵') return { ...p, x: isNextEast ? '八堵_top' : '八堵' };
                         return p;
                     });
-                    segments.push(seg1);
-                    segments.push(seg2);
+                    nextSegments.push(seg1);
+                    nextSegments.push(seg2);
                 } else {
-                    let seg = interpolated.map(p => {
+                    let newSeg = seg.map(p => {
                         if (p.x === '八堵') return { ...p, x: isPrevEast ? '八堵_top' : '八堵' };
                         return p;
                     });
-                    segments.push(seg);
+                    nextSegments.push(newSeg);
                 }
-                return segments;
             } else {
-                segments.push(interpolated);
-                return segments;
+                nextSegments.push(seg);
             }
+        });
+        finalSegments = nextSegments;
+
+        let activeBranchesArr = Array.from(state.activeBranches);
+        let normalBranches = activeBranchesArr.filter(b => b !== 'keelung').sort((a, b) => {
+            return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
+        });
+
+        normalBranches.forEach(branch => {
+            const config = branchConfigs[branch];
+            const junc = config.junction;
+            const j_d = allStationDistances[junc];
+            const branchStations = config.stations.slice(0, -1);
+            
+            let currentSegments = [];
+            finalSegments.forEach(seg => {
+                let hasBranch = seg.some(p => branchStations.includes(p.x.split('_')[0]));
+                let comesFromSouth = false;
+                if (hasBranch) {
+                    for (let p of seg) {
+                        let base = p.x.split('_')[0];
+                        if (!branchStations.includes(base) && base !== junc) {
+                            if (allStationDistances[base] > j_d) {
+                                comesFromSouth = true;
+                            }
+                        }
+                    }
+                }
+
+                let newSeg = [];
+                for (let i = 0; i < seg.length; i++) {
+                    let p = seg[i];
+                    let base = p.x.split('_')[0];
+                    if (branchStations.includes(base)) {
+                        newSeg.push({ ...p, x: base + (comesFromSouth ? '_top' : '_bottom') });
+                    } else if (base === junc) {
+                        if (hasBranch) {
+                            newSeg.push({ ...p, x: junc + (comesFromSouth ? '_top' : '_bottom') });
+                        } else {
+                            let prev_d = i > 0 ? allStationDistances[seg[i-1].x.split('_')[0]] : null;
+                            let next_d = i < seg.length - 1 ? allStationDistances[seg[i+1].x.split('_')[0]] : null;
+                            
+                            if (prev_d !== null && next_d !== null) {
+                                if (prev_d < j_d && next_d > j_d) {
+                                    newSeg.push({ ...p, x: junc + '_bottom' });
+                                    newSeg.push({ ...p, x: junc + '_top' });
+                                } else if (prev_d > j_d && next_d < j_d) {
+                                    newSeg.push({ ...p, x: junc + '_top' });
+                                    newSeg.push({ ...p, x: junc + '_bottom' });
+                                } else {
+                                    newSeg.push({ ...p, x: junc + (prev_d > j_d ? '_top' : '_bottom') });
+                                }
+                            } else {
+                                if (prev_d !== null) {
+                                    newSeg.push({ ...p, x: junc + (prev_d > j_d ? '_top' : '_bottom') });
+                                } else if (next_d !== null) {
+                                    newSeg.push({ ...p, x: junc + (next_d > j_d ? '_top' : '_bottom') });
+                                } else {
+                                    newSeg.push({ ...p, x: junc + '_bottom' });
+                                }
+                            }
+                        }
+                    } else {
+                        newSeg.push(p);
+                    }
+                }
+                currentSegments.push(newSeg);
+            });
+            finalSegments = currentSegments;
+        });
+
+        if (state.activeBranches.has('keelung')) {
+            let nextSegments = [];
+            finalSegments.forEach(seg => {
+                let hasKeelung = seg.some(p => p.x.split('_')[0] === '基隆' || p.x.split('_')[0] === '三坑');
+                let comesFromEast = false;
+
+                if (hasKeelung) {
+                    for (let i = 0; i < seg.length; i++) {
+                        let base = seg[i].x.split('_')[0];
+                        if (base !== '八堵' && base !== '三坑' && base !== '基隆') {
+                            if (allStationDistances[base] > 6000) {
+                                comesFromEast = true;
+                            }
+                        }
+                    }
+
+                    let currentSegment = [];
+                    let duplicateSegment = [];
+                    for (let i = 0; i < seg.length; i++) {
+                        let p = seg[i];
+                        let base = p.x.split('_')[0];
+                        if (base === '基隆' || base === '三坑') {
+                            if (comesFromEast) {
+                                currentSegment.push({ ...p, x: base + '_top' });
+                                duplicateSegment.push({ ...p, x: base + '_bottom' });
+                            } else {
+                                currentSegment.push({ ...p, x: base + '_bottom' });
+                                duplicateSegment.push({ ...p, x: base + '_top' });
+                            }
+                        } else if (base === '八堵') {
+                            if (comesFromEast) {
+                                currentSegment.push({ ...p, x: '八堵_top' });
+                                duplicateSegment.push({ ...p, x: '八堵' });
+                            } else {
+                                currentSegment.push({ ...p, x: '八堵' });
+                                duplicateSegment.push({ ...p, x: '八堵_top' });
+                            }
+                        } else {
+                            currentSegment.push(p);
+                        }
+                    }
+                    if (currentSegment.length > 0) nextSegments.push(currentSegment);
+                    if (duplicateSegment.length > 0) nextSegments.push(duplicateSegment);
+                } else {
+                    nextSegments.push(seg);
+                }
+            });
+            finalSegments = nextSegments;
         }
+
+        return finalSegments;
     }
 
     function fixMonotonicY(data) {
