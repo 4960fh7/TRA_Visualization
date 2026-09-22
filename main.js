@@ -367,9 +367,41 @@ async function initMap() {
                                 insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
                             }
                         } else if (!isD1Branch && !isD2Branch) {
-                            if ((d1 < junc_d && d2 > junc_d) || (d1 > junc_d && d2 < junc_d)) {
-                                let dist1 = Math.abs(d1 - junc_d);
-                                let dist2 = Math.abs(d2 - junc_d);
+                            let min_d = Math.min(d1, d2);
+                            let max_d = Math.max(d1, d2);
+                            let crossed = false;
+                            let dist1, dist2;
+
+                            if (crossesEastWest) {
+                                if (junc_d <= min_d || junc_d >= max_d) {
+                                    crossed = true;
+                                    if (d1 < d2) {
+                                        if (junc_d <= d1) {
+                                            dist1 = Math.abs(d1 - junc_d);
+                                            dist2 = junc_d + (8759 - d2);
+                                        } else {
+                                            dist1 = d1 + (8759 - junc_d);
+                                            dist2 = Math.abs(junc_d - d2);
+                                        }
+                                    } else {
+                                        if (junc_d >= d1) {
+                                            dist1 = Math.abs(d1 - junc_d);
+                                            dist2 = (8759 - junc_d) + d2;
+                                        } else {
+                                            dist1 = (8759 - d1) + junc_d;
+                                            dist2 = Math.abs(junc_d - d2);
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (junc_d >= min_d && junc_d <= max_d) {
+                                    crossed = true;
+                                    dist1 = Math.abs(d1 - junc_d);
+                                    dist2 = Math.abs(d2 - junc_d);
+                                }
+                            }
+                            
+                            if (crossed) {
                                 let ratio = dist1 / (dist1 + dist2);
                                 insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
                             }
@@ -433,10 +465,17 @@ async function initMap() {
             return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
         });
 
+        let getVisualDist = (name) => {
+            let d = state.stationDistances[name];
+            if (d !== undefined) return d;
+            return allStationDistances[name.split('_')[0]] || 0;
+        };
+
         normalBranches.forEach(branch => {
             const config = branchConfigs[branch];
             const junc = config.junction;
             const j_d = allStationDistances[junc];
+            const j_visual = state.stationDistances[junc + '_bottom'] || j_d;
             const branchStations = config.stations.slice(0, -1);
             
             let currentSegments = [];
@@ -447,7 +486,7 @@ async function initMap() {
                     for (let p of seg) {
                         let base = p.x.split('_')[0];
                         if (!branchStations.includes(base) && base !== junc) {
-                            if (allStationDistances[base] > j_d) {
+                            if (getVisualDist(p.x) > j_visual) {
                                 comesFromSouth = true;
                             }
                         }
@@ -482,8 +521,8 @@ async function initMap() {
                         let firstJunc = juncIndices[0];
                         let lastJunc = juncIndices[juncIndices.length - 1];
                         
-                        let isPrevSouth = firstJunc > 0 ? allStationDistances[seg[firstJunc - 1].x.split('_')[0]] > j_d : false;
-                        let isNextSouth = lastJunc < seg.length - 1 ? allStationDistances[seg[lastJunc + 1].x.split('_')[0]] > j_d : false;
+                        let isPrevSouth = firstJunc > 0 ? getVisualDist(seg[firstJunc - 1].x) > j_visual : false;
+                        let isNextSouth = lastJunc < seg.length - 1 ? getVisualDist(seg[lastJunc + 1].x) > j_visual : false;
                         
                         if (firstJunc === 0) isPrevSouth = !isNextSouth;
                         if (lastJunc === seg.length - 1) isNextSouth = !isPrevSouth;
