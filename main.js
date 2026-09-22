@@ -170,7 +170,7 @@ async function initMap() {
         valX: document.getElementById('val-x'),
         valY: document.getElementById('val-y'),
         pillContainer: document.getElementById('pill-container'),
-        pills: document.querySelectorAll('.pill'),
+        pills: document.querySelectorAll('.pill:not(.utility):not(.line-pill):not(.branch-pill)'),
         trainPills: document.querySelectorAll('.pill[data-type]'),
         typeFilters: document.querySelectorAll('.type-filter'),
         linePills: document.querySelectorAll('.line-pill'),
@@ -227,11 +227,41 @@ async function initMap() {
                 const d1 = allStationDistances[p1.x];
                 const d2 = allStationDistances[p2.x];
                 if (d1 !== undefined && d2 !== undefined) {
-                    if ((d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000)) {
+                    let crossesEastWest = (d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000);
+                    let isD1Branch = d1 < 0;
+                    let isD2Branch = d2 < 0;
+                    let isD1East = d1 > 6000;
+                    let isD2East = d2 > 6000;
+                    let isD1West = d1 >= 0 && d1 <= 6000;
+                    let isD2West = d2 >= 0 && d2 <= 6000;
+
+                    let crossesBadu = crossesEastWest;
+                    let ratio = 0;
+
+                    if (crossesEastWest) {
+                        let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
+                        let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
+                        ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
+                    } else if (isD1Branch && isD2West) {
+                        crossesBadu = true;
+                        ratio = (0 - d1) / (d2 - d1);
+                    } else if (isD1West && isD2Branch) {
+                        crossesBadu = true;
+                        ratio = (0 - d1) / (d2 - d1);
+                    } else if (isD1Branch && isD2East) {
+                        crossesBadu = true;
+                        let distBranch = Math.abs(d1);
+                        let distEast = Math.abs(d2 - 8759);
+                        ratio = distBranch / (distBranch + distEast);
+                    } else if (isD1East && isD2Branch) {
+                        crossesBadu = true;
+                        let distEast = Math.abs(d1 - 8759);
+                        let distBranch = Math.abs(d2);
+                        ratio = distEast / (distEast + distBranch);
+                    }
+
+                    if (crossesBadu) {
                         if (p1.x !== '八堵' && p2.x !== '八堵') {
-                            let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
-                            let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
-                            let ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
                             let t_badu = p1.y + ratio * (p2.y - p1.y);
                             interpolated.push({ x: '八堵', y: t_badu });
                         }
@@ -449,7 +479,7 @@ async function initMap() {
                 state.showSchedule = true;
             } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                 const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                state.focusedStation = stationName;
+                state.focusedStation = stationName.split('_')[0];
             }
             updateBottomPanel();
             renderDataLayers();
@@ -1046,16 +1076,25 @@ async function initMap() {
                     if (!rawGrouped[p.x]) rawGrouped[p.x] = [];
                     rawGrouped[p.x].push(p.y);
                 }
+                if (state.stationDistances[p.x + '_top'] !== undefined) {
+                    if (!rawGrouped[p.x + '_top']) rawGrouped[p.x + '_top'] = [];
+                    rawGrouped[p.x + '_top'].push(p.y);
+                }
+                if (state.stationDistances[p.x + '_bottom'] !== undefined) {
+                    if (!rawGrouped[p.x + '_bottom']) rawGrouped[p.x + '_bottom'] = [];
+                    rawGrouped[p.x + '_bottom'].push(p.y);
+                }
             });
 
             Object.entries(rawGrouped).forEach(([name, times]) => {
+                const displayName = name.split('_')[0];
                 const sortedTimes = times.sort((a, b) => a - b);
                 const arrRaw = sortedTimes[0];
                 const depRaw = sortedTimes[sortedTimes.length - 1];
 
                 if (isTodayTrain && arrRaw < 1560) {
                     scheduleData.push({
-                        station: name,
+                        station: displayName,
                         arr: Math.ceil(arrRaw),
                         dep: Math.floor(depRaw),
                         yCoord: state.stationDistances[name],
@@ -1065,7 +1104,7 @@ async function initMap() {
 
                 if (isYesterdayTrain && depRaw >= 1560) {
                     scheduleData.push({
-                        station: name,
+                        station: displayName,
                         arr: Math.ceil(arrRaw - 1440),
                         dep: Math.floor(depRaw - 1440),
                         yCoord: state.stationDistances[name],
@@ -1114,6 +1153,7 @@ async function initMap() {
                 getPosition: d => [(d.renderX + 1.5) * 3, d.yCoord + offset, 0],
                 getText: d => {
                     const format = (val) => `${Math.floor(val / 60).toString().padStart(2, '0')}${(val % 60).toString().padStart(2, '0')}`;
+                    if (d.arr === d.dep) return `${format(d.arr)} ${d.station}`;
                     return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
                 },
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
@@ -1330,21 +1370,29 @@ async function initMap() {
             const targetPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === type);
             if (targetPill) targetPill.click();
         };
-        if (state.stationDistances[stationName] === undefined) {
-            if (mountStationDistances[stationName] !== undefined) {
+
+        const targetName = state.stationDistances[stationName] !== undefined ? stationName : 
+                           state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+
+        if (targetName === null) {
+            if (mountStationDistances[stationName] !== undefined || mountStationDistances[stationName + '_top'] !== undefined) {
                 switchLine('mountain');
-            } else if (seaStationDistances[stationName] !== undefined) {
+            } else if (seaStationDistances[stationName] !== undefined || seaStationDistances[stationName + '_top'] !== undefined) {
                 switchLine('sea');
             }
         }
-        if (state.stationDistances[stationName] !== undefined) {
+        
+        const finalTargetName = state.stationDistances[stationName] !== undefined ? stationName : 
+                                state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+
+        if (finalTargetName !== null) {
             state.selectedLine = null;
             state.showSchedule = false;
             state.focusedStation = stationName;
             const currentVS = deckInstance.props.viewState ||
                 (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) ||
                 state.viewState || {};
-            const targetY = state.stationDistances[stationName];
+            const targetY = state.stationDistances[finalTargetName];
             const currentTarget = currentVS.target || [state.currentTimeMinutes * 3 + 180, 0, 0];
             const currentZoom = (typeof currentVS.zoom === 'number') ? currentVS.zoom : (state.currentZoom || 0);
             const updatedViewState = {
@@ -1436,12 +1484,13 @@ async function initMap() {
         let numericQuery = (/\d/.test(query)) ? query.replace(/^[^\d]+/, '').trim() : null;
 
         // 1. Filter and Sort Stations by Distance
-        const matchedStations = allStations
-            .filter(s => s.includes(query))
+        const uniqueStations = Array.from(new Set(allStations.map(s => s.split('_')[0])));
+        const matchedStations = uniqueStations
+            .filter(s => s.includes(query) || (mainStationDict[s] && mainStationDict[s].includes(query)))
             .sort((a, b) => {
                 // Get distances (default to a high number if distance is unknown)
-                const distA = state.stationDistances[a] ?? 99999;
-                const distB = state.stationDistances[b] ?? 99999;
+                const distA = state.stationDistances[a] ?? state.stationDistances[a + '_top'] ?? 99999;
+                const distB = state.stationDistances[b] ?? state.stationDistances[b + '_top'] ?? 99999;
                 return distA - distB;
             });
 

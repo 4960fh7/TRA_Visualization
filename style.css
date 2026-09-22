@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 
 @font-face {
     font-family: 'GlowSansSCCom-Compressed';
@@ -268,5 +268,6 @@ input, button, textarea, select {
         width: 40%; 
         padding: 10px 15px; 
     }
-}. b r a n c h - p i l l . a c t i v e   {   b a c k g r o u n d - c o l o r :   v a r ( - - s u b t e x t - c o l o r ) ;   c o l o r :   v a r ( - - p a n e l - b g ) ;   }  
- 
+}
+
+.branch-pill.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
