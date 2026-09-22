@@ -856,27 +856,42 @@ async function initMap() {
 
         let scheduleData = [];
         if (state.showSchedule && state.selectedLine) {
-            const grouped = {};
             const selectedNum = state.selectedLine.number;
             const isTodayTrain = todaySegments.some(t => t.number === selectedNum);
             const isYesterdayTrain = yesterdaySegments.some(t => t.number === selectedNum);
+            
+            const rawGrouped = {};
             state.selectedLine.data.forEach(p => {
                 if (state.stationDistances[p.x] !== undefined) {
-                    if ((isTodayTrain && p.y < 1560) || (isYesterdayTrain && p.y >= 1560)) {
-                        if (!grouped[p.x]) grouped[p.x] = [];
-                        grouped[p.x].push(isYesterdayTrain ? p.y - 1440 : p.y);
-                    }
+                    if (!rawGrouped[p.x]) rawGrouped[p.x] = [];
+                    rawGrouped[p.x].push(p.y);
                 }
             });
 
-            scheduleData = Object.entries(grouped).map(([name, times]) => {
+            Object.entries(rawGrouped).forEach(([name, times]) => {
                 const sortedTimes = times.sort((a, b) => a - b);
-                return {
-                    station: name,
-                    arr: Math.ceil(sortedTimes[0]),
-                    dep: Math.floor(sortedTimes[1] || sortedTimes[0]),
-                    yCoord: state.stationDistances[name]
-                };
+                const arrRaw = sortedTimes[0];
+                const depRaw = sortedTimes[sortedTimes.length - 1];
+                
+                if (isTodayTrain && arrRaw < 1560) {
+                    scheduleData.push({
+                        station: name,
+                        arr: Math.ceil(arrRaw),
+                        dep: Math.floor(depRaw),
+                        yCoord: state.stationDistances[name],
+                        renderX: Math.min(Math.floor(depRaw), 1560)
+                    });
+                }
+                
+                if (isYesterdayTrain && depRaw >= 1560) {
+                    scheduleData.push({
+                        station: name,
+                        arr: Math.ceil(arrRaw - 1440),
+                        dep: Math.floor(depRaw - 1440),
+                        yCoord: state.stationDistances[name],
+                        renderX: Math.max(Math.floor(depRaw - 1440), 120)
+                    });
+                }
             });
         }
 
@@ -916,7 +931,7 @@ async function initMap() {
                 id: `train-schedule-labels-${offset}`,
                 data: scheduleData,
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                getPosition: d => [(d.dep+1.5) * 3, d.yCoord + offset, 0],
+                getPosition: d => [(d.renderX+1.5) * 3, d.yCoord + offset, 0],
                 getText: d => {
                     const format = (val) => `${Math.floor(val/60).toString().padStart(2,'0')}${(val%60).toString().padStart(2,'0')}`;
                     return `${format(d.arr)} - ${format(d.dep)} ${d.station}`;
