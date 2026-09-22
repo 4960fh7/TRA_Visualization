@@ -254,6 +254,7 @@ async function initMap() {
             } else {
                 config.stations.forEach(s => {
                     newList.add(s);
+                    newDistances[s] = allStationDistances[s];
                 });
             }
         });
