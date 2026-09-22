@@ -256,6 +256,21 @@ async function initMap() {
         }
 
         let shiftOffsets = [];
+        let hasCombined = state.activeBranches.has('liujia') && state.activeBranches.has('neiwan');
+        if (hasCombined) {
+            normalBranches = normalBranches.filter(b => b !== 'liujia' && b !== 'neiwan');
+            let len_shared = Math.abs(allStationDistances['北新竹'] - allStationDistances['竹中']);
+            let len_liujia = Math.abs(allStationDistances['竹中'] - allStationDistances['六家']);
+            let len_neiwan = Math.abs(allStationDistances['竹中'] - allStationDistances['內灣']);
+            let shift = 2 * len_shared + 2 * len_liujia + 40 + 2 * len_neiwan + 40;
+            shiftOffsets.push({
+                branch: 'combined',
+                junction: '北新竹',
+                junc_d: allStationDistances['北新竹'],
+                shift: shift
+            });
+        }
+
         normalBranches.forEach(branch => {
             const config = branchConfigs[branch];
             shiftOffsets.push({
@@ -265,6 +280,8 @@ async function initMap() {
                 shift: calculateBranchShift(branch)
             });
         });
+        
+        shiftOffsets.sort((a, b) => a.junc_d - b.junc_d);
 
         let cumulativeOffset = 0;
         let sortedStations = Array.from(baseList).sort((a, b) => baseDistances[a] - baseDistances[b]);
@@ -323,6 +340,81 @@ async function initMap() {
             return currentY;
         }
 
+        function assignCombinedBranchCoords(startY) {
+            let currentY = startY;
+            let prev_d = allStationDistances['北新竹'];
+            
+            // Shared _bottom
+            ['千甲', '新莊', '竹中'].forEach(s => {
+                let s_d = allStationDistances[s];
+                currentY += Math.abs(s_d - prev_d);
+                prev_d = s_d;
+                let finalName = s + '_bottom';
+                newDistances[finalName] = currentY;
+                newList.add(finalName);
+                newList.delete(s);
+            });
+            
+            // Liujia _bottom
+            let s_d_liujia = allStationDistances['六家'];
+            currentY += Math.abs(s_d_liujia - prev_d);
+            newDistances['六家_bottom'] = currentY;
+            newList.add('六家_bottom');
+            newList.delete('六家');
+            
+            currentY += 40; // gap 1
+            
+            // Liujia _top
+            newDistances['六家_top'] = currentY;
+            newList.add('六家_top');
+            
+            currentY += Math.abs(allStationDistances['竹中'] - allStationDistances['六家']);
+            newDistances['竹中_middle'] = currentY;
+            newList.add('竹中_middle');
+            
+            // Neiwan _bottom
+            let neiwanStations = ['上員', '榮華', '竹東', '橫山', '九讚頭', '合興', '富貴', '內灣'];
+            prev_d = allStationDistances['竹中'];
+            neiwanStations.forEach(s => {
+                let s_d = allStationDistances[s];
+                currentY += Math.abs(s_d - prev_d);
+                prev_d = s_d;
+                let finalName = s + '_bottom';
+                newDistances[finalName] = currentY;
+                newList.add(finalName);
+                newList.delete(s);
+            });
+            
+            currentY += 40; // gap 2
+            
+            // Neiwan _top
+            let neiwanStationsRev = [...neiwanStations].reverse();
+            neiwanStationsRev.forEach(s => {
+                newDistances[s + '_top'] = currentY;
+                newList.add(s + '_top');
+                
+                let s_d = allStationDistances[s];
+                let next_s = neiwanStationsRev[neiwanStationsRev.indexOf(s) + 1] || '竹中';
+                let next_d = allStationDistances[next_s];
+                currentY += Math.abs(s_d - next_d);
+            });
+            
+            newDistances['竹中_top'] = currentY;
+            newList.add('竹中_top');
+            
+            // Shared _top
+            let sharedStationsRev = ['新莊', '千甲'];
+            prev_d = allStationDistances['竹中'];
+            sharedStationsRev.forEach(s => {
+                let s_d = allStationDistances[s];
+                currentY += Math.abs(s_d - prev_d);
+                prev_d = s_d;
+                let finalName = s + '_top';
+                newDistances[finalName] = currentY;
+                newList.add(finalName);
+            });
+        }
+
         shiftOffsets.forEach(so => {
             let junc = so.junction;
             newList.add(junc + '_bottom');
@@ -330,7 +422,11 @@ async function initMap() {
             newDistances[junc + '_bottom'] = newDistances[junc];
             newDistances[junc + '_top'] = newDistances[junc] + so.shift;
             
-            assignBranchCoords(so.branch, newDistances[junc], '');
+            if (so.branch === 'combined') {
+                assignCombinedBranchCoords(newDistances[junc]);
+            } else {
+                assignBranchCoords(so.branch, newDistances[junc], '');
+            }
         });
 
         let totalNormalShift = shiftOffsets.reduce((sum, so) => sum + so.shift, 0);
@@ -528,8 +624,19 @@ async function initMap() {
             return allStationDistances[name.split('_')[0]] || 0;
         };
 
+        let virtualBranchConfigs = { ...branchConfigs };
+        let hasCombined = activeBranchesArr.includes('liujia') && activeBranchesArr.includes('neiwan');
+        if (hasCombined) {
+            normalBranches = normalBranches.filter(b => b !== 'liujia' && b !== 'neiwan');
+            normalBranches.push('combined');
+            virtualBranchConfigs['combined'] = {
+                junction: '北新竹',
+                stations: ['六家', '內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員', '竹中', '新莊', '千甲', '北新竹']
+            };
+        }
+
         normalBranches.forEach(branch => {
-            const config = branchConfigs[branch];
+            const config = virtualBranchConfigs[branch];
             const junc = config.junction;
             
             let physicalStations = config.stations.slice(0, -1);
@@ -547,7 +654,7 @@ async function initMap() {
                             let base = seg[i].x.split('_')[0];
                             if (!physicalStations.includes(base) && base !== junc) {
                                 const baseList = isMountain ? mountStationList : seaStationList;
-                                const isVis = baseList.has(base) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(base));
+                                const isVis = baseList.has(base) || Array.from(state.activeBranches).some(b => branchConfigs[b] && branchConfigs[b].stations.includes(base));
                                 if (isVis) {
                                     if (getVisualDist(seg[i].x) > current_j_visual) {
                                         comesFromSouth = true;
@@ -567,13 +674,42 @@ async function initMap() {
                         let base = p.x.split('_')[0];
                         
                         let isInsideBranch = config.stations.slice(0, -1).includes(base);
+                        let new_suffix = comesFromSouth ? '_top' : '_bottom';
+                        let dup_suffix = comesFromSouth ? '_bottom' : '_top';
+                        let new_name = base;
+                        let dup_name = base;
                         
-                        if (isInsideBranch) {
-                            newSeg.push({ ...p, x: p.x + (comesFromSouth ? '_top' : '_bottom') });
-                            duplicateSeg.push({ ...p, x: p.x + (comesFromSouth ? '_bottom' : '_top') });
-                        } else if (base === junc) {
-                            newSeg.push({ ...p, x: p.x + (comesFromSouth ? '_top' : '_bottom') });
-                            duplicateSeg.push({ ...p, x: p.x + (comesFromSouth ? '_bottom' : '_top') });
+                        if (isInsideBranch || base === junc) {
+                            new_name = base + new_suffix;
+                            dup_name = base + dup_suffix;
+                        }
+
+                        if (branch === 'combined' && i > 0) {
+                            let prev_p = seg[i - 1];
+                            let prev_base = prev_p.x.split('_')[0];
+                            
+                            let timeAtZhuzhong = null;
+                            if (prev_base === '竹中' && base === '上員') timeAtZhuzhong = prev_p.y;
+                            if (prev_base === '上員' && base === '竹中') timeAtZhuzhong = p.y;
+                            
+                            if (timeAtZhuzhong !== null) {
+                                if (new_suffix === '_bottom') newSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhong });
+                                if (dup_suffix === '_bottom') duplicateSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhong });
+                            }
+                            
+                            let timeAtZhuzhongL = null;
+                            if (prev_base === '竹中' && base === '六家') timeAtZhuzhongL = prev_p.y;
+                            if (prev_base === '六家' && base === '竹中') timeAtZhuzhongL = p.y;
+                            
+                            if (timeAtZhuzhongL !== null) {
+                                if (new_suffix === '_top') newSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhongL });
+                                if (dup_suffix === '_top') duplicateSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhongL });
+                            }
+                        }
+                        
+                        if (isInsideBranch || base === junc) {
+                            newSeg.push({ ...p, x: new_name });
+                            duplicateSeg.push({ ...p, x: dup_name });
                         } else {
                             newSeg.push(p);
                         }
