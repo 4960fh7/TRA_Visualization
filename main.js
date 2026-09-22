@@ -460,6 +460,21 @@ async function initMap() {
     function preprocessTrainData(trainData) {
         if (state.activeBranches.size === 0) return [trainData];
 
+        let virtualBranchConfigs = { ...branchConfigs };
+        let activeBranchesArr = Array.from(state.activeBranches);
+        let hasCombined = activeBranchesArr.includes('liujia') && activeBranchesArr.includes('neiwan');
+        let branchesToProcess = new Set(activeBranchesArr);
+        
+        if (hasCombined) {
+            branchesToProcess.delete('liujia');
+            branchesToProcess.delete('neiwan');
+            branchesToProcess.add('combined');
+            virtualBranchConfigs['combined'] = {
+                junction: '北新竹',
+                stations: ['六家', '內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員', '竹中', '新莊', '千甲', '北新竹']
+            };
+        }
+
         let interpolated = [];
         for (let i = 0; i < trainData.length; i++) {
             interpolated.push(trainData[i]);
@@ -480,8 +495,8 @@ async function initMap() {
                         }
                     }
 
-                    state.activeBranches.forEach(branch => {
-                        const config = branchConfigs[branch];
+                    branchesToProcess.forEach(branch => {
+                        const config = virtualBranchConfigs[branch];
                         const junc = config.junction;
                         const junc_d = allStationDistances[junc];
                         
@@ -611,7 +626,6 @@ async function initMap() {
         });
         finalSegments = nextSegments;
 
-        let activeBranchesArr = Array.from(state.activeBranches);
         let normalBranches = activeBranchesArr.filter(b => b !== 'keelung').sort((a, b) => {
             return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
         });
@@ -624,15 +638,9 @@ async function initMap() {
             return allStationDistances[name.split('_')[0]] || 0;
         };
 
-        let virtualBranchConfigs = { ...branchConfigs };
-        let hasCombined = activeBranchesArr.includes('liujia') && activeBranchesArr.includes('neiwan');
         if (hasCombined) {
             normalBranches = normalBranches.filter(b => b !== 'liujia' && b !== 'neiwan');
             normalBranches.push('combined');
-            virtualBranchConfigs['combined'] = {
-                junction: '北新竹',
-                stations: ['六家', '內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員', '竹中', '新莊', '千甲', '北新竹']
-            };
         }
 
         normalBranches.forEach(branch => {
@@ -733,18 +741,8 @@ async function initMap() {
                         }
                     }
                     
-                    newSegmentsList.forEach(s => { 
-                        if (s.length > 0) {
-                            let isFloatingLiujia = s.length === 2 && s.some(p => p.x === '竹中_middle') && s.some(p => p.x === '六家_top');
-                            if (!isFloatingLiujia) currentSegments.push(s);
-                        }
-                    });
-                    duplicateSegmentsList.forEach(s => { 
-                        if (s.length > 0) {
-                            let isFloatingLiujia = s.length === 2 && s.some(p => p.x === '竹中_middle') && s.some(p => p.x === '六家_top');
-                            if (!isFloatingLiujia) currentSegments.push(s);
-                        }
-                    });
+                    newSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
+                    duplicateSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
                 } else {
                     let juncIndices = [];
                     for (let i = 0; i < seg.length; i++) {
