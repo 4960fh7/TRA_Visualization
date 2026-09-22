@@ -32,6 +32,48 @@ const branchConfigs = {
         junction: '八堵',
         stations: ['基隆', '三坑', '八堵'], // ordered from branch end to junction
         gap: 40 // distance units
+    },
+    'liujia': {
+        name: '六家線',
+        junction: '北新竹',
+        stations: ['六家', '竹中', '新莊', '千甲', '北新竹'],
+        gap: 40
+    },
+    'neiwan': {
+        name: '內灣線',
+        junction: '北新竹',
+        stations: ['內灣', '富貴', '合興', '九讚頭', '橫山', '竹東', '榮華', '上員', '竹中', '新莊', '千甲', '北新竹'],
+        gap: 40
+    },
+    'jiji': {
+        name: '集集線',
+        junction: '二水',
+        stations: ['車埕', '水里', '集集', '龍泉', '濁水', '源泉', '二水'],
+        gap: 40
+    },
+    'shalun': {
+        name: '沙崙線',
+        junction: '中洲',
+        stations: ['沙崙', '長榮大學', '中洲'],
+        gap: 40
+    },
+    'suao': {
+        name: '蘇澳線',
+        junction: '蘇澳新',
+        stations: ['蘇澳', '蘇澳新'],
+        gap: 40
+    },
+    'pingxi': {
+        name: '平溪線',
+        junction: '三貂嶺',
+        stations: ['菁桐', '平溪', '嶺腳', '望古', '十分', '大華', '三貂嶺'],
+        gap: 40
+    },
+    'shenao': {
+        name: '深澳線',
+        junction: '瑞芳',
+        stations: ['八斗子', '海科館', '瑞芳'],
+        gap: 40
     }
 };
 let gridData = {
@@ -191,25 +233,30 @@ async function initMap() {
         let newDistances = { ...baseDistances };
         let currentPeriod = basePeriod;
 
-        if (state.activeBranches.has('keelung')) {
-            const config = branchConfigs['keelung'];
-            const gap = config.gap;
+        state.activeBranches.forEach(branch => {
+            const config = branchConfigs[branch];
+            if (branch === 'keelung') {
+                const gap = config.gap;
+                newList.add('基隆_top');
+                newList.add('三坑_top');
+                newList.add('基隆_bottom');
+                newList.add('三坑_bottom');
+                newList.add('八堵_top');
 
-            newList.add('基隆_top');
-            newList.add('三坑_top');
-            newList.add('基隆_bottom');
-            newList.add('三坑_bottom');
-            newList.add('八堵_top');
+                newDistances['基隆_bottom'] = allStationDistances['基隆'];
+                newDistances['三坑_bottom'] = allStationDistances['三坑'];
+                newDistances['八堵_top'] = basePeriod;
+                newDistances['三坑_top'] = basePeriod + (0 - allStationDistances['三坑']);
+                newDistances['基隆_top'] = basePeriod + (0 - allStationDistances['基隆']);
 
-            newDistances['基隆_bottom'] = allStationDistances['基隆'];
-            newDistances['三坑_bottom'] = allStationDistances['三坑'];
-            newDistances['八堵_top'] = basePeriod;
-            newDistances['三坑_top'] = basePeriod + (0 - allStationDistances['三坑']);
-            newDistances['基隆_top'] = basePeriod + (0 - allStationDistances['基隆']);
-
-            const totalBranchLen = 0 - allStationDistances['基隆'];
-            currentPeriod = basePeriod + gap + 2 * totalBranchLen;
-        }
+                const totalBranchLen = 0 - allStationDistances['基隆'];
+                currentPeriod = basePeriod + gap + 2 * totalBranchLen;
+            } else {
+                config.stations.forEach(s => {
+                    newList.add(s);
+                });
+            }
+        });
 
         state.stationList = newList;
         state.stationDistances = newDistances;
@@ -217,7 +264,7 @@ async function initMap() {
     }
 
     function preprocessTrainData(trainData) {
-        if (!state.activeBranches.has('keelung')) return [trainData];
+        if (state.activeBranches.size === 0) return [trainData];
 
         let interpolated = [];
         for (let i = 0; i < trainData.length; i++) {
@@ -228,45 +275,53 @@ async function initMap() {
                 const d1 = allStationDistances[p1.x];
                 const d2 = allStationDistances[p2.x];
                 if (d1 !== undefined && d2 !== undefined) {
+                    let insertedJunctions = [];
                     let crossesEastWest = (d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000);
-                    let isD1Branch = d1 < 0;
-                    let isD2Branch = d2 < 0;
-                    let isD1East = d1 > 6000;
-                    let isD2East = d2 > 6000;
-                    let isD1West = d1 >= 0 && d1 <= 6000;
-                    let isD2West = d2 >= 0 && d2 <= 6000;
-
-                    let crossesBadu = crossesEastWest;
-                    let ratio = 0;
 
                     if (crossesEastWest) {
                         let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
                         let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
-                        ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
-                    } else if (isD1Branch && isD2West) {
-                        crossesBadu = true;
-                        ratio = (0 - d1) / (d2 - d1);
-                    } else if (isD1West && isD2Branch) {
-                        crossesBadu = true;
-                        ratio = (0 - d1) / (d2 - d1);
-                    } else if (isD1Branch && isD2East) {
-                        crossesBadu = true;
-                        let distBranch = Math.abs(d1);
-                        let distEast = Math.abs(d2 - 8759);
-                        ratio = distBranch / (distBranch + distEast);
-                    } else if (isD1East && isD2Branch) {
-                        crossesBadu = true;
-                        let distEast = Math.abs(d1 - 8759);
-                        let distBranch = Math.abs(d2);
-                        ratio = distEast / (distEast + distBranch);
+                        let ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
+                        insertedJunctions.push({ x: '八堵', y: p1.y + ratio * (p2.y - p1.y), isSeam: true });
                     }
 
-                    if (crossesBadu) {
-                        if (p1.x !== '八堵' && p2.x !== '八堵') {
-                            let t_badu = p1.y + ratio * (p2.y - p1.y);
-                            interpolated.push({ x: '八堵', y: t_badu });
+                    state.activeBranches.forEach(branch => {
+                        const config = branchConfigs[branch];
+                        const junc_d = allStationDistances[config.junction];
+                        const branchStations = config.stations.slice(0, -1);
+                        const isD1Branch = branchStations.includes(p1.x);
+                        const isD2Branch = branchStations.includes(p2.x);
+
+                        if ((isD1Branch && !isD2Branch) || (!isD1Branch && isD2Branch)) {
+                            let dist1, dist2;
+                            if (branch === 'keelung') {
+                                if (isD1Branch && d2 > 6000) {
+                                    dist1 = Math.abs(d1);
+                                    dist2 = Math.abs(d2 - 8759);
+                                } else if (d1 > 6000 && isD2Branch) {
+                                    dist1 = Math.abs(d1 - 8759);
+                                    dist2 = Math.abs(d2);
+                                } else {
+                                    dist1 = Math.abs(d1);
+                                    dist2 = Math.abs(d2);
+                                }
+                            } else {
+                                dist1 = Math.abs(d1 - junc_d);
+                                dist2 = Math.abs(d2 - junc_d);
+                            }
+                            let ratio = dist1 / (dist1 + dist2);
+                            if (!(branch === 'keelung' && crossesEastWest)) {
+                                insertedJunctions.push({ x: config.junction, y: p1.y + ratio * (p2.y - p1.y) });
+                            }
                         }
-                    }
+                    });
+
+                    insertedJunctions.sort((a, b) => a.y - b.y);
+                    insertedJunctions.forEach(j => {
+                        if (p1.x !== j.x && p2.x !== j.x) {
+                            interpolated.push({ x: j.x, y: j.y });
+                        }
+                    });
                 }
             }
         }
