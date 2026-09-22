@@ -641,20 +641,18 @@ async function initMap() {
 
     function updateStationGridData() {
         Object.keys(gridData).forEach(key => Array.isArray(gridData[key]) ? gridData[key] = [] : null);
+        
         Object.entries(state.stationDistances).forEach(([name, yValue]) => {
             if (state.stationList.has(name) && name !== "臺北_環島") {
                 const displayName = name.split('_')[0];
-                for (let x = 120; x <= 1560; x += 120) {
-                    const entry = { text: displayName, position: [x * 3, yValue], y: yValue };
-                    if ((x - 120) % 480 === 0) {
-                        if (mainStationList.has(displayName)) gridData.mainLabelData.push(entry);
-                        gridData.sparseLabelData.push(entry);
-                    }
-                    if ((x - 120) % 240 === 0) gridData.normalLabelData.push(entry);
-                    gridData.denseLabelData.push(entry);
+                const entry = { text: displayName, y: yValue };
+                if (mainStationList.has(displayName)) {
+                    gridData.mainLabelData.push(entry);
+                    gridData.leftonlyLabelData.push(entry);
                 }
-                const entry = { text: displayName, position: [270, yValue], y: yValue };
-                if (mainStationList.has(displayName)) gridData.leftonlyLabelData.push(entry);
+                gridData.sparseLabelData.push(entry);
+                gridData.normalLabelData.push(entry);
+                gridData.denseLabelData.push(entry);
             }
         });
 
@@ -667,16 +665,11 @@ async function initMap() {
             (x % 60 === 0) ? gridData.thickLines.push({ path }) : gridData.thinLines.push({ path });
         }
 
-        for (let y = gridData.minDistance - state.period; y <= gridData.maxDistance + state.period; y += 400) {
-            for (let x = 120; x <= 1560; x += 10) {
-                const label = { text: `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`, position: [(x * 3) + 5, y] };
-                gridData.denseLabels.push(label);
-                if (x % 30 === 0) gridData.normalLabels.push(label);
-            }
-        }
-        for (let y = gridData.minDistance - state.period; y <= gridData.maxDistance + state.period; y += 800) {
-            for (let x = 120; x <= 1560; x += 60) {
-                const label = { text: `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`, position: [(x * 3) + 5, y] };
+        for (let x = 120; x <= 1560; x += 10) {
+            const label = { text: `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`, x: (x * 3) + 5 };
+            gridData.denseLabels.push(label);
+            if (x % 30 === 0) gridData.normalLabels.push(label);
+            if (x % 60 === 0) {
                 gridData.sparseLabels.push(label);
                 if (x % 120 === 0) gridData.simpleLabels.push(label);
             }
@@ -859,6 +852,12 @@ async function initMap() {
     });
 
     function renderDataLayers() {
+        const currentVS = deckInstance.props.viewState || state.viewState || { target: [state.currentTimeMinutes * 3 + 180, state.initialY, 0], zoom: 0 };
+        const container = document.getElementById('container');
+        const width = container ? container.clientWidth : window.innerWidth;
+        const scale = Math.pow(2, currentVS.zoom);
+        const leftX = currentVS.target[0] - (width / 2) / scale;
+
         const yOffsets = [-state.period, 0, state.period];
 
         todaySegments = rawData
@@ -1170,15 +1169,15 @@ async function initMap() {
                 id: `station-labels-highlight-${offset}`,
                 data: activeLabelData.filter(d => d.text === state.focusedStation),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN, pickable: true,
-                getPosition: d => [d.position[0], d.position[1] + offset],
+                getPosition: d => [leftX, d.y + offset],
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 getSize: notime ? 0.0001 : 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 characterSet: 'auto',
-                getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10],
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [10, -10],
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 180] : [20, 20, 20, 180],
-                updateTriggers: { data: [state.currentZoom, state.focusedStation] }
+                updateTriggers: { data: [state.currentZoom, state.focusedStation], getPosition: [leftX] }
             }),
             new deck.PathLayer({
                 id: `station-layer-highlight-${offset}`,
@@ -1212,6 +1211,14 @@ async function initMap() {
     }
 
     function renderBaseLayers() {
+        const currentVS = deckInstance.props.viewState || state.viewState || { target: [state.currentTimeMinutes * 3 + 180, state.initialY, 0], zoom: 0 };
+        const container = document.getElementById('container');
+        const width = container ? container.clientWidth : window.innerWidth;
+        const height = container ? container.clientHeight : window.innerHeight;
+        const scale = Math.pow(2, currentVS.zoom);
+        const leftX = currentVS.target[0] - (width / 2) / scale;
+        const topY = currentVS.target[1] - (height / 2) / scale;
+
         const yOffsets = [-state.period, 0, state.period];
 
         layers.offsetLayers = yOffsets.flatMap(offset => [
@@ -1232,13 +1239,14 @@ async function initMap() {
                             state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
-                getPosition: d => [d.position[0], d.position[1] + offset],
+                getPosition: d => [leftX, d.y + offset],
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [60, 60, 60] : [210, 210, 210],
                 characterSet: 'auto',
-                getAlignmentBaseline: 'bottom', getTextAnchor: 'middle', pixelOffset: [0, -10]
+                getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [10, -10],
+                updateTriggers: { getPosition: [leftX] }
             })
         ]);
 
@@ -1255,11 +1263,12 @@ async function initMap() {
                 id: 'vertical-labels',
                 data: state.currentZoom > 0.8 ? gridData.denseLabels : state.currentZoom > -0.4 ? gridData.normalLabels : state.currentZoom > -1.6 ? gridData.sparseLabels : state.currentZoom > -2 ? gridData.simpleLabels : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
-                getPosition: d => d.position, getText: d => d.text,
+                getPosition: d => [d.x, topY], getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
-                getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 5]
+                getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 10],
+                updateTriggers: { getPosition: [topY] }
             })
         ];
 
