@@ -733,8 +733,18 @@ async function initMap() {
                         }
                     }
                     
-                    newSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
-                    duplicateSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
+                    newSegmentsList.forEach(s => { 
+                        if (s.length > 0) {
+                            let isFloatingLiujia = s.length === 2 && s.some(p => p.x === '竹中_middle') && s.some(p => p.x === '六家_top');
+                            if (!isFloatingLiujia) currentSegments.push(s);
+                        }
+                    });
+                    duplicateSegmentsList.forEach(s => { 
+                        if (s.length > 0) {
+                            let isFloatingLiujia = s.length === 2 && s.some(p => p.x === '竹中_middle') && s.some(p => p.x === '六家_top');
+                            if (!isFloatingLiujia) currentSegments.push(s);
+                        }
+                    });
                 } else {
                     let juncIndices = [];
                     for (let i = 0; i < seg.length; i++) {
