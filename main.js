@@ -546,10 +546,14 @@ async function initMap() {
                         for (let i = 0; i < seg.length; i++) {
                             let base = seg[i].x.split('_')[0];
                             if (!physicalStations.includes(base) && base !== junc) {
-                                if (getVisualDist(seg[i].x) > current_j_visual) {
-                                    comesFromSouth = true;
+                                const baseList = isMountain ? mountStationList : seaStationList;
+                                const isVis = baseList.has(base) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(base));
+                                if (isVis) {
+                                    if (getVisualDist(seg[i].x) > current_j_visual) {
+                                        comesFromSouth = true;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
