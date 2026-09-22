@@ -170,10 +170,29 @@ async function initMap() {
         viewMonitor: document.getElementById('view-monitor')
     };
 
+    function fixMonotonicY(data) {
+        if (!data) return;
+        data.forEach(train => {
+            let current_y_offset = 0;
+            let prev_raw_y = -1;
+            train.data.forEach(p => {
+                if (p.y !== -1) {
+                    if (prev_raw_y !== -1 && p.y < prev_raw_y - 720) {
+                        current_y_offset += 1440;
+                    }
+                    prev_raw_y = p.y;
+                    p.y += current_y_offset;
+                }
+            });
+        });
+    }
+
     const response = await fetch(realtime ? `data_new/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data_new/${dateSelector.value.replace(/-/g, '')}.json`);
     let rawData = await response.json();
+    fixMonotonicY(rawData);
     const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
+    fixMonotonicY(yrawData);
     let todaySegments = [];
     let yesterdaySegments = [];
 
@@ -202,6 +221,7 @@ async function initMap() {
         try {
             const response = await fetch(filename);
             rawData = await response.json();
+            fixMonotonicY(rawData);
         } catch (err) {
             alert("可選擇日期範圍: 2026/02/19 ~ 2026/05/31");
             console.error(err);
@@ -209,6 +229,7 @@ async function initMap() {
         try {
             const yresponse = await fetch(yfilename);
             yrawData = await yresponse.json();
+            fixMonotonicY(yrawData);
         } catch (err) {
             console.error(err);
         }
