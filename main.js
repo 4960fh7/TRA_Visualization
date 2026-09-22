@@ -471,7 +471,7 @@ async function initMap() {
 
         onClick: (info) => {
             if (info.object && (info.layer.id.includes('main-path-layer') || info.layer.id.includes('json-layer'))) {
-                window.selectTrain(info.object.number);
+                window.selectTrain(info.object.number, true);
             } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                 const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
                 window.selectStation(stationName.split('_')[0]);
@@ -1296,7 +1296,7 @@ async function initMap() {
         updateMapTheme(isLight);
     }
 
-    window.selectTrain = function (trainNumber) {
+    window.selectTrain = function (trainNumber, preventCenter = false) {
         const allTrainsSource = [...rawData, ...yrawData];
         const found = allTrainsSource.find(t => t.number == trainNumber);
         if (found) {
@@ -1355,18 +1355,20 @@ async function initMap() {
             const dx = Math.abs(xStart - xEnd);
             let targetZoom = Math.max(-1.5, Math.min(0, (600 - dx) / 500));
 
-            const currentVS = deckInstance.props.viewState || state.viewState || {};
-            const updatedViewState = {
-                ...currentVS,
-                target: [targetY * 3, targetX, 0], // Note: check if your ortho logic uses [y, x] or [x, y]
-                zoom: targetZoom,
-                transitionDuration: 600,
-                transitionInterpolator: new deck.LinearInterpolator(['target', 'zoom']),
-                transitionInterruption: 1
-            };
+            if (!preventCenter) {
+                const currentVS = deckInstance.props.viewState || state.viewState || {};
+                const updatedViewState = {
+                    ...currentVS,
+                    target: [targetY * 3, targetX, 0], // Note: check if your ortho logic uses [y, x] or [x, y]
+                    zoom: targetZoom,
+                    transitionDuration: 600,
+                    transitionInterpolator: new deck.LinearInterpolator(['target', 'zoom']),
+                    transitionInterruption: 1
+                };
 
-            state.viewState = updatedViewState;
-            deckInstance.setProps({ viewState: updatedViewState });
+                state.viewState = updatedViewState;
+                deckInstance.setProps({ viewState: updatedViewState });
+            }
 
             updateBottomPanel();
             renderDataLayers();
