@@ -666,9 +666,13 @@ async function initMap() {
                     }
                 }
 
-                let newSeg = [];
-                let duplicateSeg = [];
+                let newSegmentsList = [[]];
+                let duplicateSegmentsList = [[]];
+                
                 if (hasBranch) {
+                    let curNewSeg = newSegmentsList[0];
+                    let curDupSeg = duplicateSegmentsList[0];
+                    
                     for (let i = 0; i < seg.length; i++) {
                         let p = seg[i];
                         let base = p.x.split('_')[0];
@@ -688,34 +692,49 @@ async function initMap() {
                             let prev_p = seg[i - 1];
                             let prev_base = prev_p.x.split('_')[0];
                             
-                            let timeAtZhuzhong = null;
-                            if (prev_base === '竹中' && base === '上員') timeAtZhuzhong = prev_p.y;
-                            if (prev_base === '上員' && base === '竹中') timeAtZhuzhong = p.y;
-                            
-                            if (timeAtZhuzhong !== null) {
-                                if (new_suffix === '_bottom') newSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhong });
-                                if (dup_suffix === '_bottom') duplicateSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhong });
+                            let isNeiwanJump = (prev_base === '竹中' && base === '上員') || (prev_base === '上員' && base === '竹中');
+                            if (isNeiwanJump) {
+                                if (new_suffix === '_bottom') {
+                                    if (base === '竹中') curNewSeg.push({ ...p, x: '竹中_middle' });
+                                    curNewSeg = [];
+                                    newSegmentsList.push(curNewSeg);
+                                    if (prev_base === '竹中') curNewSeg.push({ ...prev_p, x: '竹中_middle' });
+                                }
+                                if (dup_suffix === '_bottom') {
+                                    if (base === '竹中') curDupSeg.push({ ...p, x: '竹中_middle' });
+                                    curDupSeg = [];
+                                    duplicateSegmentsList.push(curDupSeg);
+                                    if (prev_base === '竹中') curDupSeg.push({ ...prev_p, x: '竹中_middle' });
+                                }
                             }
                             
-                            let timeAtZhuzhongL = null;
-                            if (prev_base === '竹中' && base === '六家') timeAtZhuzhongL = prev_p.y;
-                            if (prev_base === '六家' && base === '竹中') timeAtZhuzhongL = p.y;
-                            
-                            if (timeAtZhuzhongL !== null) {
-                                if (new_suffix === '_top') newSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhongL });
-                                if (dup_suffix === '_top') duplicateSeg.push({ ...p, x: '竹中_middle', y: timeAtZhuzhongL });
+                            let isLiujiaJump = (prev_base === '竹中' && base === '六家') || (prev_base === '六家' && base === '竹中');
+                            if (isLiujiaJump) {
+                                if (new_suffix === '_top') {
+                                    if (base === '竹中') curNewSeg.push({ ...p, x: '竹中_middle' });
+                                    curNewSeg = [];
+                                    newSegmentsList.push(curNewSeg);
+                                    if (prev_base === '竹中') curNewSeg.push({ ...prev_p, x: '竹中_middle' });
+                                }
+                                if (dup_suffix === '_top') {
+                                    if (base === '竹中') curDupSeg.push({ ...p, x: '竹中_middle' });
+                                    curDupSeg = [];
+                                    duplicateSegmentsList.push(curDupSeg);
+                                    if (prev_base === '竹中') curDupSeg.push({ ...prev_p, x: '竹中_middle' });
+                                }
                             }
                         }
                         
                         if (isInsideBranch || base === junc) {
-                            newSeg.push({ ...p, x: new_name });
-                            duplicateSeg.push({ ...p, x: dup_name });
+                            curNewSeg.push({ ...p, x: new_name });
+                            curDupSeg.push({ ...p, x: dup_name });
                         } else {
-                            newSeg.push(p);
+                            curNewSeg.push(p);
                         }
                     }
-                    currentSegments.push(newSeg);
-                    if (duplicateSeg.length > 0) currentSegments.push(duplicateSeg);
+                    
+                    newSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
+                    duplicateSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
                 } else {
                     let juncIndices = [];
                     for (let i = 0; i < seg.length; i++) {
