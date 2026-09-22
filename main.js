@@ -409,43 +409,61 @@ async function initMap() {
                 }
 
                 let newSeg = [];
-                for (let i = 0; i < seg.length; i++) {
-                    let p = seg[i];
-                    let base = p.x.split('_')[0];
-                    if (branchStations.includes(base)) {
-                        newSeg.push({ ...p, x: base + (comesFromSouth ? '_top' : '_bottom') });
-                    } else if (base === junc) {
-                        if (hasBranch) {
+                let duplicateSeg = [];
+                if (hasBranch) {
+                    for (let i = 0; i < seg.length; i++) {
+                        let p = seg[i];
+                        let base = p.x.split('_')[0];
+                        if (branchStations.includes(base)) {
+                            newSeg.push({ ...p, x: base + (comesFromSouth ? '_top' : '_bottom') });
+                            duplicateSeg.push({ ...p, x: base + (comesFromSouth ? '_bottom' : '_top') });
+                        } else if (base === junc) {
                             newSeg.push({ ...p, x: junc + (comesFromSouth ? '_top' : '_bottom') });
+                            duplicateSeg.push({ ...p, x: junc + (comesFromSouth ? '_bottom' : '_top') });
                         } else {
-                            let prev_d = i > 0 ? allStationDistances[seg[i-1].x.split('_')[0]] : null;
-                            let next_d = i < seg.length - 1 ? allStationDistances[seg[i+1].x.split('_')[0]] : null;
-                            
-                            if (prev_d !== null && next_d !== null) {
-                                if (prev_d < j_d && next_d > j_d) {
-                                    newSeg.push({ ...p, x: junc + '_bottom' });
-                                    newSeg.push({ ...p, x: junc + '_top' });
-                                } else if (prev_d > j_d && next_d < j_d) {
-                                    newSeg.push({ ...p, x: junc + '_top' });
-                                    newSeg.push({ ...p, x: junc + '_bottom' });
-                                } else {
-                                    newSeg.push({ ...p, x: junc + (prev_d > j_d ? '_top' : '_bottom') });
-                                }
-                            } else {
-                                if (prev_d !== null) {
-                                    newSeg.push({ ...p, x: junc + (prev_d > j_d ? '_top' : '_bottom') });
-                                } else if (next_d !== null) {
-                                    newSeg.push({ ...p, x: junc + (next_d > j_d ? '_top' : '_bottom') });
-                                } else {
-                                    newSeg.push({ ...p, x: junc + '_bottom' });
-                                }
-                            }
+                            newSeg.push(p);
+                        }
+                    }
+                    currentSegments.push(newSeg);
+                    if (duplicateSeg.length > 0) currentSegments.push(duplicateSeg);
+                } else {
+                    let juncIndices = [];
+                    for (let i = 0; i < seg.length; i++) {
+                        if (seg[i].x.split('_')[0] === junc) juncIndices.push(i);
+                    }
+                    
+                    if (juncIndices.length > 0) {
+                        let firstJunc = juncIndices[0];
+                        let lastJunc = juncIndices[juncIndices.length - 1];
+                        
+                        let isPrevSouth = firstJunc > 0 ? allStationDistances[seg[firstJunc - 1].x.split('_')[0]] > j_d : false;
+                        let isNextSouth = lastJunc < seg.length - 1 ? allStationDistances[seg[lastJunc + 1].x.split('_')[0]] > j_d : false;
+                        
+                        if (firstJunc === 0) isPrevSouth = !isNextSouth;
+                        if (lastJunc === seg.length - 1) isNextSouth = !isPrevSouth;
+                        
+                        if (isPrevSouth !== isNextSouth) {
+                            let seg1 = seg.slice(0, lastJunc + 1).map(p => {
+                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isPrevSouth ? '_top' : '_bottom') };
+                                return p;
+                            });
+                            let seg2 = seg.slice(firstJunc).map(p => {
+                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isNextSouth ? '_top' : '_bottom') };
+                                return p;
+                            });
+                            currentSegments.push(seg1);
+                            currentSegments.push(seg2);
+                        } else {
+                            let newSeg = seg.map(p => {
+                                if (p.x.split('_')[0] === junc) return { ...p, x: junc + (isPrevSouth ? '_top' : '_bottom') };
+                                return p;
+                            });
+                            currentSegments.push(newSeg);
                         }
                     } else {
-                        newSeg.push(p);
+                        currentSegments.push(seg);
                     }
                 }
-                currentSegments.push(newSeg);
             });
             finalSegments = currentSegments;
         });
