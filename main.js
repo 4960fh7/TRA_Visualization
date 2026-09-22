@@ -6,7 +6,7 @@ const seaStationDistances = {'八堵': 0, '七堵': 23, '百福': 50, '五堵': 
 const mainStationList = new Set(["基隆", "八堵", "七堵", "汐止", "南港", "松山", "臺北", "臺北_環島", "萬華", "板橋", "樹林", "鶯歌", "桃園", "中壢", "新竹", "竹南", "大甲", "臺中港", "沙鹿", "苗栗", "豐原", "臺中", "新烏日", "彰化", "員林", "田中", "二水", "斗六", "斗南", "嘉義", "新營", "隆田", "善化", "永康", "臺南", "中洲", "岡山", "楠梓", "新左營", "高雄", "鳳山", "屏東", "潮州", "枋寮", "臺東", "玉里", "花蓮", "新城", "和平", "東澳", "蘇澳新", "羅東", "宜蘭", "頭城", "雙溪", "瑞芳"]);
 const mountStationList = new Set(['八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', "臺北_環島", '萬華', '板橋', '浮洲', '樹林', '南樹林', '山佳', '鶯歌', '鳳鳴', '桃園', '內壢', '中壢', '埔心', '楊梅', '富岡', '新富', '北湖', '湖口', '新豐', '竹北', '北新竹', '新竹', '三姓橋', '香山', '崎頂', '竹南', '造橋', '豐富', '苗栗', '南勢', '銅鑼', '三義', '泰安', '后里', '豐原', '栗林', '潭子', '頭家厝', '松竹', '太原', '精武', '臺中', '五權', '大慶', '烏日', '新烏日', '成功', '彰化', '花壇', '大村', '員林', '永靖', '社頭', '田中', '二水', '林內', '石榴', '斗六', '斗南', '石龜', '大林', '民雄', '嘉北', '嘉義', '水上', '南靖', '後壁', '新營', '柳營', '林鳳營', '隆田', '拔林', '善化', '南科', '新市', '永康', '大橋', '臺南', '保安', '仁德', '中洲', '大湖', '路竹', '岡山', '橋頭', '楠梓', '新左營', '左營', '內惟', '美術館', '鼓山', '三塊厝', '高雄', '民族', '科工館', '正義', '鳳山', '後庄', '九曲堂', '六塊厝', '屏東', '歸來', '麟洛', '西勢', '竹田', '潮州', '崁頂', '南州', '鎮安', '林邊', '佳冬', '東海', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東', '山里', '鹿野', '瑞源', '瑞和', '關山', '海端', '池上', '富里', '東竹', '東里', '玉里', '三民', '瑞穗', '富源', '大富', '光復', '萬榮', '鳳林', '南平', '林榮新光', '豐田', '壽豐', '平和', '志學', '吉安', '花蓮', '北埔', '景美', '新城', '崇德', '和仁', '和平', '漢本', '武塔', '南澳', '東澳', '永樂', '蘇澳新', '冬山', '羅東', '中里', '二結', '宜蘭', '四城', '礁溪', '頂埔', '頭城', '外澳', '龜山', '大溪', '大里', '石城', '福隆', '貢寮', '雙溪', '牡丹', '三貂嶺', '猴硐', '瑞芳', '四腳亭', '暖暖']);
 const seaStationList = new Set(['八堵', '七堵', '百福', '五堵', '汐止', '汐科', '南港', '松山', '臺北', "臺北_環島", '萬華', '板橋', '浮洲', '樹林', '南樹林', '山佳', '鶯歌', '鳳鳴', '桃園', '內壢', '中壢', '埔心', '楊梅', '富岡', '新富', '北湖', '湖口', '新豐', '竹北', '北新竹', '新竹', '三姓橋', '香山', '崎頂', '竹南', "談文", "大山", "後龍", "龍港", "白沙屯", "新埔", "通霄", "苑裡", "日南", "大甲", "臺中港", "清水", "沙鹿", "龍井", "大肚", "追分", '彰化', '花壇', '大村', '員林', '永靖', '社頭', '田中', '二水', '林內', '石榴', '斗六', '斗南', '石龜', '大林', '民雄', '嘉北', '嘉義', '水上', '南靖', '後壁', '新營', '柳營', '林鳳營', '隆田', '拔林', '善化', '南科', '新市', '永康', '大橋', '臺南', '保安', '仁德', '中洲', '大湖', '路竹', '岡山', '橋頭', '楠梓', '新左營', '左營', '內惟', '美術館', '鼓山', '三塊厝', '高雄', '民族', '科工館', '正義', '鳳山', '後庄', '九曲堂', '六塊厝', '屏東', '歸來', '麟洛', '西勢', '竹田', '潮州', '崁頂', '南州', '鎮安', '林邊', '佳冬', '東海', '枋寮', '加祿', '內獅', '枋山', '大武', '瀧溪', '金崙', '太麻里', '知本', '康樂', '臺東', '山里', '鹿野', '瑞源', '瑞和', '關山', '海端', '池上', '富里', '東竹', '東里', '玉里', '三民', '瑞穗', '富源', '大富', '光復', '萬榮', '鳳林', '南平', '林榮新光', '豐田', '壽豐', '平和', '志學', '吉安', '花蓮', '北埔', '景美', '新城', '崇德', '和仁', '和平', '漢本', '武塔', '南澳', '東澳', '永樂', '蘇澳新', '冬山', '羅東', '中里', '二結', '宜蘭', '四城', '礁溪', '頂埔', '頭城', '外澳', '龜山', '大溪', '大里', '石城', '福隆', '貢寮', '雙溪', '牡丹', '三貂嶺', '猴硐', '瑞芳', '四腳亭', '暖暖']);
-const mainStationDict = { "ㄅㄉ": "八堵", "ㄑㄉ": "七堵", "ㄨㄉ": "五堵", "ㄒㄓ": "汐止", "ㄋㄍ": "南港", "ㄙㄥ": "松山", "ㄊㄞ": "臺北", "ㄨㄢ": "萬華", "ㄅㄢ": "板橋", "ㄈㄓ": "浮洲", "ㄕㄨ": "樹林", "ㄕㄢ": "山佳", "ㄧㄥ": "鶯歌", "ㄊㄠ": "桃園", "ㄋㄌ": "內壢", "ㄓㄌ": "中壢", "ㄅㄒㄣ": "埔心", "ㄧㄤ": "楊梅", "ㄈㄍ": "富岡", "ㄏㄨ": "湖口", "ㄒㄈ": "新豐", "ㄓㄅ": "竹北", "ㄒㄣ": "新竹", "ㄒㄤ": "香山", "ㄑㄧ": "崎頂", "ㄓㄋ": "竹南", "ㄨㄣ": "談文", "ㄉㄚ": "大山", "ㄏㄡ": "後龍", "ㄌㄍ": "龍港", "ㄅㄕㄚ": "白沙屯", "ㄒㄅ": "新埔", "ㄊㄒ": "通霄", "ㄩㄢ": "苑裡", "ㄖㄢ": "日南", "ㄐㄚ": "大甲", "ㄊㄓㄍ": "臺中港", "ㄑㄥ": "清水", "ㄕㄚ": "沙鹿", "ㄌㄐ": "龍井", "ㄉㄉ": "大肚", "ㄓㄟ": "追分", "ㄗㄠ": "造橋", "ㄈㄈ": "豐富", "ㄇㄠ": "苗栗", "ㄋㄕ": "南勢", "ㄊㄌ": "銅鑼", "ㄢㄧ": "三義", "ㄊㄞㄢ": "泰安", "ㄏㄌ": "后里", "ㄈㄥ": "豐原", "ㄊㄗ": "潭子", "ㄊㄓ": "臺中", "ㄨㄖ": "烏日", "ㄔㄥㄍ": "成功", "ㄓㄤ": "彰化", "ㄊㄢ": "花壇", "ㄩㄌ": "員林", "ㄥㄐ": "永靖", "ㄕㄜ": "社頭", "ㄊㄧㄢ": "田中", "ㄦㄕ": "二水", "ㄌㄣ": "林內", "ㄌㄧㄡ": "石榴", "ㄉㄡ": "斗六", "ㄉㄋ": "斗南", "ㄕㄍㄟ": "石龜", "ㄉㄌㄣ": "大林", "ㄇㄣ": "民雄", "ㄐㄧ": "嘉義", "ㄕㄟ": "水上", "ㄋㄐ": "南靖", "ㄏㄅ": "後壁", "ㄒㄥ": "新營", "ㄌㄧ": "柳營", "ㄌㄈ": "林鳳營", "ㄌㄥㄊ": "隆田", "ㄅㄚㄌ": "拔林", "ㄕㄏ": "善化", "ㄒㄕ": "新市", "ㄎㄤ": "永康", "ㄊㄋ": "臺南", "ㄠㄢ": "保安", "ㄓㄡ": "中洲", "ㄉㄏㄨ": "大湖", "ㄌㄨ": "路竹", "ㄍㄤ": "岡山", "ㄑㄠ": "橋頭", "ㄋㄗ": "楠梓", "ㄒㄗㄛ": "新左營", "ㄗㄛ": "左營", "ㄋㄨ": "內惟", "ㄍㄕ": "鼓山", "ㄙㄎㄘ": "三塊厝", "ㄍㄠ": "高雄", "ㄈㄕ": "鳳山", "ㄏㄓ": "後庄", "ㄐㄡ": "九曲堂", "ㄌㄡ": "六塊厝", "ㄆㄥ": "屏東", "ㄨㄞ": "歸來", "ㄌㄧㄣ": "麟洛", "ㄒㄧㄕ": "西勢", "ㄓㄨ": "竹田", "ㄔㄠ": "潮州", "ㄎㄉ": "崁頂", "ㄋㄓ": "南州", "ㄓㄣ": "鎮安", "ㄌㄅ": "林邊", "ㄐㄉ": "佳冬", "ㄉㄏㄞ": "東海", "ㄤㄌ": "枋寮", "ㄐㄌㄨ": "加祿", "ㄋㄟㄕ": "內獅", "ㄤㄕ": "枋山", "ㄤㄧ": "枋野", "ㄉㄚㄨ": "大武", "ㄌㄨㄥ": "瀧溪", "ㄐㄌㄣ": "金崙", "ㄊㄇㄌ": "太麻里", "ㄓㄅㄣ": "知本", "ㄎㄌ": "康樂", "ㄎㄌ": "康樂", "ㄊㄞㄉ": "臺東", "ㄕㄢㄌ": "山里", "ㄌㄧㄝ": "鹿野", "ㄖㄩ": "瑞源", "ㄖㄏ": "瑞和", "ㄍㄢㄕ": "關山", "ㄏㄉ": "海端", "ㄔㄕ": "池上", "ㄈㄌㄧ": "富里", "ㄉㄓ": "東竹", "ㄉㄥㄌ": "東里", "ㄩㄌㄧ": "玉里", "ㄙㄇ": "三民", "ㄖㄟ": "瑞穗", "ㄈㄩ": "富源", "ㄉㄈㄩ": "大富", "ㄍㄈ": "光復", "ㄨㄢㄖ": "萬榮", "ㄈㄌㄣ": "鳳林", "ㄋㄆ": "南平", "ㄌㄖ": "林榮新光", "ㄈㄊ": "豐田", "ㄕㄈ": "壽豐", "ㄥㄏ": "平和", "ㄓㄝ": "志學", "ㄐㄢ": "吉安", "ㄌㄧㄢ": "花蓮", "ㄅㄟㄅ": "北埔", "ㄐㄥ": "景美", "ㄒㄔ": "新城", "ㄔㄥㄉ": "崇德", "ㄏㄖ": "和仁", "ㄏㄆㄥ": "和平", "ㄏㄢ": "漢本", "ㄨㄊ": "武塔", "ㄋㄠ": "南澳", "ㄉㄠ": "東澳", "ㄩㄌㄜ": "永樂", "ㄙㄒㄣ": "蘇澳新", "ㄉㄥ": "冬山", "ㄌㄛ": "羅東", "ㄓㄥ": "中里", "ㄦㄐ": "二結", "ㄧㄌ": "宜蘭", "ㄙㄔ": "四城", "ㄐㄠ": "礁溪", "ㄉㄅ": "頂埔", "ㄊㄔ": "頭城", "ㄨㄠ": "外澳", "ㄍㄟ": "龜山", "ㄉㄑ": "大溪", "ㄉㄌ": "大里", "ㄕㄔ": "石城", "ㄈㄌ": "福隆", "ㄍㄌ": "貢寮", "ㄕㄤㄑ": "雙溪", "ㄇㄉ": "牡丹", "ㄙㄉㄌ": "三貂嶺", "ㄏㄊ": "猴硐", "ㄖㄈ": "瑞芳", "ㄙㄐㄠ": "四腳亭", "ㄋㄋ": "暖暖", };
+const mainStationDict = { "ㄅㄉ": "八堵", "ㄑㄉ": "七堵", "ㄨㄉ": "五堵", "ㄒㄓ": "汐止", "ㄋㄍ": "南港", "ㄙㄥ": "松山", "ㄊㄞ": "臺北", "ㄨㄢ": "萬華", "ㄅㄢ": "板橋", "ㄈㄓ": "浮洲", "ㄕㄨ": "樹林", "ㄕㄢ": "山佳", "ㄧㄥ": "鶯歌", "ㄊㄠ": "桃園", "ㄋㄌ": "內壢", "ㄓㄌ": "中壢", "ㄅㄒㄣ": "埔心", "ㄧㄤ": "楊梅", "ㄈㄍ": "富岡", "ㄏㄨ": "湖口", "ㄒㄈ": "新豐", "ㄓㄅ": "竹北", "ㄒㄣ": "新竹", "ㄒㄤ": "香山", "ㄑㄧ": "崎頂", "ㄓㄋ": "竹南", "ㄨㄣ": "談文", "ㄉㄚ": "大山", "ㄏㄡ": "後龍", "ㄌㄍ": "龍港", "ㄅㄕㄚ": "白沙屯", "ㄒㄅ": "新埔", "ㄊㄒ": "通霄", "ㄩㄢ": "苑裡", "ㄖㄢ": "日南", "ㄐㄚ": "大甲", "ㄊㄓㄍ": "臺中港", "ㄑㄥ": "清水", "ㄕㄚ": "沙鹿", "ㄌㄐ": "龍井", "ㄉㄉ": "大肚", "ㄓㄟ": "追分", "ㄗㄠ": "造橋", "ㄈㄈ": "豐富", "ㄇㄠ": "苗栗", "ㄋㄕ": "南勢", "ㄊㄌ": "銅鑼", "ㄢㄧ": "三義", "ㄊㄞㄢ": "泰安", "ㄏㄌ": "后里", "ㄈㄥ": "豐原", "ㄊㄗ": "潭子", "ㄊㄓ": "臺中", "ㄨㄖ": "烏日", "ㄔㄥㄍ": "成功", "ㄓㄤ": "彰化", "ㄊㄢ": "花壇", "ㄩㄌ": "員林", "ㄥㄐ": "永靖", "ㄕㄜ": "社頭", "ㄊㄧㄢ": "田中", "ㄦㄕ": "二水", "ㄌㄣ": "林內", "ㄌㄧㄡ": "石榴", "ㄉㄡ": "斗六", "ㄉㄋ": "斗南", "ㄕㄍㄟ": "石龜", "ㄉㄌㄣ": "大林", "ㄇㄣ": "民雄", "ㄐㄧ": "嘉義", "ㄕㄟ": "水上", "ㄋㄐ": "南靖", "ㄏㄅ": "後壁", "ㄒㄥ": "新營", "ㄌㄧ": "柳營", "ㄌㄈ": "林鳳營", "ㄌㄥⵜ": "隆田", "ㄅㄚㄌ": "拔林", "ㄕㄏ": "善化", "ㄒㄕ": "新市", "ㄎㄤ": "永康", "ㄊㄋ": "臺南", "ㄠㄢ": "保安", "ㄓㄡ": "中洲", "ㄉㄏㄨ": "大湖", "ㄌㄨ": "路竹", "ㄍㄤ": "岡山", "ㄑㄠ": "橋頭", "ㄋㄗ": "楠梓", "ㄒㄗㄛ": "新左營", "ㄗㄛ": "左營", "ㄋㄨ": "內惟", "ㄍㄕ": "鼓山", "ㄙㄎㄘ": "三塊厝", "ㄍㄠ": "高雄", "ㄈㄕ": "鳳山", "ㄏㄓ": "後庄", "ㄐㄡ": "九曲堂", "ㄌㄡ": "六塊厝", "ㄆㄥ": "屏東", "ㄨㄞ": "歸來", "ㄌㄧㄣ": "麟洛", "ㄒㄧㄕ": "西勢", "ㄓㄨ": "竹田", "ㄔㄠ": "潮州", "ㄎㄉ": "崁頂", "ㄋㄓ": "南州", "ㄓㄣ": "鎮安", "ㄌㄅ": "林邊", "ㄐㄉ": "佳冬", "ㄉㄏㄞ": "東海", "ㄤㄌ": "枋寮", "ㄐㄌㄨ": "加祿", "ㄋㄟㄕ": "內獅", "ㄤㄕ": "枋山", "ㄤㄧ": "枋野", "ㄉㄚㄨ": "大武", "ㄌㄨㄥ": "瀧溪", "ㄐㄌㄣ": "金崙", "ㄊㄇㄌ": "太麻里", "ㄓㄅㄣ": "知本", "ㄎㄌ": "康樂", "ㄎㄌ": "康樂", "ㄊㄞㄉ": "臺東", "ㄕㄢㄌ": "山里", "ㄌㄧㄝ": "鹿野", "ㄖㄩ": "瑞源", "ㄖㄏ": "瑞和", "ㄍㄢㄕ": "關山", "ㄏㄉ": "海端", "ㄔㄕ": "池上", "ㄈㄌㄧ": "富里", "ㄉㄓ": "東竹", "ㄉㄥㄌ": "東里", "玉里": "玉里", "ㄙㄇ": "三民", "ㄖㄟ": "瑞穗", "ㄈㄩ": "富源", "ㄉㄈㄩ": "大富", "ㄍㄈ": "光復", "ㄨㄢㄖ": "萬榮", "ㄈㄌㄣ": "鳳林", "ㄋㄆ": "南平", "ㄌㄖ": "林榮新光", "ㄈㄊ": "豐田", "ㄕㄈ": "壽豐", "ㄥㄏ": "平和", "ㄓㄝ": "志學", "ㄐㄢ": "吉安", "ㄌㄧㄢ": "花蓮", "ㄅㄟㄅ": "北埔", "ㄐㄥ": "景美", "ㄒㄔ": "新城", "ㄔㄥㄉ": "崇德", "ㄏㄖ": "和仁", "ㄏㄆㄥ": "和平", "ㄏㄢ": "漢本", "ㄨㄊ": "武塔", "ㄋㄠ": "南澳", "ㄉㄠ": "東澳", "ㄩㄌㄜ": "永樂", "ㄙㄒㄣ": "蘇澳新", "ㄉㄥ": "冬山", "ㄌㄛ": "羅東", "ㄓㄥ": "中里", "ㄦㄐ": "二結", "ㄧㄌ": "宜蘭", "ㄙㄔ": "四城", "ㄐㄠ": "礁溪", "ㄉㄅ": "頂埔", "ㄊㄔ": "頭城", "ㄨㄠ": "外澳", "ㄍㄟ": "龜山", "ㄉㄑ": "大溪", "ㄉㄌ": "大里", "ㄕㄔ": "石城", "ㄈㄌ": "福隆", "ㄍㄌ": "貢寮", "ㄕㄤㄑ": "雙溪", "ㄇㄉ": "牡丹", "ㄙㄉㄌ": "三貂嶺", "ㄏㄊ": "猴硐", "ㄖㄈ": "瑞芳", "ㄙㄐㄠ": "四腳亭", "ㄋㄋ": "暖暖", };
 const reverseStationDict = {};
 Object.entries(mainStationDict).forEach(([key, value]) => { reverseStationDict[value] = key; });
 let isLight = false;
@@ -22,7 +22,17 @@ let state = {
     selectedLine: null, showSchedule: false, currentZoom: 0, 
     enabledTypes: new Set(['普悠瑪', '太魯閣', '新自強', '柴聯自強', 'PP自強', '自強專列', '莒光', '莒光專列', '區間快', '區間', '普通專列']),
     stationList: mountStationList, stationDistances: mountStationDistances, focusedStation: null,
+    activeBranches: new Set(),
     period: 8759, initialY: 246, currentTimeMinutes: 0
+};
+
+const branchConfigs = {
+    'keelung': {
+        name: '基隆線',
+        junction: '八堵',
+        stations: ['基隆', '三坑', '八堵'], // ordered from branch end to junction
+        gap: 40 // distance units
+    }
 };
 let gridData = {
     denseLabels: [], normalLabels: [], sparseLabels: [], simpleLabels: [],
@@ -167,8 +177,141 @@ async function initMap() {
         btnSelectAll: document.getElementById('btn-select-all'),
         btnDeselectAll: document.getElementById('btn-deselect-all'),
         btnClearSelection: document.getElementById('btn-clear-selection'),
-        viewMonitor: document.getElementById('view-monitor')
+        viewMonitor: document.getElementById('view-monitor'),
+        branchPills: document.querySelectorAll('.branch-pill')
     };
+
+    function calculateDynamicDistances() {
+        const baseList = isMountain ? mountStationList : seaStationList;
+        const baseDistances = isMountain ? mountStationDistances : seaStationDistances;
+        const basePeriod = isMountain ? 8759 : 8806;
+
+        let newList = new Set(baseList);
+        let newDistances = { ...baseDistances };
+        let currentPeriod = basePeriod;
+
+        if (state.activeBranches.has('keelung')) {
+            const config = branchConfigs['keelung'];
+            const gap = config.gap;
+            
+            newList.add('基隆_top');
+            newList.add('三坑_top');
+            newList.add('基隆_bottom');
+            newList.add('三坑_bottom');
+            newList.add('八堵_top');
+            
+            newDistances['基隆_bottom'] = allStationDistances['基隆']; 
+            newDistances['三坑_bottom'] = allStationDistances['三坑']; 
+            newDistances['八堵_top'] = basePeriod;
+            newDistances['三坑_top'] = basePeriod + (0 - allStationDistances['三坑']);
+            newDistances['基隆_top'] = basePeriod + (0 - allStationDistances['基隆']);
+            
+            const totalBranchLen = 0 - allStationDistances['基隆'];
+            currentPeriod = basePeriod + gap + 2 * totalBranchLen;
+        }
+        
+        state.stationList = newList;
+        state.stationDistances = newDistances;
+        state.period = currentPeriod;
+    }
+
+    function preprocessTrainData(trainData) {
+        if (!state.activeBranches.has('keelung')) return [trainData];
+        
+        let interpolated = [];
+        for (let i = 0; i < trainData.length; i++) {
+            interpolated.push(trainData[i]);
+            if (i < trainData.length - 1) {
+                const p1 = trainData[i];
+                const p2 = trainData[i+1];
+                const d1 = allStationDistances[p1.x];
+                const d2 = allStationDistances[p2.x];
+                if (d1 !== undefined && d2 !== undefined) {
+                    if ((d1 > 6000 && d2 < 1000) || (d1 < 1000 && d2 > 6000)) {
+                        if (p1.x !== '八堵' && p2.x !== '八堵') {
+                            let d1_wrap = d1 > 6000 ? d1 - 8759 : d1;
+                            let d2_wrap = d2 > 6000 ? d2 - 8759 : d2;
+                            let ratio = (0 - d1_wrap) / (d2_wrap - d1_wrap);
+                            let t_badu = p1.y + ratio * (p2.y - p1.y);
+                            interpolated.push({ x: '八堵', y: t_badu });
+                        }
+                    }
+                }
+            }
+        }
+
+        let segments = [];
+        let currentSegment = [];
+        let duplicateSegment = null;
+        
+        let hasBranch = interpolated.some(p => p.x === '基隆' || p.x === '三坑');
+        let comesFromEast = false;
+        let baduIndex = interpolated.findIndex(p => p.x === '八堵');
+        if (hasBranch && baduIndex !== -1) {
+            for (let i = 0; i < interpolated.length; i++) {
+                if (interpolated[i].x !== '八堵' && interpolated[i].x !== '三坑' && interpolated[i].x !== '基隆') {
+                    if (allStationDistances[interpolated[i].x] > 6000) {
+                        comesFromEast = true;
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < interpolated.length; i++) {
+            let p = interpolated[i];
+            
+            if (p.x === '基隆' || p.x === '三坑') {
+                if (comesFromEast) {
+                    currentSegment.push({ ...p, x: p.x + '_top' });
+                    if (!duplicateSegment) duplicateSegment = [];
+                    duplicateSegment.push({ ...p, x: p.x + '_bottom' });
+                } else {
+                    currentSegment.push({ ...p, x: p.x + '_bottom' });
+                    if (!duplicateSegment) duplicateSegment = [];
+                    duplicateSegment.push({ ...p, x: p.x + '_top' });
+                }
+            } 
+            else if (p.x === '八堵') {
+                if (hasBranch) {
+                    if (comesFromEast) {
+                        currentSegment.push({ ...p, x: '八堵_top' });
+                        if (!duplicateSegment) duplicateSegment = [];
+                        duplicateSegment.push({ ...p, x: '八堵' });
+                    } else {
+                        currentSegment.push({ ...p, x: '八堵' });
+                        if (!duplicateSegment) duplicateSegment = [];
+                        duplicateSegment.push({ ...p, x: '八堵_top' });
+                    }
+                } else {
+                    let prevDist = i > 0 ? allStationDistances[interpolated[i-1].x] : undefined;
+                    let nextDist = i < interpolated.length - 1 ? allStationDistances[interpolated[i+1].x] : undefined;
+                    let isPrevEast = prevDist > 6000;
+                    let isNextEast = nextDist > 6000;
+                    
+                    if (isPrevEast) {
+                        currentSegment.push({ ...p, x: '八堵_top' });
+                        segments.push(currentSegment);
+                        currentSegment = [{ ...p, x: '八堵' }];
+                    } else if (prevDist !== undefined) {
+                        currentSegment.push({ ...p, x: '八堵' });
+                        segments.push(currentSegment);
+                        currentSegment = [{ ...p, x: '八堵_top' }];
+                    } else {
+                        if (isNextEast) currentSegment.push({ ...p, x: '八堵_top' });
+                        else currentSegment.push({ ...p, x: '八堵' });
+                    }
+                }
+            }
+            else {
+                currentSegment.push(p);
+            }
+        }
+        
+        if (currentSegment.length > 0) segments.push(currentSegment);
+        if (duplicateSegment && duplicateSegment.length > 0) segments.push(duplicateSegment);
+        
+        return segments;
+    }
 
     function fixMonotonicY(data) {
         if (!data) return;
@@ -450,17 +593,18 @@ async function initMap() {
         Object.keys(gridData).forEach(key => Array.isArray(gridData[key]) ? gridData[key] = [] : null);
         Object.entries(state.stationDistances).forEach(([name, yValue]) => {
             if (state.stationList.has(name) && name !== "臺北_環島") {
+                const displayName = name.split('_')[0];
                 for (let x = 120; x <= 1560; x += 120) {
-                    const entry = { text: name, position: [x * 3, yValue], y: yValue };
+                    const entry = { text: displayName, position: [x * 3, yValue], y: yValue };
                     if ((x-120) % 480 === 0) {
-                        if (mainStationList.has(name)) gridData.mainLabelData.push(entry);
+                        if (mainStationList.has(displayName)) gridData.mainLabelData.push(entry);
                         gridData.sparseLabelData.push(entry);
                     }
                     if ((x-120) % 240 === 0) gridData.normalLabelData.push(entry);
                     gridData.denseLabelData.push(entry);
                 }
-                const entry = { text: name, position: [270, yValue], y: yValue };
-                if (mainStationList.has(name)) gridData.leftonlyLabelData.push(entry);
+                const entry = { text: displayName, position: [270, yValue], y: yValue };
+                if (mainStationList.has(displayName)) gridData.leftonlyLabelData.push(entry);
             }
         });
 
@@ -549,18 +693,16 @@ async function initMap() {
             pill.classList.add('active');
             const lineType = pill.getAttribute('data-line');
             isMountain = lineType === 'mountain';
-            state.stationList = isMountain ? mountStationList : seaStationList;
-            state.stationDistances = isMountain ? mountStationDistances : seaStationDistances;
-            state.period = isMountain ? 8759 : 8806;
+            calculateDynamicDistances();
             
             if (state.selectedLine) {
                 const updatedMatch = rawData.find(t => 
                     t.number === state.selectedLine.number && 
-                    t.data.some(p => state.stationList.has(p.x))
+                    t.data.some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
                 );
                 const yupdatedMatch = yrawData.find(t => 
                     t.number === state.selectedLine.number && 
-                    t.data.some(p => state.stationList.has(p.x))
+                    t.data.some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
                 );
                 if (updatedMatch) { state.selectedLine = updatedMatch; }
                 else if ( yupdatedMatch ) { state.selectedLine = yupdatedMatch; }
@@ -570,6 +712,23 @@ async function initMap() {
                     updateInfoBox();
                 }
             }
+            updateStationGridData();
+            updateInfoBox();
+            renderDataLayers();
+        });
+    });
+
+    DOM.branchPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            const branch = pill.getAttribute('data-branch');
+            if (pill.classList.contains('active')) {
+                state.activeBranches.add(branch);
+            } else {
+                state.activeBranches.delete(branch);
+            }
+            calculateDynamicDistances();
+            
             updateStationGridData();
             updateInfoBox();
             renderDataLayers();
@@ -659,9 +818,11 @@ async function initMap() {
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
-                const filteredData = train.data.filter((p, index) => 
-                    index % 2 === 0 && state.stationList.has(p.x)
-                );
+                const preprocessedSegments = preprocessTrainData(train.data);
+                return preprocessedSegments.flatMap(segment => {
+                    const filteredData = segment.filter((p, index) => 
+                        (index === 0 || p.x !== segment[index-1].x) && state.stationList.has(p.x)
+                    );
 
                 if (notime) {
                     if (filteredData.length === 0) return [];
@@ -695,8 +856,8 @@ async function initMap() {
                 const segments = [];
                 let currentSegment = [];
                 let cumulativeOffset = 0;
-                for (let i = 0; i < train.data.length; i++) {
-                    const p = train.data[i];
+                for (let i = 0; i < segment.length; i++) {
+                    const p = segment[i];
                     if (p.y == -1) {
                         continue;
                     }
@@ -734,7 +895,7 @@ async function initMap() {
                         }
                     }
                     if (i > 0 && currentRawDist !== undefined) {
-                        const prevPoint = train.data[i - 1];
+                        const prevPoint = segment[i - 1];
                         const prevRawDist = state.stationDistances[prevPoint.x];
                         if (prevRawDist === undefined) {
                             const prevCalcDist = allStationDistances[prevPoint.x];
@@ -766,6 +927,7 @@ async function initMap() {
                 }
 
                 return segments;
+                });
             })
             .filter(train => train.data.length > 1);
 
@@ -776,11 +938,13 @@ async function initMap() {
                 return isEnabled && passesStation;
             })
             .flatMap(train => {
-                const segments = [];
-                let currentSegment = [];
-                let cumulativeOffset = 0;
-                for (let i = 0; i < train.data.length; i++) {
-                    const p = train.data[i];
+                const preprocessedSegments = preprocessTrainData(train.data);
+                return preprocessedSegments.flatMap(segment => {
+                    const segments = [];
+                    let currentSegment = [];
+                    let cumulativeOffset = 0;
+                    for (let i = 0; i < segment.length; i++) {
+                        const p = segment[i];
                     if (p.y < 1560) { continue; }
                     let tmpy = p.y - 1440;
                     const currentRawDist = state.stationDistances[p.x];
@@ -808,7 +972,7 @@ async function initMap() {
                         }
                     } else {
                         if (i > 0) {
-                            const prevPoint = train.data[i - 1];
+                            const prevPoint = segment[i - 1];
                             if (prevPoint.y >= 1560) continue;
                             const prevDist = state.stationDistances[prevPoint.x];
                             const currentDist = state.stationDistances[p.x];
@@ -816,7 +980,7 @@ async function initMap() {
                         }
                     }
                     if (i > 0 && currentRawDist !== undefined) {
-                        const prevPoint = train.data[i - 1];
+                        const prevPoint = segment[i - 1];
                         const prevRawDist = state.stationDistances[prevPoint.x];
                         if (prevRawDist === undefined) {
                             const prevCalcDist = allStationDistances[prevPoint.x];
@@ -849,6 +1013,7 @@ async function initMap() {
                 }
 
                 return segments;
+                });
             })
             .filter(train => train.data.length > 1);
 
