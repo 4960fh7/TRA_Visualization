@@ -239,7 +239,7 @@ async function initMap() {
 
         let activeBranchesArr = Array.from(state.activeBranches);
         let normalBranches = activeBranchesArr.filter(b => b !== 'keelung').sort((a, b) => {
-            return allStationDistances[branchConfigs[a].junction] - allStationDistances[branchConfigs[b].junction];
+            return baseDistances[branchConfigs[a].junction] - baseDistances[branchConfigs[b].junction];
         });
 
         let branchShifts = {};
@@ -266,7 +266,7 @@ async function initMap() {
             shiftOffsets.push({
                 branch: 'combined',
                 junction: '北新竹',
-                junc_d: allStationDistances['北新竹'],
+                junc_d: baseDistances['北新竹'],
                 shift: shift
             });
         }
@@ -276,7 +276,7 @@ async function initMap() {
             shiftOffsets.push({
                 branch,
                 junction: config.junction,
-                junc_d: allStationDistances[config.junction],
+                junc_d: baseDistances[config.junction],
                 shift: calculateBranchShift(branch)
             });
         });
