@@ -231,10 +231,10 @@ async function initMap() {
 
         let newList = new Set(baseList);
         let newDistances = { ...baseDistances };
-        
+
         newList.add('八堵_top');
         newDistances['八堵_top'] = basePeriod;
-        
+
         let currentPeriod = basePeriod;
 
         let activeBranchesArr = Array.from(state.activeBranches);
@@ -247,10 +247,10 @@ async function initMap() {
             if (branchShifts[branch]) return branchShifts[branch];
             const config = branchConfigs[branch];
             const junc = config.junction;
-            
+
             let len = Math.abs(allStationDistances[junc] - allStationDistances[config.stations[0]]);
             let shift = config.gap + 2 * len;
-            
+
             branchShifts[branch] = shift;
             return shift;
         }
@@ -280,7 +280,7 @@ async function initMap() {
                 shift: calculateBranchShift(branch)
             });
         });
-        
+
         shiftOffsets.sort((a, b) => a.junc_d - b.junc_d);
 
         let cumulativeOffset = 0;
@@ -307,43 +307,43 @@ async function initMap() {
         function assignBranchCoords(branch, startY, suffixPrefix) {
             const config = branchConfigs[branch];
             const junc = config.junction;
-            
+
             let stations = config.stations.slice(0, -1).reverse();
-            
+
             let currentY = startY;
             let prev_d = allStationDistances[junc];
-            
+
             stations.forEach(s => {
                 let s_d = allStationDistances[s];
                 currentY += Math.abs(s_d - prev_d);
                 prev_d = s_d;
-                
+
                 let finalName = s + suffixPrefix + '_bottom';
                 newDistances[finalName] = currentY;
                 newList.add(finalName);
                 if (!suffixPrefix) newList.delete(s);
             });
-            
+
             currentY += config.gap;
-            
+
             stations.slice().reverse().forEach(s => {
                 let finalName = s + suffixPrefix + '_top';
                 newDistances[finalName] = currentY;
                 newList.add(finalName);
-                
+
                 let s_d = allStationDistances[s];
                 let next_s = stations[stations.indexOf(s) - 1];
                 let next_d = next_s ? allStationDistances[next_s] : allStationDistances[junc];
                 currentY += Math.abs(s_d - next_d);
             });
-            
+
             return currentY;
         }
 
         function assignCombinedBranchCoords(startY) {
             let currentY = startY;
             let prev_d = allStationDistances['北新竹'];
-            
+
             // Shared _bottom
             ['千甲', '新莊', '竹中'].forEach(s => {
                 let s_d = allStationDistances[s];
@@ -354,24 +354,24 @@ async function initMap() {
                 newList.add(finalName);
                 newList.delete(s);
             });
-            
+
             // Liujia _bottom
             let s_d_liujia = allStationDistances['六家'];
             currentY += Math.abs(s_d_liujia - prev_d);
             newDistances['六家_bottom'] = currentY;
             newList.add('六家_bottom');
             newList.delete('六家');
-            
+
             currentY += 40; // gap 1
-            
+
             // Liujia _top
             newDistances['六家_top'] = currentY;
             newList.add('六家_top');
-            
+
             currentY += Math.abs(allStationDistances['竹中'] - allStationDistances['六家']);
             newDistances['竹中_middle'] = currentY;
             newList.add('竹中_middle');
-            
+
             // Neiwan _bottom
             let neiwanStations = ['上員', '榮華', '竹東', '橫山', '九讚頭', '合興', '富貴', '內灣'];
             prev_d = allStationDistances['竹中'];
@@ -384,24 +384,24 @@ async function initMap() {
                 newList.add(finalName);
                 newList.delete(s);
             });
-            
+
             currentY += 40; // gap 2
-            
+
             // Neiwan _top
             let neiwanStationsRev = [...neiwanStations].reverse();
             neiwanStationsRev.forEach(s => {
                 newDistances[s + '_top'] = currentY;
                 newList.add(s + '_top');
-                
+
                 let s_d = allStationDistances[s];
                 let next_s = neiwanStationsRev[neiwanStationsRev.indexOf(s) + 1] || '竹中';
                 let next_d = allStationDistances[next_s];
                 currentY += Math.abs(s_d - next_d);
             });
-            
+
             newDistances['竹中_top'] = currentY;
             newList.add('竹中_top');
-            
+
             // Shared _top
             let sharedStationsRev = ['新莊', '千甲'];
             prev_d = allStationDistances['竹中'];
@@ -421,7 +421,7 @@ async function initMap() {
             newList.add(junc + '_top');
             newDistances[junc + '_bottom'] = newDistances[junc];
             newDistances[junc + '_top'] = newDistances[junc] + so.shift;
-            
+
             if (so.branch === 'combined') {
                 assignCombinedBranchCoords(newDistances[junc]);
             } else {
@@ -437,18 +437,18 @@ async function initMap() {
             const config = branchConfigs['keelung'];
             const gap = config.gap;
             const branchLen = Math.abs(allStationDistances['基隆']);
-            
+
             newList.add('基隆_top');
             newList.add('三坑_top');
             newList.add('基隆_bottom');
             newList.add('三坑_bottom');
-            
+
             newDistances['基隆_bottom'] = allStationDistances['基隆'];
             newDistances['三坑_bottom'] = allStationDistances['三坑'];
-            
+
             newDistances['三坑_top'] = currentPeriod + (0 - allStationDistances['三坑']);
             newDistances['基隆_top'] = currentPeriod + (0 - allStationDistances['基隆']);
-            
+
             currentPeriod += gap + 2 * branchLen;
         }
 
@@ -464,7 +464,7 @@ async function initMap() {
         let activeBranchesArr = Array.from(state.activeBranches);
         let hasCombined = activeBranchesArr.includes('liujia') && activeBranchesArr.includes('neiwan');
         let branchesToProcess = new Set(activeBranchesArr);
-        
+
         if (hasCombined) {
             branchesToProcess.delete('liujia');
             branchesToProcess.delete('neiwan');
@@ -499,9 +499,9 @@ async function initMap() {
                         const config = virtualBranchConfigs[branch];
                         const junc = config.junction;
                         const junc_d = allStationDistances[junc];
-                        
+
                         let physicalStations = config.stations.slice(0, -1);
-                        
+
                         const isD1Branch = physicalStations.includes(p1.x);
                         const isD2Branch = physicalStations.includes(p2.x);
 
@@ -509,9 +509,9 @@ async function initMap() {
                             const baseList = isMountain ? mountStationList : seaStationList;
                             const isP1Visible = baseList.has(p1.x) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(p1.x));
                             const isP2Visible = baseList.has(p2.x) || Array.from(state.activeBranches).some(b => branchConfigs[b].stations.includes(p2.x));
-                            
+
                             if (!isP1Visible || !isP2Visible) return;
-                            
+
                             let dist1, dist2;
                             if (branch === 'keelung') {
                                 if (isD1Branch && d2 > 6000) {
@@ -566,7 +566,7 @@ async function initMap() {
                                     dist2 = Math.abs(d2 - junc_d);
                                 }
                             }
-                            
+
                             if (crossed) {
                                 let ratio = dist1 / (dist1 + dist2);
                                 insertedJunctions.push({ x: junc, y: p1.y + ratio * (p2.y - p1.y) });
@@ -646,14 +646,14 @@ async function initMap() {
         normalBranches.forEach(branch => {
             const config = virtualBranchConfigs[branch];
             const junc = config.junction;
-            
+
             let physicalStations = config.stations.slice(0, -1);
-            
+
             let currentSegments = [];
             finalSegments.forEach(seg => {
                 let hasBranch = seg.some(p => physicalStations.includes(p.x.split('_')[0]));
                 let comesFromSouth = false;
-                
+
                 if (hasBranch) {
                     let branchJuncIndex = seg.findIndex(p => p.x.split('_')[0] === junc);
                     if (branchJuncIndex !== -1) {
@@ -676,21 +676,21 @@ async function initMap() {
 
                 let newSegmentsList = [[]];
                 let duplicateSegmentsList = [[]];
-                
+
                 if (hasBranch) {
                     let curNewSeg = newSegmentsList[0];
                     let curDupSeg = duplicateSegmentsList[0];
-                    
+
                     for (let i = 0; i < seg.length; i++) {
                         let p = seg[i];
                         let base = p.x.split('_')[0];
-                        
+
                         let isInsideBranch = config.stations.slice(0, -1).includes(base);
                         let new_suffix = comesFromSouth ? '_top' : '_bottom';
                         let dup_suffix = comesFromSouth ? '_bottom' : '_top';
                         let new_name = base;
                         let dup_name = base;
-                        
+
                         if (isInsideBranch || base === junc) {
                             new_name = base + new_suffix;
                             dup_name = base + dup_suffix;
@@ -699,7 +699,7 @@ async function initMap() {
                         if (branch === 'combined' && i > 0) {
                             let prev_p = seg[i - 1];
                             let prev_base = prev_p.x.split('_')[0];
-                            
+
                             let isNeiwanJump = (prev_base === '竹中' && base === '上員') || (prev_base === '上員' && base === '竹中');
                             if (isNeiwanJump) {
                                 if (new_suffix === '_bottom') {
@@ -715,7 +715,7 @@ async function initMap() {
                                     if (prev_base === '竹中') curDupSeg.push({ ...prev_p, x: '竹中_middle' });
                                 }
                             }
-                            
+
                             let isLiujiaJump = (prev_base === '竹中' && base === '六家') || (prev_base === '六家' && base === '竹中');
                             if (isLiujiaJump) {
                                 if (new_suffix === '_top') {
@@ -732,7 +732,7 @@ async function initMap() {
                                 }
                             }
                         }
-                        
+
                         if (isInsideBranch || base === junc) {
                             curNewSeg.push({ ...p, x: new_name });
                             curDupSeg.push({ ...p, x: dup_name });
@@ -740,7 +740,7 @@ async function initMap() {
                             curNewSeg.push(p);
                         }
                     }
-                    
+
                     newSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
                     duplicateSegmentsList.forEach(s => { if (s.length > 0) currentSegments.push(s); });
                 } else {
@@ -748,19 +748,19 @@ async function initMap() {
                     for (let i = 0; i < seg.length; i++) {
                         if (seg[i].x.split('_')[0] === junc) juncIndices.push(i);
                     }
-                    
+
                     if (juncIndices.length > 0) {
                         let firstJunc = juncIndices[0];
                         let lastJunc = juncIndices[juncIndices.length - 1];
-                        
+
                         let current_j_visual = getVisualDist(seg[firstJunc].x);
                         let isPrevSouth = firstJunc > 0 ? getVisualDist(seg[firstJunc - 1].x) > current_j_visual : false;
                         let last_j_visual = getVisualDist(seg[lastJunc].x);
                         let isNextSouth = lastJunc < seg.length - 1 ? getVisualDist(seg[lastJunc + 1].x) > last_j_visual : false;
-                        
+
                         if (firstJunc === 0) isPrevSouth = !isNextSouth;
                         if (lastJunc === seg.length - 1) isNextSouth = !isPrevSouth;
-                        
+
                         if (isPrevSouth !== isNextSouth) {
                             let seg1 = seg.slice(0, lastJunc + 1).map(p => {
                                 if (p.x.split('_')[0] === junc) return { ...p, x: p.x + (isPrevSouth ? '_top' : '_bottom') };
@@ -1126,7 +1126,7 @@ async function initMap() {
 
     function updateStationGridData() {
         Object.keys(gridData).forEach(key => Array.isArray(gridData[key]) ? gridData[key] = [] : null);
-        
+
         Object.entries(state.stationDistances).forEach(([name, yValue]) => {
             if (state.stationList.has(name) && name !== "臺北_環島") {
                 const displayName = name.split('_')[0];
@@ -1336,7 +1336,7 @@ async function initMap() {
         }
     });
 
-    window.triggerRender = function() {
+    window.triggerRender = function () {
         renderDataLayers();
         renderBaseLayers();
     };
@@ -1425,15 +1425,16 @@ async function initMap() {
 
                             if (currentRawDist === undefined) {
                                 const currentCalcDist = allStationDistances[p.x];
-                                if (currentCalcDist !== undefined) {
-                                    if (currentCalcDist > 1250 && prevRawDist < 1200) {
-                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (1214 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 1214 + cumulativeOffset });
+                                const prevCalcDist = allStationDistances[prevPoint.x.split('_')[0]];
+                                if (currentCalcDist !== undefined && prevCalcDist !== undefined) {
+                                    if (currentCalcDist > 1230 && prevCalcDist < 1210) {
+                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (1214 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['竹南'] + cumulativeOffset });
                                     }
-                                    if (currentCalcDist < 2050 && prevRawDist > 2100 && train.info.via == "海線" && isMountain) {
-                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (2070 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 2070 + cumulativeOffset });
+                                    if (currentCalcDist < 2050 && prevCalcDist > 2080 && train.info.via == "海線" && isMountain) {
+                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (2070 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
-                                    if (currentCalcDist < 2100 && prevRawDist > 2150 && train.info.via == "山線" && !isMountain) {
-                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (2117 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 2117 + cumulativeOffset });
+                                    if (currentCalcDist < 2100 && prevCalcDist > 2125 && train.info.via == "山線" && !isMountain) {
+                                        currentSegment.push({ ...p, y: prevPoint.y + (p.y - prevPoint.y) * (2117 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
                                 }
                             }
@@ -1442,16 +1443,17 @@ async function initMap() {
                             const prevPoint = segment[i - 1];
                             const prevRawDist = state.stationDistances[prevPoint.x];
                             if (prevRawDist === undefined) {
-                                const prevCalcDist = allStationDistances[prevPoint.x];
-                                if (prevCalcDist !== undefined) {
-                                    if (prevCalcDist > 1250 && currentRawDist < 1200) {
-                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (1214 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 1214 + cumulativeOffset });
+                                const prevCalcDist = allStationDistances[prevPoint.x.split('_')[0]];
+                                const currentCalcDist = allStationDistances[p.x.split('_')[0]];
+                                if (prevCalcDist !== undefined && currentCalcDist !== undefined) {
+                                    if (prevCalcDist > 1230 && currentCalcDist < 1210) {
+                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (1214 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['竹南'] + cumulativeOffset });
                                     }
-                                    if (prevCalcDist < 2050 && currentRawDist > 2100 && train.info.via == "海線" && isMountain) {
-                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (2070 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 2070 + cumulativeOffset });
+                                    if (prevCalcDist < 2050 && currentCalcDist > 2080 && train.info.via == "海線" && isMountain) {
+                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (2070 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
-                                    if (prevCalcDist < 2100 && currentRawDist > 2150 && train.info.via == "山線" && !isMountain) {
-                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (2117 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 2117 + cumulativeOffset });
+                                    if (prevCalcDist < 2100 && currentCalcDist > 2125 && train.info.via == "山線" && !isMountain) {
+                                        currentSegment.push({ ...p, y: p.y + (prevPoint.y - p.y) * (2117 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
                                 }
                             }
@@ -1502,15 +1504,16 @@ async function initMap() {
 
                             if (currentRawDist === undefined) {
                                 const currentCalcDist = allStationDistances[p.x];
-                                if (currentCalcDist !== undefined) {
-                                    if (currentCalcDist > 1250 && prevRawDist < 1200) {
-                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (1214 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 1214 + cumulativeOffset });
+                                const prevCalcDist = allStationDistances[prevPoint.x.split('_')[0]];
+                                if (currentCalcDist !== undefined && prevCalcDist !== undefined) {
+                                    if (currentCalcDist > 1230 && prevCalcDist < 1210) {
+                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (1214 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['竹南'] + cumulativeOffset });
                                     }
-                                    if (currentCalcDist < 2050 && prevRawDist > 2100 && train.info.via == "海線" && isMountain) {
-                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (2070 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 2070 + cumulativeOffset });
+                                    if (currentCalcDist < 2050 && prevCalcDist > 2080 && train.info.via == "海線" && isMountain) {
+                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (2070 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
-                                    if (currentCalcDist < 2100 && prevRawDist > 2150 && train.info.via == "山線" && !isMountain) {
-                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (2117 - prevRawDist) / (currentCalcDist - prevRawDist), adjustedDist: 2117 + cumulativeOffset });
+                                    if (currentCalcDist < 2100 && prevCalcDist > 2125 && train.info.via == "山線" && !isMountain) {
+                                        currentSegment.push({ ...p, y: tmpprey + (tmpy - tmpprey) * (2117 - prevCalcDist) / (currentCalcDist - prevCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
                                 }
                             }
@@ -1527,16 +1530,17 @@ async function initMap() {
                             const prevPoint = segment[i - 1];
                             const prevRawDist = state.stationDistances[prevPoint.x];
                             if (prevRawDist === undefined) {
-                                const prevCalcDist = allStationDistances[prevPoint.x];
-                                if (prevCalcDist !== undefined) {
-                                    if (prevCalcDist > 1250 && currentRawDist < 1200) {
-                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (1214 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 1214 + cumulativeOffset });
+                                const prevCalcDist = allStationDistances[prevPoint.x.split('_')[0]];
+                                const currentCalcDist = allStationDistances[p.x.split('_')[0]];
+                                if (prevCalcDist !== undefined && currentCalcDist !== undefined) {
+                                    if (prevCalcDist > 1230 && currentCalcDist < 1210) {
+                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (1214 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['竹南'] + cumulativeOffset });
                                     }
-                                    if (prevCalcDist < 2050 && currentRawDist > 2100 && train.info.via == "海線" && isMountain) {
-                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (2070 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 2070 + cumulativeOffset });
+                                    if (prevCalcDist < 2050 && currentCalcDist > 2080 && train.info.via == "海線" && isMountain) {
+                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (2070 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
-                                    if (prevCalcDist < 2100 && currentRawDist > 2150 && train.info.via == "山線" && !isMountain) {
-                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (2117 - currentRawDist) / (prevCalcDist - currentRawDist), adjustedDist: 2117 + cumulativeOffset });
+                                    if (prevCalcDist < 2100 && currentCalcDist > 2125 && train.info.via == "山線" && !isMountain) {
+                                        currentSegment.push({ ...p, y: tmpy + (tmpprey - tmpy) * (2117 - currentCalcDist) / (prevCalcDist - currentCalcDist), adjustedDist: state.stationDistances['彰化'] + cumulativeOffset });
                                     }
                                 }
                             }
@@ -1957,14 +1961,14 @@ async function initMap() {
 
     window.selectStation = function (stationName) {
         if (!stationName) return;
-        
+
         const switchLine = (type) => {
             const targetPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === type);
             if (targetPill) targetPill.click();
         };
 
-        const checkTarget = () => state.stationDistances[stationName] !== undefined ? stationName : 
-                                  state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
+        const checkTarget = () => state.stationDistances[stationName] !== undefined ? stationName :
+            state.stationDistances[stationName + '_top'] !== undefined ? stationName + '_top' : null;
 
         let targetName = checkTarget();
 
@@ -1989,7 +1993,7 @@ async function initMap() {
                 }
             }
         }
-        
+
         const finalTargetName = checkTarget();
 
         if (finalTargetName !== null) {
