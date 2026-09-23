@@ -1243,6 +1243,7 @@ async function initMap() {
             updateStationGridData();
             updateInfoBox();
             renderDataLayers();
+            renderBaseLayers();
         });
     });
 
