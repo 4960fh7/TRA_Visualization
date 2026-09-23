@@ -1869,11 +1869,16 @@ async function initMap() {
         const allTrainsSource = [...rawData, ...yrawData];
         const found = allTrainsSource.find(t => t.number == trainNumber);
         if (found) {
-            if (found.data.some(p => p.x === '基隆' || p.x === '三坑')) {
-                const keelungPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === 'keelung');
-                if (keelungPill && !keelungPill.classList.contains('active')) {
-                    keelungPill.click();
-                }
+            if (!preventCenter) {
+                Object.entries(branchConfigs).forEach(([branchId, config]) => {
+                    const branchStations = config.stations.slice(0, -1);
+                    if (found.data.some(p => branchStations.includes(p.x))) {
+                        const branchPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === branchId);
+                        if (branchPill && !branchPill.classList.contains('active')) {
+                            branchPill.click();
+                        }
+                    }
+                });
             }
 
             const selected = {
@@ -1960,12 +1965,15 @@ async function initMap() {
         let targetName = checkTarget();
 
         if (targetName === null) {
-            if (['基隆', '三坑'].includes(stationName)) {
-                const keelungPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === 'keelung');
-                if (keelungPill && !keelungPill.classList.contains('active')) {
-                    keelungPill.click();
+            Object.entries(branchConfigs).forEach(([branchId, config]) => {
+                const branchStations = config.stations.slice(0, -1);
+                if (branchStations.includes(stationName)) {
+                    const branchPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === branchId);
+                    if (branchPill && !branchPill.classList.contains('active')) {
+                        branchPill.click();
+                    }
                 }
-            }
+            });
 
             targetName = checkTarget();
 
