@@ -1583,6 +1583,10 @@ async function initMap() {
                     if (!rawGrouped[p.x + '_bottom']) rawGrouped[p.x + '_bottom'] = [];
                     rawGrouped[p.x + '_bottom'].push(p.y);
                 }
+                if (state.stationDistances[p.x + '_middle'] !== undefined) {
+                    if (!rawGrouped[p.x + '_middle']) rawGrouped[p.x + '_middle'] = [];
+                    rawGrouped[p.x + '_middle'].push(p.y);
+                }
             });
 
             Object.entries(rawGrouped).forEach(([name, times]) => {
