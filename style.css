@@ -270,7 +270,7 @@ input, button, textarea, select {
         box-sizing: border-box;
     }
     .search-box {
-        width: 70%;
+        width: 100%;
         box-sizing: border-box;
     }
     .search-box > div {
