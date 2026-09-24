@@ -1348,7 +1348,8 @@ async function initMap() {
         const width = container ? container.clientWidth : window.innerWidth;
         const scale = Math.pow(2, currentVS.zoom);
         const isCollapsed = document.getElementById('sidebar').classList.contains('collapsed');
-        const visibleRightOffset = isCollapsed ? width / 2 : width * 0.25;
+        const isMobile = window.innerWidth <= 768;
+        const visibleRightOffset = (isCollapsed || isMobile) ? width / 2 : width * 0.25;
 
         const leftX = currentVS.target[0] - (width / 2) / scale;
         const rightX = currentVS.target[0] + visibleRightOffset / scale;
@@ -1708,7 +1709,8 @@ async function initMap() {
         const height = container ? container.clientHeight : window.innerHeight;
         const scale = Math.pow(2, currentVS.zoom);
         const isCollapsed = document.getElementById('sidebar').classList.contains('collapsed');
-        const visibleRightOffset = isCollapsed ? width / 2 : width * 0.25;
+        const isMobile = window.innerWidth <= 768;
+        const visibleRightOffset = (isCollapsed || isMobile) ? width / 2 : width * 0.25;
 
         const leftX = currentVS.target[0] - (width / 2) / scale;
         const topY = currentVS.target[1] - (height / 2) / scale;
