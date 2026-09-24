@@ -959,7 +959,7 @@ async function initMap() {
                 window.selectTrain(info.object.number, true);
             } else if (info.object && (info.layer.id.includes('station-layer') || info.layer.id.includes('station-labels'))) {
                 const stationName = Array.isArray(info.object) ? info.object[0] : info.object.text;
-                window.selectStation(stationName.split('_')[0]);
+                window.selectStation(stationName.split('_')[0], false);
             } else {
                 state.selectedLine = null;
                 state.showSchedule = false;
@@ -1967,7 +1967,7 @@ async function initMap() {
         }
     };
 
-    window.selectStation = function (stationName) {
+    window.selectStation = function (stationName, centerView = true) {
         if (!stationName) return;
 
         const switchLine = (type) => {
@@ -2008,22 +2008,26 @@ async function initMap() {
             state.selectedLine = null;
             state.showSchedule = false;
             state.focusedStation = stationName;
-            const currentVS = deckInstance.props.viewState ||
-                (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) ||
-                state.viewState || {};
-            const targetY = state.stationDistances[finalTargetName];
-            const currentTarget = currentVS.target || [state.currentTimeMinutes * 3 + 180, 0, 0];
-            const currentZoom = (typeof currentVS.zoom === 'number') ? currentVS.zoom : (state.currentZoom || 0);
-            const updatedViewState = {
-                ...currentVS,
-                target: [currentTarget[0], targetY, currentTarget[2] || 0],
-                zoom: currentZoom,
-                transitionDuration: 400,
-                transitionInterpolator: new deck.LinearInterpolator(['target']),
-                transitionInterruption: 1
-            };
-            state.viewState = updatedViewState;
-            deckInstance.setProps({ viewState: updatedViewState });
+            
+            if (centerView) {
+                const currentVS = deckInstance.props.viewState ||
+                    (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) ||
+                    state.viewState || {};
+                const targetY = state.stationDistances[finalTargetName];
+                const currentTarget = currentVS.target || [state.currentTimeMinutes * 3 + 180, 0, 0];
+                const currentZoom = (typeof currentVS.zoom === 'number') ? currentVS.zoom : (state.currentZoom || 0);
+                const updatedViewState = {
+                    ...currentVS,
+                    target: [currentTarget[0], targetY, currentTarget[2] || 0],
+                    zoom: currentZoom,
+                    transitionDuration: 400,
+                    transitionInterpolator: new deck.LinearInterpolator(['target']),
+                    transitionInterruption: 1
+                };
+                state.viewState = updatedViewState;
+                deckInstance.setProps({ viewState: updatedViewState });
+            }
+
             updateBottomPanel();
             renderDataLayers();
             renderBaseLayers();
