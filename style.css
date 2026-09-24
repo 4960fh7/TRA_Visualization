@@ -271,9 +271,15 @@ input, button, textarea, select {
     }
     .search-box {
         width: 70%;
+        box-sizing: border-box;
+    }
+    .search-box > div {
+        min-width: 0;
     }
     #global-search {
+        width: 100%;
         min-width: 0;
+        box-sizing: border-box;
     }
 }
 
