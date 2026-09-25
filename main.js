@@ -965,6 +965,7 @@ async function initMap() {
                 state.showSchedule = false;
                 state.focusedStation = null;
                 updateBottomPanel();
+                updateStationGridData();
                 renderDataLayers();
                 renderBaseLayers();
                 updateInfoBox();
@@ -1145,13 +1146,29 @@ async function initMap() {
         gridData.minDistance = Math.min(...distances);
         gridData.maxDistance = Math.max(...distances);
 
-        for (let x = 120; x <= 1560; x += 10) {
+        let startX = 120;
+        let endX = 1560;
+
+        if (notime) {
+            startX = state.focusedStation ? -1440 : 0;
+            endX = 1440;
+        }
+
+        for (let x = startX; x <= endX; x += 10) {
             const path = [[x * 3, gridData.minDistance - state.period], [x * 3, gridData.maxDistance + state.period]];
             (x % 60 === 0) ? gridData.thickLines.push({ path }) : gridData.thinLines.push({ path });
         }
 
-        for (let x = 120; x <= 1560; x += 10) {
-            const label = { text: `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`, x: (x * 3) + 5 };
+        for (let x = startX; x <= endX; x += 10) {
+            let labelText = '';
+            if (notime) {
+                let absX = Math.abs(x);
+                let sign = x < 0 ? '-' : '';
+                labelText = `${sign}${Math.floor(absX / 60)}:${(absX % 60).toString().padStart(2, '0')}`;
+            } else {
+                labelText = `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`;
+            }
+            const label = { text: labelText, x: (x * 3) + 5 };
             gridData.denseLabels.push(label);
             if (x % 30 === 0) gridData.normalLabels.push(label);
             if (x % 60 === 0) {
@@ -1307,6 +1324,8 @@ async function initMap() {
             }
             state.showSchedule = false;
             updateAdvancedButtons();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         });
     }
@@ -1327,6 +1346,8 @@ async function initMap() {
                 state.showSchedule = true;
             }
             updateAdvancedButtons();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         });
     }
@@ -1349,6 +1370,8 @@ async function initMap() {
             onlystart = false;
             state.showSchedule = true;
             updateAdvancedButtons();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         }
         if (key === 's') {
@@ -1365,6 +1388,8 @@ async function initMap() {
                 state.showSchedule = true;
             }
             updateAdvancedButtons();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         }
         if (key === 't') {
@@ -1382,6 +1407,8 @@ async function initMap() {
             }
             state.showSchedule = false;
             updateAdvancedButtons();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         }
         if (key === "escape" || e.keyCode === 27) {
@@ -1394,6 +1421,8 @@ async function initMap() {
             if (questionModal) questionModal.style.display = 'none';
             updateInfoBox();
             updateBottomPanel();
+            updateStationGridData();
+            renderBaseLayers();
             renderDataLayers();
         }
     });
@@ -1890,7 +1919,7 @@ async function initMap() {
                 getPosition: d => [d.x, topY], getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 fontWeight: 'bold',
-                getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
+                getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                 getAlignmentBaseline: 'top', getTextAnchor: 'start', pixelOffset: [5, 10],
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
@@ -1903,7 +1932,7 @@ async function initMap() {
                 getPosition: d => [d.x, bottomY], getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 fontWeight: 'bold',
-                getSize: notime ? 0.001 : 12, sizeMaxPixels: 12, sizeMinPixels: 0,
+                getSize: 12, sizeMaxPixels: 12, sizeMinPixels: 0,
                 getColor: isLight ? [80, 80, 80] : [180, 180, 180], characterSet: 'auto',
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [5, -10],
                 background: true, getBackgroundColor: isLight ? [235, 235, 235, 204] : [20, 20, 20, 204],
@@ -2092,6 +2121,7 @@ async function initMap() {
             }
 
             updateBottomPanel();
+            updateStationGridData();
             renderDataLayers();
             renderBaseLayers();
             updateInfoBox();
