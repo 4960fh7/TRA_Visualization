@@ -1,178 +1,187 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Taiwan Railway Operation Diagram</title>
-        <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap">
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <div id="main-wrapper">
-            <div id="container">
-                <div id="view-monitor">
-                    Zoom: <span id="val-zoom">0</span> | Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
-                </div>
-                <div style="visibility: hidden; position: absolute;">
-                    ## Test Message 載入字體 未来荧黑 ... ##
-                </div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiwan Railway Operation Diagram</title>
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="main-wrapper">
+        <div id="container">
+            <div id="view-monitor">
+                Zoom: <span id="val-zoom">0</span> | Center: [<span id="val-x">0</span>, <span id="val-y">0</span>]
             </div>
-            <div id="bottompanel" class="biz-udgothic-regular">
-                <div id="view-train" class="tab-view hidden">
-                    <h2>列車資訊</h2>
-                    <div id="info-content" class="scrollable"></div>
-                </div>
-                <div id="view-station" class="tab-view hidden">
-                    <h2>車站資訊</h2>
-                    <div id="station-info-content" class="scrollable"></div>
-                </div>
-                <div id="view-null" class="tab-view">
-                    <h2>列車資訊</h2>
-                    <div>
-                        <p class="placeholder">點選列車或車站以顯示資訊</p>
-                    </div>
-                </div>
-                <button id="btn-clear-selection"></button>
+            <div style="visibility: hidden; position: absolute;">
+                ## Test Message 載入字體 未来荧黑 ... ##
             </div>
-            <div id="sidebar">
-                <button id="theme-toggle" class="rev-pill utility" title="切換深淺主題">
-                    <span id="theme-icon">☀️</span>
-                </button>
-                <button id="btn-info" class="pill" title="關於本站">
-                    <span class="icon">ℹ️</span>
-                </button>
-                <button id="btn-question" class="pill" title="使用說明">
-                    <span class="icon">❓</span>
-                </button>
-                <h2>日期</h2>
+        </div>
+        <div id="bottompanel" class="biz-udgothic-regular">
+            <div id="view-train" class="tab-view hidden">
+                <h2>列車資訊</h2>
+                <div id="info-content" class="scrollable"></div>
+            </div>
+            <div id="view-station" class="tab-view hidden">
+                <h2>車站資訊</h2>
+                <div id="station-info-content" class="scrollable"></div>
+            </div>
+            <div id="view-null" class="tab-view">
+                <h2>列車資訊</h2>
                 <div>
-                    <input type="date" id="date-selector" class="date-input" title="選擇日期" font-family="Orbitron">
+                    <p class="scrollable">點選列車或車站以顯示資訊</p>
                 </div>
-                <h2>環島鐵路</h2>
-                <div id="line-pill-container">
-                    <button class="pill line-pill mount-text active" data-line="mountain">山線</button>
-                    <button class="pill line-pill sea-text" data-line="sea">海線</button>
-                </div>
-                <h2>支線</h2>
-                <div id="branch-pill-container">
-                    <button class="pill branch-pill" data-branch="keelung">基隆線</button>
-                    <button class="pill branch-pill" data-branch="liujia">六家線</button>
-                    <button class="pill branch-pill" data-branch="neiwan">內灣線</button>
-                    <button class="pill branch-pill" data-branch="jiji">集集線</button>
-                    <button class="pill branch-pill" data-branch="shalun">沙崙線</button>
-                    <button class="pill branch-pill" data-branch="suao">蘇澳線</button>
-                    <button class="pill branch-pill" data-branch="pingxi">平溪線</button>
-                    <button class="pill branch-pill" data-branch="shenao">深澳線</button>
-                </div>
-                <h2>車種</h2>
-                <div id="pill-container">
-                    <button id="btn-select-all" class="pill utility">全選</button>
-                    <button id="btn-deselect-all" class="pill utility">全部不選</button>
-                    <button class="pill active" data-type="普悠瑪" checked> 普悠瑪</button>
-                    <button class="pill active" data-type="太魯閣" checked> 太魯閣</button>
-                    <button class="pill active" data-type="新自強" checked> 新自強</button>
-                    <button class="pill active" data-type="柴聯自強" checked> 柴聯自強</button>
-                    <button class="pill active" data-type="PP自強" checked> PP自強</button>
-                    <button class="pill active" data-type="自強專列" checked> 自強專列</button>
-                    <button class="pill active" data-type="莒光" checked> 莒光</button>
-                    <button class="pill active" data-type="莒光專列" checked> 莒光專列</button>
-                    <button class="pill active" data-type="區間快" checked> 區間快</button>
-                    <button class="pill active" data-type="區間" checked> 區間</button>
-                    <button class="pill active" data-type="普通專列" checked> 普通專列</button>
-                </div>
-                <h2>搜尋</h2>
-                <div id="search-container">
-                    <div class="search-box">
-                        <div style="position: relative; flex: 1; display: flex;">
-                            <input type="text" id="global-search" placeholder="搜尋車站或車次" autocomplete="off">
-                            <div id="search-results" class="autocomplete-list"></div>
-                            <span id="clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--border-color); display: none;">&times;</span>
-                        </div>
-                        <button id="search-btn" class="pill">🔍</button>
-                    </div>
-                    <div id="search-error" class="search-error" style="display: none;">找不到該車站或車次</div>
-                </div>
-                <h2>模式</h2>
-                <div id="mode-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px;">
-                    <button id="btn-mode-timetable" class="pill utility active">運行圖</button>
-                    <button id="btn-mode-driving-time" class="pill utility">行駛時間</button>
-                </div>
-                <div id="driving-time-options" style="display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; margin-top: -15px;">
-                    <button id="btn-start-train" class="pill utility">始發列車</button>
-                    <button id="btn-train-connection" class="pill utility">列車連線</button>
-                </div>
-                <div id="search-blank" style="min-height: 200px;"></div>
             </div>
-            <button id="sidebar-toggle" class="toggle-btn">
-                <span class="icon">❯</span>
+            <button id="btn-clear-selection"></button>
+        </div>
+        <div id="sidebar">
+            <button id="theme-toggle" class="rev-pill utility" title="切換深淺主題">
+                <span id="theme-icon">☀️</span>
             </button>
-            
-            <div id="info-modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>關於本站</h2>
-                        <span class="close-infomodal">&times;</span>
-                    </div>
-                    <div class="modal-body">
-                        <h3>網站介紹</h3>
-                        <p>本站提供每日鐵路運行圖與列車運行資訊，並可依需求選擇路線與篩選車種。</p>
-                        <h3>聲明</h3>
-                        <p>1. 本站所提供的資料，均取自 國營臺灣鐵路股份有限公司 官網。</p>
-                        <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
-                        <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
-                        <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
-                        <p class="last-update">版本： pre-1.1 | 最後更新： 2026/06/02</p>
-                        <h3>意見回應</h3>
-                        <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST" class="feedback-form">
-                            <div class="input-group">
-                                <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！" required></textarea><br>
-                            </div>
-                            <div class="form-footer">
-                                <button type="submit" class="pill submit-btn">傳送</button>
-                                <span id="submit-status" style="font-size: 0.8em; color: var(--text-color); display: none;">✓ 成功送出回應！</span>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <button id="btn-info" class="pill" title="關於本站">
+                <span class="icon">ℹ️</span>
+            </button>
+            <button id="btn-question" class="pill" title="使用說明">
+                <span class="icon">❓</span>
+            </button>
+            <h2>日期</h2>
+            <div>
+                <input type="date" id="date-selector" class="date-input" title="選擇日期" font-family="Orbitron">
             </div>
-            <div id="question-modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>使用說明</h2>
-                        <span class="close-questionmodal">&times;</span>
+            <h2>環島鐵路</h2>
+            <div id="line-pill-container">
+                <button class="pill line-pill mount-text active" data-line="mountain">山線</button>
+                <button class="pill line-pill sea-text" data-line="sea">海線</button>
+            </div>
+            <h2>支線</h2>
+            <div id="branch-pill-container">
+                <button class="pill branch-pill" data-branch="keelung">基隆線</button>
+                <button class="pill branch-pill" data-branch="liujia">六家線</button>
+                <button class="pill branch-pill" data-branch="neiwan">內灣線</button>
+                <button class="pill branch-pill" data-branch="jiji">集集線</button>
+                <button class="pill branch-pill" data-branch="shalun">沙崙線</button>
+                <button class="pill branch-pill" data-branch="suao">蘇澳線</button>
+                <button class="pill branch-pill" data-branch="pingxi">平溪線</button>
+                <button class="pill branch-pill" data-branch="shenao">深澳線</button>
+            </div>
+            <h2>車種</h2>
+            <div id="pill-container">
+                <button id="btn-select-all" class="pill utility">全選</button>
+                <button id="btn-deselect-all" class="pill utility">全部不選</button>
+                <button class="pill active" data-type="普悠瑪" checked> 普悠瑪</button>
+                <button class="pill active" data-type="太魯閣" checked> 太魯閣</button>
+                <button class="pill active" data-type="新自強" checked> 新自強</button>
+                <button class="pill active" data-type="柴聯自強" checked> 柴聯自強</button>
+                <button class="pill active" data-type="PP自強" checked> PP自強</button>
+                <button class="pill active" data-type="自強專列" checked> 自強專列</button>
+                <button class="pill active" data-type="莒光" checked> 莒光</button>
+                <button class="pill active" data-type="莒光專列" checked> 莒光專列</button>
+                <button class="pill active" data-type="區間快" checked> 區間快</button>
+                <button class="pill active" data-type="區間" checked> 區間</button>
+                <button class="pill active" data-type="普通專列" checked> 普通專列</button>
+            </div>
+            <h2>搜尋</h2>
+            <div id="search-container">
+                <div class="search-box">
+                    <div style="position: relative; flex: 1; display: flex;">
+                        <input type="text" id="global-search" placeholder="搜尋車站或車次" autocomplete="off">
+                        <div id="search-results" class="autocomplete-list"></div>
+                        <span id="clear-search"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--border-color); display: none;">&times;</span>
                     </div>
-                    <div class="modal-body">
-                        <h3>座標軸與標記</h3>
-                        <p>橫軸：時間。天藍色鉛直線為現在時刻。</p>
-                        <p>縱軸：距離，其中畫線代表車站。沿著縱軸往上為順行，往下為逆行。</p>
-                        <p>彩色折線：列車行駛路線。折線與車站重疊的橫線段代表該列車會在該車站停留；無橫線段則代表不停留，與車站橫線交點為估計之通過時間（註：僅為推算，可能與真實有誤差）。路線的顏色依車種而不同，對應顏色見右方側邊欄。</p>
-                        <h3>側邊欄</h3>
-                        <p>☀️/🌙 切換淺色/深色主題。</p>
-                        <p>ℹ️ 關於此網站的介紹、版本與聲明。</p>
-                        <p>❓ 此網站的使用說明。（就是你正在讀的這段文字）</p>
-                        <p>日期：點擊行事曆圖形可以選擇日期，也可以點擊數字直接輸入。</p>
-                        <p>路線：點擊可切換顯示的路線，目前僅支援環島鐵路，可選擇經由山線或海線。</p>
-                        <p>車種：點擊可篩選特定車種。</p>
-                        <p>搜尋：可輸入車次編號或車站名稱以選擇車次或車站。</p>
-                        <h3>列車與車站資訊</h3>
-                        <p>一、點擊列車會在圖中顯示其停靠站與停靠時間，並在下方顯示列車資訊。點擊空白處或按下 Esc 鍵可取消選取。</p>
-                        <p>1. 列車資訊由左至右分別為：車種、車次、經由路線、起訖站與時間、行駛日期、乘客服務與其他資訊。</p>
-                        <p>2. 滑鼠指標停留在行駛日期上，可顯示加班列車的行駛日期。</p>
-                        <p>3. 滑鼠指標停留在乘客服務上，可顯示各圖示所對應的資訊。</p>
-                        <p>4. 點擊車站會顯示其資訊，同下方 二、，並將該車站置中。</p>
-                        <p>二、點擊車站（橫線）會篩選有停靠該車站的列車，並在下方顯示車站資訊。點擊空白處或按下 Esc 鍵可取消篩選。</p>
-                        <p>1. 車站資訊包含現在時間起今日所有停靠該車站的列車，依離站時間排序。</p>
-                        <p>2. 點擊列車會顯示其資訊，同上方 一、。</p>
-                        <p>註：由於目前僅支援環島鐵路，因此點擊非環島鐵路的車站（含基隆、三坑、蘇澳與各支線不在環島鐵路上的車站）暫無資訊。</p>
-                    </div>
+                    <button id="search-btn" class="pill">🔍</button>
+                </div>
+                <div id="search-error" class="search-error" style="display: none;">找不到該車站或車次</div>
+            </div>
+            <h2>模式</h2>
+            <div id="mode-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px;">
+                <button id="btn-mode-timetable" class="pill utility active">運行圖</button>
+                <button id="btn-mode-driving-time" class="pill utility">行駛時間</button>
+            </div>
+            <div id="driving-time-options"
+                style="display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; margin-top: -15px;">
+                <button id="btn-start-train" class="pill utility">始發列車</button>
+                <button id="btn-train-connection" class="pill utility">列車連線</button>
+            </div>
+            <div id="search-blank" style="min-height: 200px;"></div>
+        </div>
+        <button id="sidebar-toggle" class="toggle-btn">
+            <span class="icon">❯</span>
+        </button>
+
+        <div id="info-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>關於本站</h2>
+                    <span class="close-infomodal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <h3>網站介紹</h3>
+                    <p>本站提供每日鐵路運行圖與列車運行資訊，並可依需求選擇路線與篩選車種。</p>
+                    <h3>聲明</h3>
+                    <p>1. 本站所提供的資料，均取自 國營臺灣鐵路股份有限公司 官網。</p>
+                    <p>2. 本站資訊僅供參考，不保證資料之即時性、完整性或準確性，實際運行狀況請以 國營臺灣鐵路股份有限公司 公告為準。</p>
+                    <p>3. 地圖資料與列車位置僅大致計算，並未考量部分路段速率不等的情形，可能與實際狀況存在誤差。</p>
+                    <p>4. 歡迎任何非商業性使用與分享，惟請標示來源。</p>
+                    <p class="last-update">版本： pre-1.1 | 最後更新： 2026/06/02</p>
+                    <h3>意見回應</h3>
+                    <form id="feedback-form" action="https://formspree.io/f/xqeyyqke" method="POST"
+                        class="feedback-form">
+                        <div class="input-group">
+                            <textarea name="message" id="feedback-text" placeholder="輸入任何想法、建議或回應！"
+                                required></textarea><br>
+                        </div>
+                        <div class="form-footer">
+                            <button type="submit" class="pill submit-btn">傳送</button>
+                            <span id="submit-status"
+                                style="font-size: 0.8em; color: var(--text-color); display: none;">✓ 成功送出回應！</span>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+        <div id="question-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>使用說明</h2>
+                    <span class="close-questionmodal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <h3>座標軸與標記</h3>
+                    <p>橫軸：時間。天藍色鉛直線為現在時刻。</p>
+                    <p>縱軸：距離，其中畫線代表車站。沿著縱軸往上為順行，往下為逆行。</p>
+                    <p>彩色折線：列車行駛路線。折線與車站重疊的橫線段代表該列車會在該車站停留；無橫線段則代表不停留，與車站橫線交點為估計之通過時間（註：僅為推算，可能與真實有誤差）。路線的顏色依車種而不同，對應顏色見右方側邊欄。
+                    </p>
+                    <h3>側邊欄</h3>
+                    <p>☀️/🌙 切換淺色/深色主題。</p>
+                    <p>ℹ️ 關於此網站的介紹、版本與聲明。</p>
+                    <p>❓ 此網站的使用說明。（就是你正在讀的這段文字）</p>
+                    <p>日期：點擊行事曆圖形可以選擇日期，也可以點擊數字直接輸入。</p>
+                    <p>路線：點擊可切換顯示的路線，目前僅支援環島鐵路，可選擇經由山線或海線。</p>
+                    <p>車種：點擊可篩選特定車種。</p>
+                    <p>搜尋：可輸入車次編號或車站名稱以選擇車次或車站。</p>
+                    <h3>列車與車站資訊</h3>
+                    <p>一、點擊列車會在圖中顯示其停靠站與停靠時間，並在下方顯示列車資訊。點擊空白處或按下 Esc 鍵可取消選取。</p>
+                    <p>1. 列車資訊由左至右分別為：車種、車次、經由路線、起訖站與時間、行駛日期、乘客服務與其他資訊。</p>
+                    <p>2. 滑鼠指標停留在行駛日期上，可顯示加班列車的行駛日期。</p>
+                    <p>3. 滑鼠指標停留在乘客服務上，可顯示各圖示所對應的資訊。</p>
+                    <p>4. 點擊車站會顯示其資訊，同下方 二、，並將該車站置中。</p>
+                    <p>二、點擊車站（橫線）會篩選有停靠該車站的列車，並在下方顯示車站資訊。點擊空白處或按下 Esc 鍵可取消篩選。</p>
+                    <p>1. 車站資訊包含現在時間起今日所有停靠該車站的列車，依離站時間排序。</p>
+                    <p>2. 點擊列車會顯示其資訊，同上方 一、。</p>
+                    <p>註：由於目前僅支援環島鐵路，因此點擊非環島鐵路的車站（含基隆、三坑、蘇澳與各支線不在環島鐵路上的車站）暫無資訊。</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <script src="main.js"></script>
+    <script src="main.js"></script>
 
-    </body>
+</body>
+
 </html>
