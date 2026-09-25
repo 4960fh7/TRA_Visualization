@@ -1064,6 +1064,49 @@ async function initMap() {
             `;
         }
         else if (state.focusedStation) {
+            if (notime) {
+                const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
+                const typeCounts = {};
+                const startCounts = {};
+                const orderedTypes = DOM.trainPills.map(p => p.getAttribute('data-type'));
+
+                allAvailableTrains.forEach(train => {
+                    if (state.enabledTypes.has(train.train)) {
+                        const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
+                        if (stop) {
+                            typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
+                            if (train.data[0].x.split('_')[0] === state.focusedStation) {
+                                startCounts[train.train] = (startCounts[train.train] || 0) + 1;
+                            }
+                        }
+                    }
+                });
+
+                const formatCounts = (counts) => orderedTypes
+                    .filter(type => counts[type] > 0)
+                    .map(type => `<span style="color: ${colorPalette[type]}">${type}：${counts[type]}</span>`)
+                    .join(' &nbsp; ');
+
+                let line1 = formatCounts(typeCounts);
+                let line2 = formatCounts(startCounts);
+
+                let line1Text = line1 ? `【今日運行列車數量：${line1}】` : `【今日運行列車數量：無】`;
+                let line2Text = line2 ? `【本站始發列車數量：${line2}】` : `【本站始發列車數量：無】`;
+
+                DOM.stationBox.innerHTML = `
+                    <div style="display: flex; align-items: stretch; gap: 15px;">
+                        <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
+                            font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
+                            padding-left: 20px; padding-right: 20px; height: 15vh; ">
+                            <strong>${state.focusedStation}站</strong>
+                        </div>
+                        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 0.95em; padding-right: 30vw">
+                            <div>${line1Text}</div>
+                            <div>${line2Text}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
             const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
             const seenTrainNumbers = new Set();
             const nextTrains = allAvailableTrains
@@ -1119,6 +1162,7 @@ async function initMap() {
                     </div>
                 </div>
             `;
+            }
         } else {
             DOM.stationBox.innerHTML = '';
             DOM.infoBox.innerHTML = '';
@@ -1150,8 +1194,8 @@ async function initMap() {
         let endX = 1560;
 
         if (notime) {
-            startX = state.focusedStation ? -1440 : 0;
-            endX = 1440;
+            startX = state.focusedStation ? 120 - 1440 : 120;
+            endX = 1560;
         }
 
         for (let x = startX; x <= endX; x += 10) {
@@ -1162,8 +1206,8 @@ async function initMap() {
         for (let x = startX; x <= endX; x += 10) {
             let labelText = '';
             if (notime) {
-                let absX = Math.abs(x);
-                let sign = x < 0 ? '-' : '';
+                let absX = Math.abs(x - 120);
+                let sign = x - 120 < 0 ? '-' : '';
                 labelText = `${sign}${Math.floor(absX / 60)}:${(absX % 60).toString().padStart(2, '0')}`;
             } else {
                 labelText = `${Math.floor(x / 60).toString().padStart(2, '0')}${(x % 60).toString().padStart(2, '0')}`;
@@ -1747,7 +1791,7 @@ async function initMap() {
             }),
             new deck.TextLayer({
                 id: `train-schedule-labels-${offset}`,
-                data: scheduleData,
+                data: notime ? [] : scheduleData,
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 getPosition: d => [(d.renderX + 1.5) * 3, d.yCoord + offset, 0],
                 getText: d => {
@@ -1824,8 +1868,7 @@ async function initMap() {
         layers.axisLabels = yOffsets.flatMap(offset => [
             new deck.TextLayer({
                 id: `station-labels-left-${offset}`,
-                data: notime ? gridData.leftonlyLabelData :
-                    state.currentZoom > 0.8 ? gridData.denseLabelData :
+                data: state.currentZoom > 0.8 ? gridData.denseLabelData :
                         state.currentZoom > -0.4 ? gridData.normalLabelData :
                             state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
@@ -1843,8 +1886,7 @@ async function initMap() {
             }),
             new deck.TextLayer({
                 id: `station-labels-right-${offset}`,
-                data: notime ? gridData.leftonlyLabelData :
-                    state.currentZoom > 0.8 ? gridData.denseLabelData :
+                data: state.currentZoom > 0.8 ? gridData.denseLabelData :
                         state.currentZoom > -0.4 ? gridData.normalLabelData :
                             state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
@@ -1862,8 +1904,7 @@ async function initMap() {
             })
         ]);
 
-        const highlightLabelData = notime ? gridData.leftonlyLabelData :
-                    state.currentZoom > 0.8 ? gridData.denseLabelData :
+        const highlightLabelData = state.currentZoom > 0.8 ? gridData.denseLabelData :
                         state.currentZoom > -0.4 ? gridData.normalLabelData :
                             state.currentZoom > -1.8 ? gridData.mainLabelData : [];
 
@@ -1876,7 +1917,7 @@ async function initMap() {
                 getText: d => d.text,
                 fontFamily: 'GlowSansSCCom-Compressed, sans-serif',
                 fontWeight: 'bold',
-                getSize: notime ? 0.0001 : 16, sizeMaxPixels: 16, sizeMinPixels: 0,
+                getSize: 16, sizeMaxPixels: 16, sizeMinPixels: 0,
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 characterSet: 'auto',
                 getAlignmentBaseline: 'bottom', getTextAnchor: 'start', pixelOffset: [10, -10],
