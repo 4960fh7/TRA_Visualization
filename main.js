@@ -1191,27 +1191,29 @@ async function initMap() {
                     let line1 = formatCounts(typeCounts);
                     let line1Text = line1 ? `今日運行列車數量：${line1}` : `今日運行列車數量：無`;
                     
-                    nullView.style.opacity = '1';
-                    nullView.style.justifyContent = 'flex-start';
+                    nullView.style.opacity = '';
+                    nullView.style.justifyContent = '';
                     nullView.innerHTML = `
-                        <div style="display: flex; align-items: stretch; gap: 15px; width: 100%;">
-                            <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
-                                font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
-                                padding-left: 20px; padding-right: 20px; height: 15vh;">
-                                <strong>列車資訊</strong>
-                            </div>
-                            <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 0.95em; padding-right: 30vw">
-                                <div>${line1Text}</div>
+                        <h2>列車資訊</h2>
+                        <div class="scrollable">
+                            <div style="display: flex; align-items: stretch; gap: 15px;">
+                                <span style="display: flex; align-items: center; padding: 0 10px; white-space: nowrap;">
+                                    ${line1Text}
+                                </span>
                             </div>
                         </div>
                     `;
                 } else {
-                    nullView.style.opacity = '0.5';
-                    nullView.style.justifyContent = 'center';
+                    nullView.style.opacity = '';
+                    nullView.style.justifyContent = '';
                     nullView.innerHTML = `
                         <h2>列車資訊</h2>
-                        <div>
-                            <p class="placeholder">點選列車或車站以顯示資訊</p>
+                        <div class="scrollable">
+                            <div style="display: flex; align-items: stretch; gap: 15px;">
+                                <span style="display: flex; align-items: center; padding: 0 10px; white-space: nowrap;">
+                                    點選列車或車站以顯示資訊
+                                </span>
+                            </div>
                         </div>
                     `;
                 }
