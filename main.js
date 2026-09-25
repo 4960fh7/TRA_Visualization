@@ -15,6 +15,7 @@ let deckInstance = null;
 let realtime = false;
 let notime = false;
 let onlystart = false;
+let trainConnection = false;
 let rawData = [];
 let yrawData = [];
 let allTrainsSource = [];
@@ -1379,66 +1380,95 @@ async function initMap() {
     };
 
     function updateAdvancedButtons() {
-        const btnDrivingTime = document.getElementById('btn-driving-time');
+        const btnModeTimetable = document.getElementById('btn-mode-timetable');
+        const btnModeDrivingTime = document.getElementById('btn-mode-driving-time');
+        const optionsContainer = document.getElementById('driving-time-options');
         const btnStartTrain = document.getElementById('btn-start-train');
-        if (btnDrivingTime && btnStartTrain) {
-            if (notime && !onlystart) {
-                btnDrivingTime.classList.add('active');
-                btnStartTrain.classList.remove('active');
-            } else if (notime && onlystart) {
-                btnDrivingTime.classList.remove('active');
+        const btnTrainConnection = document.getElementById('btn-train-connection');
+        
+        if (btnModeTimetable && btnModeDrivingTime && optionsContainer) {
+            if (notime) {
+                btnModeTimetable.classList.remove('active');
+                btnModeDrivingTime.classList.add('active');
+                optionsContainer.style.display = 'flex';
+            } else {
+                btnModeTimetable.classList.add('active');
+                btnModeDrivingTime.classList.remove('active');
+                optionsContainer.style.display = 'none';
+            }
+        }
+
+        if (btnStartTrain) {
+            if (onlystart) {
                 btnStartTrain.classList.add('active');
             } else {
-                btnDrivingTime.classList.remove('active');
                 btnStartTrain.classList.remove('active');
+            }
+        }
+        
+        if (btnTrainConnection) {
+            if (trainConnection) {
+                btnTrainConnection.classList.add('active');
+            } else {
+                btnTrainConnection.classList.remove('active');
             }
         }
     }
 
-    const btnDrivingTime = document.getElementById('btn-driving-time');
-    if (btnDrivingTime) {
-        btnDrivingTime.addEventListener('click', () => {
-            if (!notime) {
-                notime = true;
-                onlystart = false;
-                state.showSchedule = false;
-            } else if (onlystart) {
-                onlystart = false;
-                state.showSchedule = false;
-            } else {
+    const btnModeTimetable = document.getElementById('btn-mode-timetable');
+    if (btnModeTimetable) {
+        btnModeTimetable.addEventListener('click', () => {
+            if (notime) {
                 notime = false;
                 onlystart = false;
+                trainConnection = false;
                 state.showSchedule = true;
+                updateAdvancedButtons();
+                updateStationGridData();
+                renderBaseLayers();
+                renderDataLayers();
+                updateInfoBox();
             }
-            state.showSchedule = false;
-            updateAdvancedButtons();
-            updateStationGridData();
-            renderBaseLayers();
-            renderDataLayers();
-            updateInfoBox();
+        });
+    }
+
+    const btnModeDrivingTime = document.getElementById('btn-mode-driving-time');
+    if (btnModeDrivingTime) {
+        btnModeDrivingTime.addEventListener('click', () => {
+            if (!notime) {
+                notime = true;
+                state.showSchedule = false;
+                updateAdvancedButtons();
+                updateStationGridData();
+                renderBaseLayers();
+                renderDataLayers();
+                updateInfoBox();
+            }
         });
     }
 
     const btnStartTrain = document.getElementById('btn-start-train');
     if (btnStartTrain) {
         btnStartTrain.addEventListener('click', () => {
-            if (!notime) {
-                notime = true;
-                onlystart = true;
-                state.showSchedule = false;
-            } else if (!onlystart) {
-                onlystart = true;
-                state.showSchedule = false;
-            } else {
-                notime = false;
-                onlystart = false;
-                state.showSchedule = true;
+            if (notime) {
+                onlystart = !onlystart;
+                updateAdvancedButtons();
+                updateStationGridData();
+                renderBaseLayers();
+                renderDataLayers();
+                updateInfoBox();
             }
-            updateAdvancedButtons();
-            updateStationGridData();
-            renderBaseLayers();
-            renderDataLayers();
-            updateInfoBox();
+        });
+    }
+
+    const btnTrainConnection = document.getElementById('btn-train-connection');
+    if (btnTrainConnection) {
+        btnTrainConnection.addEventListener('click', () => {
+            if (notime) {
+                trainConnection = !trainConnection;
+                updateAdvancedButtons();
+                renderDataLayers();
+            }
         });
     }
 
@@ -1458,6 +1488,7 @@ async function initMap() {
         if (key === 'o') {
             notime = false;
             onlystart = false;
+            trainConnection = false;
             state.showSchedule = true;
             updateAdvancedButtons();
             updateStationGridData();
@@ -1465,37 +1496,24 @@ async function initMap() {
             renderDataLayers();
         }
         if (key === 's') {
-            if (!notime) {
-                notime = true;
-                onlystart = true;
-                state.showSchedule = false;
-            } else if (!onlystart) {
-                onlystart = true;
-                state.showSchedule = false;
-            } else {
-                notime = false;
-                onlystart = false;
-                state.showSchedule = true;
+            if (notime) {
+                onlystart = !onlystart;
+                updateAdvancedButtons();
+                updateStationGridData();
+                renderBaseLayers();
+                renderDataLayers();
             }
-            updateAdvancedButtons();
-            updateStationGridData();
-            renderBaseLayers();
-            renderDataLayers();
         }
         if (key === 't') {
             if (!notime) {
                 notime = true;
-                onlystart = false;
-                state.showSchedule = false;
-            } else if (onlystart) {
-                onlystart = false;
                 state.showSchedule = false;
             } else {
                 notime = false;
                 onlystart = false;
+                trainConnection = false;
                 state.showSchedule = true;
             }
-            state.showSchedule = false;
             updateAdvancedButtons();
             updateStationGridData();
             renderBaseLayers();
@@ -1825,7 +1843,7 @@ async function initMap() {
                     const b = parseInt(hexcolor.substring(5, 7), 16);
                     return [r, g, b];
                 },
-                getWidth: notime ? 0.001 : 1.5, widthMaxPixels: 2, widthMinPixels: 0
+                getWidth: (notime && !trainConnection) ? 0.001 : 1.5, widthMaxPixels: 2, widthMinPixels: 0
             })
         ]);
 
