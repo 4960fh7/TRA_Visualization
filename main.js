@@ -1071,7 +1071,7 @@ async function initMap() {
                     const startCounts = {};
                     const orderedTypes = Array.from(DOM.trainPills).map(p => p.getAttribute('data-type'));
 
-                    allAvailableTrains.forEach(train => {
+                    rawData.forEach(train => {
                         if (state.enabledTypes.has(train.train)) {
                             const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
                             if (stop) {
@@ -1091,8 +1091,8 @@ async function initMap() {
                     let line1 = formatCounts(typeCounts);
                     let line2 = formatCounts(startCounts);
 
-                    let line1Text = line1 ? `【今日運行列車數量：${line1}】` : `【今日運行列車數量：無】`;
-                    let line2Text = line2 ? `【本站始發列車數量：${line2}】` : `【本站始發列車數量：無】`;
+                    let line1Text = line1 ? `今日運行列車數量：${line1}` : `今日運行列車數量：無`;
+                    let line2Text = line2 ? `本站始發列車數量：${line2}` : `本站始發列車數量：無`;
 
                     DOM.stationBox.innerHTML = `
                         <div style="display: flex; align-items: stretch; gap: 15px;">
@@ -1111,50 +1111,50 @@ async function initMap() {
                     DOM.stationBox.innerHTML = `<div style="color: red; padding: 20px;">Error: ${e.message} <br> ${e.stack}</div>`;
                 }
             } else {
-            const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
-            const seenTrainNumbers = new Set();
-            const nextTrains = allAvailableTrains
-                .map(train => {
-                    const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
-                    const stopDistances = train.data.map(p => allStationDistances[p.x]).filter(d => d !== undefined);
-                    return stop ? {
-                        number: train.number,
-                        type: train.train,
-                        dest: train.info.end.slice(6),
-                        time: stop.y,
-                        isClockwise: (allStationDistances[train.info.start.slice(6)] > allStationDistances[train.info.end.slice(6)]) ^ (Math.max(...stopDistances) - Math.min(...stopDistances) > 6000)
-                    } : null;
-                })
-                .filter(t => {
-                    if (t !== null && t.time >= state.currentTimeMinutes && !seenTrainNumbers.has(t.number)) {
-                        seenTrainNumbers.add(t.number);
-                        return true;
-                    }
-                    return false;
-                })
-                .sort((a, b) => a.time - b.time);
-            const cwTrains = nextTrains.filter(t => t.isClockwise);
-            const ccwTrains = nextTrains.filter(t => !t.isClockwise);
-            const cwtext = nextTrains.length > 0 ? cwTrains.map(t => `
+                const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
+                const seenTrainNumbers = new Set();
+                const nextTrains = allAvailableTrains
+                    .map(train => {
+                        const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
+                        const stopDistances = train.data.map(p => allStationDistances[p.x]).filter(d => d !== undefined);
+                        return stop ? {
+                            number: train.number,
+                            type: train.train,
+                            dest: train.info.end.slice(6),
+                            time: stop.y,
+                            isClockwise: (allStationDistances[train.info.start.slice(6)] > allStationDistances[train.info.end.slice(6)]) ^ (Math.max(...stopDistances) - Math.min(...stopDistances) > 6000)
+                        } : null;
+                    })
+                    .filter(t => {
+                        if (t !== null && t.time >= state.currentTimeMinutes && !seenTrainNumbers.has(t.number)) {
+                            seenTrainNumbers.add(t.number);
+                            return true;
+                        }
+                        return false;
+                    })
+                    .sort((a, b) => a.time - b.time);
+                const cwTrains = nextTrains.filter(t => t.isClockwise);
+                const ccwTrains = nextTrains.filter(t => !t.isClockwise);
+                const cwtext = nextTrains.length > 0 ? cwTrains.map(t => `
             <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                 style="cursor: pointer; transition: opacity 0.2s;"
                 onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
                 <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${getTrainTypeName(t.type, t.number)}</span>
                 <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
             </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
-            const ccwtext = nextTrains.length > 0 ? ccwTrains.map(t => `
+                const ccwtext = nextTrains.length > 0 ? ccwTrains.map(t => `
             <span class="panel-train-info" onclick="selectTrain('${t.number}')"
                 style="cursor: pointer; transition: opacity 0.2s;"
                 onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
                 <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${getTrainTypeName(t.type, t.number)}</span>
                 <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
             </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
-            let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
-                : cwtext != "" && ccwtext == "" ? `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
-                    : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
-                        : `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
+                let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
+                    : cwtext != "" && ccwtext == "" ? `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
+                        : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
+                            : `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
 
-            DOM.stationBox.innerHTML = `
+                DOM.stationBox.innerHTML = `
                 <div style="display: flex; align-items: stretch; gap: 15px;">
                     <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
                         font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
@@ -1375,6 +1375,7 @@ async function initMap() {
             updateStationGridData();
             renderBaseLayers();
             renderDataLayers();
+            updateInfoBox();
         });
     }
 
@@ -1397,6 +1398,7 @@ async function initMap() {
             updateStationGridData();
             renderBaseLayers();
             renderDataLayers();
+            updateInfoBox();
         });
     }
 
@@ -1812,7 +1814,7 @@ async function initMap() {
                 data: Object.entries(state.stationDistances).filter(([name]) => name === state.focusedStation),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
-                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
+                getPath: d => [[(notime && state.focusedStation) ? -3960 : 270, d[1] + offset], [4770, d[1] + offset]],
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 getWidth: 3, widthMaxPixels: 2, widthMinPixels: 0
             })
@@ -1857,13 +1859,14 @@ async function initMap() {
 
         const yOffsets = [-state.period, 0, state.period];
 
+        const horizontalStartX = (notime && state.focusedStation) ? -3960 : 270;
         layers.offsetLayers = yOffsets.flatMap(offset => [
             new deck.PathLayer({
                 id: `station-layer-${offset}`,
                 data: Object.entries(state.stationDistances).filter(([name]) => state.stationList.has(name)),
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 pickable: true, autoHighlight: true, highlightColor: [220, 220, 220, 150],
-                getPath: d => [[270, d[1] + offset], [4770, d[1] + offset]],
+                getPath: d => [[horizontalStartX, d[1] + offset], [4770, d[1] + offset]],
                 getColor: d => d[0].split('_')[0] === state.focusedStation ? (isLight ? [189, 146, 8] : [232, 252, 13]) : (isLight ? [180, 180, 180] : [80, 80, 80]),
                 getWidth: d => d[0].split('_')[0] === state.focusedStation ? 3 : 1, widthMaxPixels: 2, widthMinPixels: 0
             })
@@ -1873,8 +1876,8 @@ async function initMap() {
             new deck.TextLayer({
                 id: `station-labels-left-${offset}`,
                 data: state.currentZoom > 0.8 ? gridData.denseLabelData :
-                        state.currentZoom > -0.4 ? gridData.normalLabelData :
-                            state.currentZoom > -1.8 ? gridData.mainLabelData : [],
+                    state.currentZoom > -0.4 ? gridData.normalLabelData :
+                        state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                 getPosition: d => [leftX, d.y + offset],
@@ -1891,8 +1894,8 @@ async function initMap() {
             new deck.TextLayer({
                 id: `station-labels-right-${offset}`,
                 data: state.currentZoom > 0.8 ? gridData.denseLabelData :
-                        state.currentZoom > -0.4 ? gridData.normalLabelData :
-                            state.currentZoom > -1.8 ? gridData.mainLabelData : [],
+                    state.currentZoom > -0.4 ? gridData.normalLabelData :
+                        state.currentZoom > -1.8 ? gridData.mainLabelData : [],
                 coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                 pickable: true, autoHighlight: true, highlightColor: [255, 255, 255, 150],
                 getPosition: d => [rightX, d.y + offset],
@@ -1909,8 +1912,8 @@ async function initMap() {
         ]);
 
         const highlightLabelData = state.currentZoom > 0.8 ? gridData.denseLabelData :
-                        state.currentZoom > -0.4 ? gridData.normalLabelData :
-                            state.currentZoom > -1.8 ? gridData.mainLabelData : [];
+            state.currentZoom > -0.4 ? gridData.normalLabelData :
+                state.currentZoom > -1.8 ? gridData.mainLabelData : [];
 
         layers.axisLabelsHighlight = yOffsets.flatMap(offset => [
             new deck.TextLayer({
@@ -2145,7 +2148,7 @@ async function initMap() {
             state.selectedLine = null;
             state.showSchedule = false;
             state.focusedStation = stationName;
-            
+
             if (centerView) {
                 const currentVS = deckInstance.props.viewState ||
                     (deckInstance.viewManager && deckInstance.viewManager.getViewState('ortho')) ||
