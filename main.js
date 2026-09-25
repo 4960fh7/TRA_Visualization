@@ -1273,6 +1273,64 @@ async function initMap() {
         renderDataLayers();
     };
 
+    function updateAdvancedButtons() {
+        const btnDrivingTime = document.getElementById('btn-driving-time');
+        const btnStartTrain = document.getElementById('btn-start-train');
+        if (btnDrivingTime && btnStartTrain) {
+            if (notime && !onlystart) {
+                btnDrivingTime.classList.add('active');
+                btnStartTrain.classList.remove('active');
+            } else if (notime && onlystart) {
+                btnDrivingTime.classList.remove('active');
+                btnStartTrain.classList.add('active');
+            } else {
+                btnDrivingTime.classList.remove('active');
+                btnStartTrain.classList.remove('active');
+            }
+        }
+    }
+
+    const btnDrivingTime = document.getElementById('btn-driving-time');
+    if (btnDrivingTime) {
+        btnDrivingTime.addEventListener('click', () => {
+            if (!notime) {
+                notime = true;
+                onlystart = false;
+                state.showSchedule = false;
+            } else if (onlystart) {
+                onlystart = false;
+                state.showSchedule = false;
+            } else {
+                notime = false;
+                onlystart = false;
+                state.showSchedule = true;
+            }
+            state.showSchedule = false;
+            updateAdvancedButtons();
+            renderDataLayers();
+        });
+    }
+
+    const btnStartTrain = document.getElementById('btn-start-train');
+    if (btnStartTrain) {
+        btnStartTrain.addEventListener('click', () => {
+            if (!notime) {
+                notime = true;
+                onlystart = true;
+                state.showSchedule = false;
+            } else if (!onlystart) {
+                onlystart = true;
+                state.showSchedule = false;
+            } else {
+                notime = false;
+                onlystart = false;
+                state.showSchedule = true;
+            }
+            updateAdvancedButtons();
+            renderDataLayers();
+        });
+    }
+
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
         if (key === 'h' && state.selectedLine) {
@@ -1290,6 +1348,7 @@ async function initMap() {
             notime = false;
             onlystart = false;
             state.showSchedule = true;
+            updateAdvancedButtons();
             renderDataLayers();
         }
         if (key === 's') {
@@ -1305,6 +1364,7 @@ async function initMap() {
                 onlystart = false;
                 state.showSchedule = true;
             }
+            updateAdvancedButtons();
             renderDataLayers();
         }
         if (key === 't') {
@@ -1321,6 +1381,7 @@ async function initMap() {
                 state.showSchedule = true;
             }
             state.showSchedule = false;
+            updateAdvancedButtons();
             renderDataLayers();
         }
         if (key === "escape" || e.keyCode === 27) {
