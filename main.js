@@ -1208,7 +1208,12 @@ async function initMap() {
                 } else {
                     nullView.style.opacity = '0.5';
                     nullView.style.justifyContent = 'center';
-                    nullView.innerHTML = `點選列車或車站以顯示資訊`;
+                    nullView.innerHTML = `
+                        <h2>列車資訊</h2>
+                        <div>
+                            <p class="placeholder">點選列車或車站以顯示資訊</p>
+                        </div>
+                    `;
                 }
             }
         }
