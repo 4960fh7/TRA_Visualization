@@ -284,4 +284,4 @@ input, button, textarea, select {
 }
 
 .branch-pill.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
-#btn-driving-time.active, #btn-start-train.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
+#btn-mode-timetable.active, #btn-mode-driving-time.active, #btn-start-train.active, #btn-train-connection.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
