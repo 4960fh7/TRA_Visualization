@@ -1191,13 +1191,22 @@ async function initMap() {
                     let line1Text = line1 ? `今日運行列車數量：${line1}` : `今日運行列車數量：無`;
                     
                     nullView.style.opacity = '1';
+                    nullView.style.justifyContent = 'flex-start';
                     nullView.innerHTML = `
-                        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 1.1em;">
-                            <div>${line1Text}</div>
+                        <div style="display: flex; align-items: stretch; gap: 15px; width: 100%;">
+                            <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
+                                font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
+                                padding-left: 20px; padding-right: 20px; height: 15vh;">
+                                <strong>列車資訊</strong>
+                            </div>
+                            <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 0.95em; padding-right: 30vw">
+                                <div>${line1Text}</div>
+                            </div>
                         </div>
                     `;
                 } else {
                     nullView.style.opacity = '0.5';
+                    nullView.style.justifyContent = 'center';
                     nullView.innerHTML = `點選列車或車站以顯示資訊`;
                 }
             }
@@ -1650,7 +1659,7 @@ async function initMap() {
             })
             .filter(train => train.data.length > 1);
 
-        yesterdaySegments = yrawData
+        yesterdaySegments = notime ? [] : yrawData
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
                 const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
