@@ -1171,7 +1171,7 @@ async function initMap() {
         } else {
             DOM.stationBox.innerHTML = '';
             DOM.infoBox.innerHTML = '';
-            
+
             const nullView = document.getElementById('view-null');
             if (nullView) {
                 if (notime) {
@@ -1190,7 +1190,7 @@ async function initMap() {
 
                     let line1 = formatCounts(typeCounts);
                     let line1Text = line1 ? `今日運行列車數量：${line1}` : `今日運行列車數量：無`;
-                    
+
                     nullView.style.opacity = '';
                     nullView.style.justifyContent = '';
                     nullView.innerHTML = `
@@ -1392,7 +1392,7 @@ async function initMap() {
         const optionsContainer = document.getElementById('driving-time-options');
         const btnStartTrain = document.getElementById('btn-start-train');
         const btnTrainConnection = document.getElementById('btn-train-connection');
-        
+
         if (btnModeTimetable && btnModeDrivingTime && optionsContainer) {
             if (notime) {
                 btnModeTimetable.classList.remove('active');
@@ -1412,7 +1412,7 @@ async function initMap() {
                 btnStartTrain.classList.remove('active');
             }
         }
-        
+
         if (btnTrainConnection) {
             if (trainConnection) {
                 btnTrainConnection.classList.add('active');
@@ -1576,7 +1576,7 @@ async function initMap() {
                     const currentStation = state.focusedStation ? train.data.find(p => p.x.split('_')[0] === state.focusedStation) : null;
                     globalFirstY = currentStation ? currentStation.y : firstValidPoint.y;
                 }
-                
+
                 const preprocessedSegments = preprocessTrainData(train.data);
                 return preprocessedSegments.flatMap(segment => {
                     const filteredData = segment.filter((p, index) =>
@@ -2170,6 +2170,7 @@ async function initMap() {
             }
 
             updateBottomPanel();
+            updateStationGridData();
             renderDataLayers();
             renderBaseLayers();
             updateInfoBox();
