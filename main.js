@@ -1544,6 +1544,14 @@ async function initMap() {
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
+                let globalFirstY = null;
+                if (notime) {
+                    const firstValidPoint = train.data.find(p => p.y !== -1);
+                    if (!firstValidPoint) return [];
+                    const currentStation = state.focusedStation ? train.data.find(p => p.x.split('_')[0] === state.focusedStation) : null;
+                    globalFirstY = currentStation ? currentStation.y : firstValidPoint.y;
+                }
+                
                 const preprocessedSegments = preprocessTrainData(train.data);
                 return preprocessedSegments.flatMap(segment => {
                     const filteredData = segment.filter((p, index) =>
@@ -1552,10 +1560,6 @@ async function initMap() {
 
                     if (notime) {
                         if (filteredData.length === 0) return [];
-                        const firstValidPoint = filteredData.find(p => p.y !== -1);
-                        if (!firstValidPoint) return [];
-                        const currentStation = state.focusedStation ? filteredData.find(p => p.x === state.focusedStation) : null;
-                        const firstY = currentStation ? currentStation.y : firstValidPoint.y;
                         let cumulativeOffset = 0;
                         const processedData = [];
                         for (let i = 0; i < filteredData.length; i++) {
@@ -1571,7 +1575,7 @@ async function initMap() {
 
                             processedData.push({
                                 ...p,
-                                y: p.y - firstY + 120,
+                                y: p.y - globalFirstY + 120,
                                 adjustedDist: currentRawDist + cumulativeOffset
                             });
                         }
