@@ -1006,7 +1006,7 @@ async function initMap() {
             let rawNote = state.selectedLine.info.note || "";
             let specialNote = (rawNote.includes('。') ? rawNote.slice(0, rawNote.indexOf('。')) : "");
 
-            const tooltipAttr = specialNote ? `title="${specialNote.trim()}"` : '';
+            const tooltipAttr = specialNote ? `data-tooltip="${specialNote.trim()}" onclick="this.classList.add('show-tooltip'); setTimeout(() => { this.classList.remove('show-tooltip'); }, 3000);"` : '';
             let boxesHtml = `<div class="day-container" ${tooltipAttr}>`;
             sequence.forEach(num => {
                 const driveStr = state.selectedLine.info.drive;
