@@ -1065,47 +1065,51 @@ async function initMap() {
         }
         else if (state.focusedStation) {
             if (notime) {
-                const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
-                const typeCounts = {};
-                const startCounts = {};
-                const orderedTypes = DOM.trainPills.map(p => p.getAttribute('data-type'));
+                try {
+                    const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
+                    const typeCounts = {};
+                    const startCounts = {};
+                    const orderedTypes = DOM.trainPills.map(p => p.getAttribute('data-type'));
 
-                allAvailableTrains.forEach(train => {
-                    if (state.enabledTypes.has(train.train)) {
-                        const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
-                        if (stop) {
-                            typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
-                            if (train.data[0].x.split('_')[0] === state.focusedStation) {
-                                startCounts[train.train] = (startCounts[train.train] || 0) + 1;
+                    allAvailableTrains.forEach(train => {
+                        if (state.enabledTypes.has(train.train)) {
+                            const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
+                            if (stop) {
+                                typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
+                                if (train.data[0].x.split('_')[0] === state.focusedStation) {
+                                    startCounts[train.train] = (startCounts[train.train] || 0) + 1;
+                                }
                             }
                         }
-                    }
-                });
+                    });
 
-                const formatCounts = (counts) => orderedTypes
-                    .filter(type => counts[type] > 0)
-                    .map(type => `<span style="color: ${colorPalette[type]}">${type}：${counts[type]}</span>`)
-                    .join(' &nbsp; ');
+                    const formatCounts = (counts) => orderedTypes
+                        .filter(type => counts[type] > 0)
+                        .map(type => `<span style="color: ${colorPalette[type]}">${type}：${counts[type]}</span>`)
+                        .join(' &nbsp; ');
 
-                let line1 = formatCounts(typeCounts);
-                let line2 = formatCounts(startCounts);
+                    let line1 = formatCounts(typeCounts);
+                    let line2 = formatCounts(startCounts);
 
-                let line1Text = line1 ? `【今日運行列車數量：${line1}】` : `【今日運行列車數量：無】`;
-                let line2Text = line2 ? `【本站始發列車數量：${line2}】` : `【本站始發列車數量：無】`;
+                    let line1Text = line1 ? `【今日運行列車數量：${line1}】` : `【今日運行列車數量：無】`;
+                    let line2Text = line2 ? `【本站始發列車數量：${line2}】` : `【本站始發列車數量：無】`;
 
-                DOM.stationBox.innerHTML = `
-                    <div style="display: flex; align-items: stretch; gap: 15px;">
-                        <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
-                            font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
-                            padding-left: 20px; padding-right: 20px; height: 15vh; ">
-                            <strong>${state.focusedStation}站</strong>
+                    DOM.stationBox.innerHTML = `
+                        <div style="display: flex; align-items: stretch; gap: 15px;">
+                            <div class="info-segment" style="position: sticky; left: -15px; display: flex; align-items: center; z-index: 20;
+                                font-size: 1.3em; white-space: nowrap; background: var(--panel-bg); border-right: 1px solid var(--border-color); 
+                                padding-left: 20px; padding-right: 20px; height: 15vh; ">
+                                <strong>${state.focusedStation}站</strong>
+                            </div>
+                            <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 0.95em; padding-right: 30vw">
+                                <div>${line1Text}</div>
+                                <div>${line2Text}</div>
+                            </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 0.95em; padding-right: 30vw">
-                            <div>${line1Text}</div>
-                            <div>${line2Text}</div>
-                        </div>
-                    </div>
-                `;
+                    `;
+                } catch (e) {
+                    DOM.stationBox.innerHTML = `<div style="color: red; padding: 20px;">Error: ${e.message} <br> ${e.stack}</div>`;
+                }
             } else {
             const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
             const seenTrainNumbers = new Set();
