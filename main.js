@@ -93,6 +93,12 @@ const dateSelector = document.getElementById('date-selector');
 let today = new Date();
 if (today.getHours() < 2) { today.setDate(today.getDate() - 1); }
 dateSelector.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('d')) {
+    let dStr = urlParams.get('d');
+    if (dStr.length === 6) dStr = `20${dStr.slice(0, 2)}-${dStr.slice(2, 4)}-${dStr.slice(4, 6)}`;
+    if (dStr.length === 10) dateSelector.value = dStr;
+}
 today.setDate(today.getDate() - 1);
 const yesterday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
@@ -2395,6 +2401,59 @@ async function initMap() {
             searchResults.style.display = 'none';
         }
     });
+
+    if (urlParams.has('q')) {
+        const qStr = urlParams.get('q');
+        const combinedVal = parseInt(qStr, 36);
+        
+        if (!isNaN(combinedVal)) {
+            let val = combinedVal;
+            const lineType = val % 2; val = Math.floor(val / 2);
+            const bVal = val % 256; val = Math.floor(val / 256);
+            const tVal = val % 2048; val = Math.floor(val / 2048);
+            const hasSelection = val % 2; val = Math.floor(val / 2);
+            const isStation = val % 2; val = Math.floor(val / 2);
+            const selectionValue = val;
+            
+            if (lineType === 1) {
+                const seaPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === 'sea');
+                if (seaPill) seaPill.click();
+            }
+            
+            const branchList = ['keelung', 'liujia', 'neiwan', 'jiji', 'shalun', 'suao', 'pingxi', 'shenao'];
+            branchList.forEach((b, index) => {
+                if ((bVal & (1 << index)) !== 0) {
+                    const branchPill = [...DOM.branchPills].find(p => p.getAttribute('data-branch') === b);
+                    if (branchPill && !branchPill.classList.contains('active')) branchPill.click();
+                }
+            });
+            
+            const typeList = ['普悠瑪', '太魯閣', '新自強', '柴聯自強', 'PP自強', '自強專列', '莒光', '莒光專列', '區間快', '區間', '普通專列'];
+            state.enabledTypes.clear();
+            typeList.forEach((type, index) => {
+                if ((tVal & (1 << index)) !== 0) {
+                    state.enabledTypes.add(type);
+                }
+            });
+            
+            if (hasSelection) {
+                let searchVal = '';
+                if (isStation) {
+                    const stationsForURL = Object.keys(allStationDistances);
+                    searchVal = stationsForURL[selectionValue];
+                } else {
+                    searchVal = String(selectionValue);
+                }
+                
+                if (searchVal) {
+                    setTimeout(() => {
+                        searchInput.value = searchVal;
+                        handleSearch();
+                    }, 500);
+                }
+            }
+        }
+    }
 
     syncPillStyles();
     updateStationGridData();
