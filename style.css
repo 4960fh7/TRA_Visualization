@@ -286,7 +286,7 @@ input, button, textarea, select {
 .branch-pill.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
 #btn-mode-timetable.active, #btn-mode-driving-time.active, #btn-start-train.active, #btn-train-connection.active { background-color: var(--subtext-color) !important; color: var(--panel-bg) !important; }
 
-#info-content .day-container { position: relative; cursor: help; }
+#info-content .day-container { position: relative; cursor: default; }
 #info-content .day-container[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.85); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; pointer-events: none; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); font-weight: normal; }
 .light-theme #info-content .day-container[data-tooltip]::after { background-color: rgba(255, 255, 255, 0.95); color: #333; border-color: rgba(0,0,0,0.1); }
 #info-content .day-container[data-tooltip]:hover::after, #info-content .day-container[data-tooltip].show-tooltip::after { opacity: 1; visibility: visible; }
