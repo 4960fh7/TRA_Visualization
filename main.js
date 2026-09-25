@@ -1069,7 +1069,7 @@ async function initMap() {
                     const allAvailableTrains = [...todaySegments, ...yesterdaySegments];
                     const typeCounts = {};
                     const startCounts = {};
-                    const orderedTypes = DOM.trainPills.map(p => p.getAttribute('data-type'));
+                    const orderedTypes = Array.from(DOM.trainPills).map(p => p.getAttribute('data-type'));
 
                     allAvailableTrains.forEach(train => {
                         if (state.enabledTypes.has(train.train)) {
