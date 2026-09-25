@@ -1170,6 +1170,37 @@ async function initMap() {
         } else {
             DOM.stationBox.innerHTML = '';
             DOM.infoBox.innerHTML = '';
+            
+            const nullView = document.getElementById('view-null');
+            if (nullView) {
+                if (notime) {
+                    const typeCounts = {};
+                    const orderedTypes = Array.from(DOM.trainPills).map(p => p.getAttribute('data-type'));
+                    rawData.forEach(train => {
+                        if (state.enabledTypes.has(train.train)) {
+                            typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
+                        }
+                    });
+
+                    const formatCounts = (counts) => orderedTypes
+                        .filter(type => counts[type] > 0)
+                        .map(type => `<span style="color: ${colorPalette[type]}">${type}：${counts[type]}</span>`)
+                        .join(' &nbsp; ');
+
+                    let line1 = formatCounts(typeCounts);
+                    let line1Text = line1 ? `今日運行列車數量：${line1}` : `今日運行列車數量：無`;
+                    
+                    nullView.style.opacity = '1';
+                    nullView.innerHTML = `
+                        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.6; font-size: 1.1em;">
+                            <div>${line1Text}</div>
+                        </div>
+                    `;
+                } else {
+                    nullView.style.opacity = '0.5';
+                    nullView.innerHTML = `點選列車或車站以顯示資訊`;
+                }
+            }
         }
     }
 
