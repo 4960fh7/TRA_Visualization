@@ -1668,14 +1668,14 @@ async function initMap() {
                 if (orig && calc && orig.x.split('_')[0] === calc.x) {
                     let duration = orig.dep - orig.arr;
                     if (duration > 0 && duration < 1) duration = 1;
-                    mergedStops.push({ x: orig.x, arr: calc.time - duration, dep: calc.time, isSeam: orig.isSeam });
+                    mergedStops.push({ x: orig.x, arr: calc.time - duration, dep: calc.time, isSeam: orig.isSeam, isMatched: true, delay: calc.time - orig.dep });
                     origIdx++; calcIdx++;
                 } else {
                     let origInCalc = orig ? calcStops.slice(calcIdx).findIndex(c => c.x === orig.x.split('_')[0]) : -1;
                     let calcInOrig = calc ? originalStops.slice(origIdx).findIndex(o => o.x.split('_')[0] === calc.x) : -1;
 
                     if (!calc) {
-                        mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
+                        mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                         origIdx++;
                     } else if (!orig) {
                         mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
@@ -1684,17 +1684,41 @@ async function initMap() {
                         mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
                         calcIdx++;
                     } else if (origInCalc === -1 && calcInOrig !== -1) {
-                        mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
+                        mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                         origIdx++;
                     } else {
                         if (calc.time < orig.arr) {
                             mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
                             calcIdx++;
                         } else {
-                            mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
+                            mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                             origIdx++;
                         }
                     }
+                }
+            }
+            for (let j = 0; j < mergedStops.length; j++) {
+                if (mergedStops[j].isOrigOnly) {
+                    let prevMatchedIdx = -1;
+                    for (let k = j - 1; k >= 0; k--) {
+                        if (mergedStops[k].isMatched) { prevMatchedIdx = k; break; }
+                    }
+                    let nextMatchedIdx = -1;
+                    for (let k = j + 1; k < mergedStops.length; k++) {
+                        if (mergedStops[k].isMatched) { nextMatchedIdx = k; break; }
+                    }
+                    
+                    let offset = 0;
+                    if (prevMatchedIdx !== -1 && nextMatchedIdx !== -1) {
+                        offset = (mergedStops[prevMatchedIdx].delay + mergedStops[nextMatchedIdx].delay) / 2;
+                    } else if (prevMatchedIdx !== -1) {
+                        offset = mergedStops[prevMatchedIdx].delay;
+                    } else if (nextMatchedIdx !== -1) {
+                        offset = mergedStops[nextMatchedIdx].delay;
+                    }
+                    
+                    mergedStops[j].arr += offset;
+                    mergedStops[j].dep += offset;
                 }
             }
             let newActualData = [];
