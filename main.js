@@ -937,7 +937,7 @@ async function initMap() {
             rawData = await response.json();
             fixMonotonicY(rawData);
         } catch (err) {
-            alert("可選擇日期範圍: 2026/02/19 ~ 2026/05/31");
+            alert("可選擇日期範圍: 2026/06/01 ~ ");
             console.error(err);
         }
         try {
