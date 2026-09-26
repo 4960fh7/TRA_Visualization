@@ -892,7 +892,7 @@ async function initMap() {
     } catch (err) {
         console.error("Failed to load stations data", err);
     }
-    
+
     async function loadCalcSchedule() {
         if (!calcScheduleData) {
             try {
@@ -1199,8 +1199,8 @@ async function initMap() {
                 let stationInfo = stationInfoByName[actualStationName];
                 let cwTitle = stationInfo && stationInfo.CW ? `順行 往 ${stationInfo.CW}` : `順行`;
                 let ccwTitle = stationInfo && stationInfo.CCW ? `逆行 往 ${stationInfo.CCW}` : `逆行`;
-                
-                let maxLen = Math.max(cwTitle.length, ccwTitle.length) + 2;
+
+                let maxLen = Math.max(cwTitle.length, ccwTitle.length);
                 let cwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${cwTitle}</span>`;
                 let ccwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${ccwTitle}</span>`;
 
@@ -1644,7 +1644,7 @@ async function initMap() {
             let i = 0;
             while (i < train.data.length) {
                 let p1 = train.data[i];
-                let p2 = (i + 1 < train.data.length && train.data[i+1].x === p1.x) ? train.data[i+1] : p1;
+                let p2 = (i + 1 < train.data.length && train.data[i + 1].x === p1.x) ? train.data[i + 1] : p1;
                 originalStops.push({ x: p1.x, arr: p1.y, dep: p2.y, isSeam: p1.isSeam });
                 i += (p2 === p1) ? 1 : 2;
             }
@@ -1723,7 +1723,7 @@ async function initMap() {
                     for (let k = j + 1; k < mergedStops.length; k++) {
                         if (mergedStops[k].isMatched) { nextMatchedIdx = k; break; }
                     }
-                    
+
                     let offset = 0;
                     if (prevMatchedIdx !== -1 && nextMatchedIdx !== -1) {
                         offset = (mergedStops[prevMatchedIdx].delay + mergedStops[nextMatchedIdx].delay) / 2;
@@ -1732,7 +1732,7 @@ async function initMap() {
                     } else if (nextMatchedIdx !== -1) {
                         offset = mergedStops[nextMatchedIdx].delay;
                     }
-                    
+
                     mergedStops[j].arr += offset;
                     mergedStops[j].dep += offset;
                 }
@@ -2615,7 +2615,7 @@ async function initMap() {
     if (urlParams.has('q')) {
         const qStr = urlParams.get('q');
         const combinedVal = parseInt(qStr, 36);
-        
+
         if (!isNaN(combinedVal)) {
             let val = combinedVal;
             const lineType = val % 2; val = Math.floor(val / 2);
@@ -2624,12 +2624,12 @@ async function initMap() {
             const hasSelection = val % 2; val = Math.floor(val / 2);
             const isStation = val % 2; val = Math.floor(val / 2);
             const selectionValue = val;
-            
+
             if (lineType === 1) {
                 const seaPill = [...DOM.linePills].find(p => p.getAttribute('data-line') === 'sea');
                 if (seaPill) seaPill.click();
             }
-            
+
             const branchList = ['keelung', 'liujia', 'neiwan', 'jiji', 'shalun', 'suao', 'pingxi', 'shenao'];
             branchList.forEach((b, index) => {
                 if ((bVal & (1 << index)) !== 0) {
@@ -2637,7 +2637,7 @@ async function initMap() {
                     if (branchPill && !branchPill.classList.contains('active')) branchPill.click();
                 }
             });
-            
+
             const typeList = ['普悠瑪', '太魯閣', '新自強', '柴聯自強', 'PP自強', '自強專列', '莒光', '莒光專列', '區間快', '區間', '普通專列'];
             state.enabledTypes.clear();
             typeList.forEach((type, index) => {
@@ -2645,7 +2645,7 @@ async function initMap() {
                     state.enabledTypes.add(type);
                 }
             });
-            
+
             if (hasSelection) {
                 let searchVal = '';
                 if (isStation) {
@@ -2654,7 +2654,7 @@ async function initMap() {
                 } else {
                     searchVal = String(selectionValue);
                 }
-                
+
                 if (searchVal) {
                     setTimeout(() => {
                         searchInput.value = searchVal;
