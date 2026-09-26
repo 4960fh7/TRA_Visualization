@@ -1199,10 +1199,15 @@ async function initMap() {
                 let stationInfo = stationInfoByName[actualStationName];
                 let cwTitle = stationInfo && stationInfo.CW ? `順行 往 ${stationInfo.CW}` : `順行`;
                 let ccwTitle = stationInfo && stationInfo.CCW ? `逆行 往 ${stationInfo.CCW}` : `逆行`;
+                
+                let maxLen = Math.max(cwTitle.length, ccwTitle.length) + 2;
+                let cwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${cwTitle}</span>`;
+                let ccwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${ccwTitle}</span>`;
+
                 let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
-                    : cwtext != "" && ccwtext == "" ? `<span>${cwTitle} <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
-                        : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次<br>${ccwTitle} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
-                            : `<span>${cwTitle} <b style="opacity: 0.5;">>></b> ${cwtext}<br>${ccwTitle} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
+                    : cwtext != "" && ccwtext == "" ? `<span>${cwTitleSpan} <b style="opacity: 0.5;">>></b> ${cwtext}<br>${ccwTitleSpan} 無後續車次</span>`
+                        : cwtext == "" && ccwtext != "" ? `<span>${cwTitleSpan} 無後續車次<br>${ccwTitleSpan} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
+                            : `<span>${cwTitleSpan} <b style="opacity: 0.5;">>></b> ${cwtext}<br>${ccwTitleSpan} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
 
                 DOM.stationBox.innerHTML = `
                 <div style="display: flex; align-items: stretch; gap: 15px;">
