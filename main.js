@@ -871,10 +871,14 @@ async function initMap() {
 
     const response = await fetch(realtime ? `data_new/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data_new/${dateSelector.value.replace(/-/g, '')}.json`);
     let rawData = await response.json();
+    await new Promise(r => requestAnimationFrame(r));
     fixMonotonicY(rawData);
+    
     const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
+    await new Promise(r => requestAnimationFrame(r));
     fixMonotonicY(yrawData);
+    await new Promise(r => requestAnimationFrame(r));
 
     try {
         const stationsRes = await fetch('stations.json');
@@ -2667,9 +2671,13 @@ async function initMap() {
     }
 
     syncPillStyles();
+    await new Promise(r => requestAnimationFrame(r));
     updateStationGridData();
+    await new Promise(r => requestAnimationFrame(r));
     renderDataLayers();
+    await new Promise(r => requestAnimationFrame(r));
     renderBaseLayers();
+    await new Promise(r => requestAnimationFrame(r));
 
     document.fonts.ready.then(() => {
         const elapsed = Date.now() - loadStartTime;
