@@ -871,18 +871,28 @@ async function initMap() {
 
     const response = await fetch(realtime ? `data_new/${dateSelector.value.replace(/-/g, '')}_realtime.json` : `data_new/${dateSelector.value.replace(/-/g, '')}.json`);
     let rawData = await response.json();
-    await new Promise(r => requestAnimationFrame(r));
-    fixMonotonicY(rawData);
     
     const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
-    await new Promise(r => requestAnimationFrame(r));
-    fixMonotonicY(yrawData);
-    await new Promise(r => requestAnimationFrame(r));
 
+    let stationsJson = null;
     try {
         const stationsRes = await fetch('stations.json');
-        const stationsJson = await stationsRes.json();
+        stationsJson = await stationsRes.json();
+    } catch (err) {
+        console.error("Failed to load stations data", err);
+    }
+
+    await document.fonts.ready;
+    const elapsedSoFar = Date.now() - loadStartTime;
+    if (elapsedSoFar < 2000) {
+        await new Promise(r => setTimeout(r, 2000 - elapsedSoFar));
+    }
+
+    fixMonotonicY(rawData);
+    fixMonotonicY(yrawData);
+
+    if (stationsJson) {
         stationsJson.forEach(s => {
             let sName = s.stationName;
             if (sName === '台北') sName = '臺北';
@@ -894,8 +904,6 @@ async function initMap() {
             stationCodeToName[s.stationCode] = sName;
             stationInfoByName[sName] = s;
         });
-    } catch (err) {
-        console.error("Failed to load stations data", err);
     }
 
     async function loadCalcSchedule() {
@@ -2679,21 +2687,13 @@ async function initMap() {
     renderBaseLayers();
     await new Promise(r => requestAnimationFrame(r));
 
-    document.fonts.ready.then(() => {
-        const elapsed = Date.now() - loadStartTime;
-        const minLoadingTime = 2000;
-        const remainingTime = Math.max(0, minLoadingTime - elapsed);
-        
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
         setTimeout(() => {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
-            }
-        }, remainingTime);
-    });
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }
 }
 
 initMap();
