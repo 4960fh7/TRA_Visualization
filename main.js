@@ -1200,7 +1200,7 @@ async function initMap() {
                 let cwTitle = stationInfo && stationInfo.CW ? `順行 往 ${stationInfo.CW}` : `順行`;
                 let ccwTitle = stationInfo && stationInfo.CCW ? `逆行 往 ${stationInfo.CCW}` : `逆行`;
 
-                let maxLen = Math.max(cwTitle.length, ccwTitle.length);
+                let maxLen = Math.max(cwTitle.length, ccwTitle.length) - 2;
                 let cwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${cwTitle}</span>`;
                 let ccwTitleSpan = `<span style="display: inline-block; width: ${maxLen}em;">${ccwTitle}</span>`;
 
