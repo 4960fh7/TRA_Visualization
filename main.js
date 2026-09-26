@@ -19,6 +19,7 @@ let trainConnection = false;
 let actualDriving = false;
 let calcScheduleData = null;
 let stationCodeToName = {};
+let stationInfoByName = {};
 let rawData = [];
 let yrawData = [];
 let allTrainsSource = [];
@@ -888,6 +889,7 @@ async function initMap() {
                     if (sName === '台東') sName = '臺東';
                     sName = sName.replace(/台/g, '臺');
                     stationCodeToName[s.stationCode] = sName;
+                    stationInfoByName[sName] = s;
                 });
                 const calcRes = await fetch('CalcSchedule.json');
                 const calcJson = await calcRes.json();
@@ -1188,10 +1190,14 @@ async function initMap() {
                 <span style="color: ${colorPalette[t.type]}; opacity: ${t.dest == state.focusedStation ? 0.5 : 1};">${getTrainTypeName(t.type, t.number)}</span>
                 <span style="opacity: ${t.dest == state.focusedStation ? 0.5 : 1};"> ${formatTime(t.time)} 往 ${t.dest}</span>
             </span>`).join(' <b style="opacity: 0.5;">>></b> ') : "";
+                let actualStationName = state.focusedStation === "臺北_環島" ? "臺北" : state.focusedStation;
+                let stationInfo = stationInfoByName[actualStationName];
+                let cwTitle = stationInfo && stationInfo.CW ? `順行 往 ${stationInfo.CW}` : `順行`;
+                let ccwTitle = stationInfo && stationInfo.CCW ? `逆行 往 ${stationInfo.CCW}` : `逆行`;
                 let trainsHtml = nextTrains.length == 0 ? `<span class="placeholder" style="padding-left: 10px;">今日無後續車次</span>`
-                    : cwtext != "" && ccwtext == "" ? `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
-                        : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
-                            : `<span>順行 <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行 <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
+                    : cwtext != "" && ccwtext == "" ? `<span>${cwTitle} <b style="opacity: 0.5;">>></b> ${cwtext}<br>逆行無後續車次</span>`
+                        : cwtext == "" && ccwtext != "" ? `<span>順行無後續車次<br>${ccwTitle} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`
+                            : `<span>${cwTitle} <b style="opacity: 0.5;">>></b> ${cwtext}<br>${ccwTitle} <b style="opacity: 0.5;">>></b> ${ccwtext}</span>`;
 
                 DOM.stationBox.innerHTML = `
                 <div style="display: flex; align-items: stretch; gap: 15px;">
