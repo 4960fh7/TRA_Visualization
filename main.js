@@ -1065,6 +1065,7 @@ async function initMap() {
             });
             iconsHtml += '</div>';
             const stopsMap = getTrainData(state.selectedLine).reduce((acc, curr) => {
+                if (curr.isVirtual) return acc;
                 if (!acc[curr.x]) acc[curr.x] = { arr: null, dep: null };
                 if (acc[curr.x].arr === null) acc[curr.x].arr = Math.ceil(curr.y);
                 else acc[curr.x].dep = Math.floor(curr.y);
@@ -1110,10 +1111,11 @@ async function initMap() {
 
                     rawData.forEach(train => {
                         if (state.enabledTypes.has(train.train)) {
-                            const stop = getTrainData(train).findLast(p => p.x.split('_')[0] === state.focusedStation);
+                            const stop = getTrainData(train).findLast(p => !p.isVirtual && p.x.split('_')[0] === state.focusedStation);
                             if (stop) {
                                 typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
-                                if (getTrainData(train)[0].x.split('_')[0] === state.focusedStation) {
+                                const firstValid = getTrainData(train).find(p => !p.isVirtual);
+                                if (firstValid && firstValid.x.split('_')[0] === state.focusedStation) {
                                     startCounts[train.train] = (startCounts[train.train] || 0) + 1;
                                 }
                             }
@@ -1152,8 +1154,8 @@ async function initMap() {
                 const seenTrainNumbers = new Set();
                 const nextTrains = allAvailableTrains
                     .map(train => {
-                        const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
-                        const stopDistances = train.data.map(p => allStationDistances[p.x]).filter(d => d !== undefined);
+                        const stop = train.data.findLast(p => !p.isVirtual && p.x.split('_')[0] === state.focusedStation);
+                        const stopDistances = train.data.filter(p => !p.isVirtual).map(p => allStationDistances[p.x]).filter(d => d !== undefined);
                         return stop ? {
                             number: train.number,
                             type: train.train,
@@ -1672,7 +1674,7 @@ async function initMap() {
                     mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
                     origIdx++;
                 } else if (calc && (!orig || !originalStops.slice(origIdx).some(o => o.x.split('_')[0] === calc.x))) {
-                    mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time });
+                    mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
                     calcIdx++;
                 } else {
                     let origInCalc = calcStops.slice(calcIdx).findIndex(c => c.x === orig.x.split('_')[0]);
@@ -1690,10 +1692,12 @@ async function initMap() {
             mergedStops.forEach(stop => {
                 let p1 = { x: stop.x, y: stop.arr };
                 if (stop.isSeam) p1.isSeam = true;
+                if (stop.isVirtual) p1.isVirtual = true;
                 let p2 = { x: stop.x, y: stop.dep };
+                if (stop.isVirtual) p2.isVirtual = true;
                 newActualData.push(p1);
                 if (p2.y !== p1.y) newActualData.push(p2);
-                else newActualData.push({ x: stop.x, y: stop.arr });
+                else newActualData.push({ x: stop.x, y: stop.arr, isVirtual: stop.isVirtual });
             });
             train.actualData = newActualData;
         });
@@ -1725,8 +1729,9 @@ async function initMap() {
         todaySegments = rawData
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
-                const passesStation = state.focusedStation ? getTrainData(train).some(p => p.x === state.focusedStation) : true;
-                const startingStation = (notime && state.focusedStation && onlystart) ? getTrainData(train)[0].x === state.focusedStation : true;
+                const passesStation = state.focusedStation ? getTrainData(train).some(p => !p.isVirtual && p.x.split('_')[0] === state.focusedStation) : true;
+                const firstValid = getTrainData(train).find(p => !p.isVirtual);
+                const startingStation = (notime && state.focusedStation && onlystart) ? (firstValid && firstValid.x.split('_')[0] === state.focusedStation) : true;
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
@@ -1852,7 +1857,7 @@ async function initMap() {
         yesterdaySegments = notime ? [] : yrawData
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
-                const passesStation = state.focusedStation ? getTrainData(train).some(p => p.x === state.focusedStation) : true;
+                const passesStation = state.focusedStation ? getTrainData(train).some(p => !p.isVirtual && p.x.split('_')[0] === state.focusedStation) : true;
                 return isEnabled && passesStation;
             })
             .flatMap(train => {
@@ -1947,6 +1952,7 @@ async function initMap() {
 
             const rawGrouped = {};
             getTrainData(state.selectedLine).forEach(p => {
+                if (p.isVirtual) return;
                 if (state.stationDistances[p.x] !== undefined) {
                     if (!rawGrouped[p.x]) rawGrouped[p.x] = [];
                     rawGrouped[p.x].push(p.y);
