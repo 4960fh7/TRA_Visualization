@@ -217,6 +217,7 @@ document.addEventListener('submit', async (e) => {
 });
 
 async function initMap() {
+    const loadStartTime = Date.now();
     const DOM = {
         infoBox: document.getElementById('info-content'),
         stationBox: document.getElementById('station-info-content'),
@@ -2671,13 +2672,19 @@ async function initMap() {
     renderBaseLayers();
 
     document.fonts.ready.then(() => {
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500);
-        }
+        const elapsed = Date.now() - loadStartTime;
+        const minLoadingTime = 2000;
+        const remainingTime = Math.max(0, minLoadingTime - elapsed);
+        
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+        }, remainingTime);
     });
 }
 
