@@ -2669,6 +2669,16 @@ async function initMap() {
     updateStationGridData();
     renderDataLayers();
     renderBaseLayers();
+
+    document.fonts.ready.then(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+    });
 }
 
 initMap();
