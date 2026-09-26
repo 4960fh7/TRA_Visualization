@@ -1646,7 +1646,7 @@ async function initMap() {
             let firstMatchOrig = originalStops.find(o => calcStops.some(c => c.x === o.x.split('_')[0]));
             if (firstMatchOrig) {
                 let firstCalc = calcStops.find(c => c.x === firstMatchOrig.x.split('_')[0]);
-                calcOffset = Math.round((firstMatchOrig.arr - firstCalc.time) / 1440) * 1440;
+                calcOffset = Math.round((firstMatchOrig.dep - firstCalc.time) / 1440) * 1440;
             }
             let calc_prev_raw_y = -1;
             let calc_current_offset = calcOffset;
@@ -1666,7 +1666,7 @@ async function initMap() {
                 if (orig && calc && orig.x.split('_')[0] === calc.x) {
                     let duration = orig.dep - orig.arr;
                     if (duration > 0 && duration < 1) duration = 1;
-                    mergedStops.push({ x: orig.x, arr: calc.time, dep: calc.time + duration, isSeam: orig.isSeam });
+                    mergedStops.push({ x: orig.x, arr: calc.time - duration, dep: calc.time, isSeam: orig.isSeam });
                     origIdx++; calcIdx++;
                 } else if (orig && (!calc || !calcStops.slice(calcIdx).some(c => c.x === orig.x.split('_')[0]))) {
                     mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
