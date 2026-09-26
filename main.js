@@ -16,6 +16,9 @@ let realtime = false;
 let notime = false;
 let onlystart = false;
 let trainConnection = false;
+let actualDriving = false;
+let calcScheduleData = null;
+let stationCodeToName = {};
 let rawData = [];
 let yrawData = [];
 let allTrainsSource = [];
@@ -870,6 +873,33 @@ async function initMap() {
     const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
     fixMonotonicY(yrawData);
+    
+    async function loadCalcSchedule() {
+        if (!calcScheduleData) {
+            try {
+                const stationsRes = await fetch('stations.json');
+                const stationsJson = await stationsRes.json();
+                stationsJson.forEach(s => {
+                    let sName = s.stationName;
+                    if (sName === '台北') sName = '臺北';
+                    if (sName === '台中') sName = '臺中';
+                    if (sName === '台南') sName = '臺南';
+                    if (sName === '台东') sName = '臺東';
+                    if (sName === '台東') sName = '臺東';
+                    sName = sName.replace(/台/g, '臺');
+                    stationCodeToName[s.stationCode] = sName;
+                });
+                const calcRes = await fetch('CalcSchedule.json');
+                const calcJson = await calcRes.json();
+                calcScheduleData = {};
+                calcJson.forEach(t => {
+                    calcScheduleData[t.No] = t.data;
+                });
+            } catch (err) {
+                console.error("Failed to load CalcSchedule data", err);
+            }
+        }
+    }
     let todaySegments = [];
     let yesterdaySegments = [];
 
@@ -1034,7 +1064,7 @@ async function initMap() {
                 }
             });
             iconsHtml += '</div>';
-            const stopsMap = state.selectedLine.data.reduce((acc, curr) => {
+            const stopsMap = getTrainData(state.selectedLine).reduce((acc, curr) => {
                 if (!acc[curr.x]) acc[curr.x] = { arr: null, dep: null };
                 if (acc[curr.x].arr === null) acc[curr.x].arr = Math.ceil(curr.y);
                 else acc[curr.x].dep = Math.floor(curr.y);
@@ -1080,10 +1110,10 @@ async function initMap() {
 
                     rawData.forEach(train => {
                         if (state.enabledTypes.has(train.train)) {
-                            const stop = train.data.findLast(p => p.x.split('_')[0] === state.focusedStation);
+                            const stop = getTrainData(train).findLast(p => p.x.split('_')[0] === state.focusedStation);
                             if (stop) {
                                 typeCounts[train.train] = (typeCounts[train.train] || 0) + 1;
-                                if (train.data[0].x.split('_')[0] === state.focusedStation) {
+                                if (getTrainData(train)[0].x.split('_')[0] === state.focusedStation) {
                                     startCounts[train.train] = (startCounts[train.train] || 0) + 1;
                                 }
                             }
@@ -1345,11 +1375,11 @@ async function initMap() {
             if (state.selectedLine) {
                 const updatedMatch = rawData.find(t =>
                     t.number === state.selectedLine.number &&
-                    t.data.some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
+                    getTrainData(t).some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
                 );
                 const yupdatedMatch = yrawData.find(t =>
                     t.number === state.selectedLine.number &&
-                    t.data.some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
+                    getTrainData(t).some(p => state.stationList.has(p.x) || state.stationList.has(p.x + '_top') || state.stationList.has(p.x + '_bottom'))
                 );
                 if (updatedMatch) { state.selectedLine = updatedMatch; }
                 else if (yupdatedMatch) { state.selectedLine = yupdatedMatch; }
@@ -1395,18 +1425,26 @@ async function initMap() {
     function updateAdvancedButtons() {
         const btnModeTimetable = document.getElementById('btn-mode-timetable');
         const btnModeDrivingTime = document.getElementById('btn-mode-driving-time');
+        const btnModeActualDriving = document.getElementById('btn-mode-actual-driving');
         const optionsContainer = document.getElementById('driving-time-options');
         const btnStartTrain = document.getElementById('btn-start-train');
         const btnTrainConnection = document.getElementById('btn-train-connection');
 
-        if (btnModeTimetable && btnModeDrivingTime && optionsContainer) {
+        if (btnModeTimetable && btnModeDrivingTime && btnModeActualDriving && optionsContainer) {
             if (notime) {
                 btnModeTimetable.classList.remove('active');
                 btnModeDrivingTime.classList.add('active');
+                btnModeActualDriving.classList.remove('active');
                 optionsContainer.style.display = 'flex';
+            } else if (actualDriving) {
+                btnModeTimetable.classList.remove('active');
+                btnModeDrivingTime.classList.remove('active');
+                btnModeActualDriving.classList.add('active');
+                optionsContainer.style.display = 'none';
             } else {
                 btnModeTimetable.classList.add('active');
                 btnModeDrivingTime.classList.remove('active');
+                btnModeActualDriving.classList.remove('active');
                 optionsContainer.style.display = 'none';
             }
         }
@@ -1431,10 +1469,11 @@ async function initMap() {
     const btnModeTimetable = document.getElementById('btn-mode-timetable');
     if (btnModeTimetable) {
         btnModeTimetable.addEventListener('click', () => {
-            if (notime) {
+            if (notime || actualDriving) {
                 notime = false;
                 onlystart = false;
                 trainConnection = false;
+                actualDriving = false;
                 state.showSchedule = true;
                 updateAdvancedButtons();
                 updateStationGridData();
@@ -1450,12 +1489,33 @@ async function initMap() {
         btnModeDrivingTime.addEventListener('click', () => {
             if (!notime) {
                 notime = true;
+                actualDriving = false;
                 state.showSchedule = false;
                 updateAdvancedButtons();
                 updateStationGridData();
                 renderBaseLayers();
                 renderDataLayers();
                 updateInfoBox();
+            }
+        });
+    }
+
+    const btnModeActualDriving = document.getElementById('btn-mode-actual-driving');
+    if (btnModeActualDriving) {
+        btnModeActualDriving.addEventListener('click', () => {
+            if (!actualDriving) {
+                notime = false;
+                onlystart = false;
+                trainConnection = false;
+                actualDriving = true;
+                state.showSchedule = true;
+                loadCalcSchedule().then(() => {
+                    updateAdvancedButtons();
+                    updateStationGridData();
+                    renderBaseLayers();
+                    renderDataLayers();
+                    updateInfoBox();
+                });
             }
         });
     }
@@ -1553,6 +1613,101 @@ async function initMap() {
         renderBaseLayers();
     };
 
+    function processActualDriving(dataList) {
+        if (!dataList || !calcScheduleData) return;
+        dataList.forEach(train => {
+            if (train.actualData) return;
+            let calcDataRaw = calcScheduleData[train.number];
+            if (!calcDataRaw) {
+                train.actualData = train.data;
+                return;
+            }
+            let originalStops = [];
+            let i = 0;
+            while (i < train.data.length) {
+                let p1 = train.data[i];
+                let p2 = (i + 1 < train.data.length && train.data[i+1].x === p1.x) ? train.data[i+1] : p1;
+                originalStops.push({ x: p1.x, arr: p1.y, dep: p2.y, isSeam: p1.isSeam });
+                i += (p2 === p1) ? 1 : 2;
+            }
+            let calcStops = [];
+            calcDataRaw.forEach(p => {
+                let stName = stationCodeToName[p.StationID];
+                if (stName) {
+                    let [h, m, s] = p.Time.split(':').map(Number);
+                    calcStops.push({ x: stName, time: h * 60 + m + s / 60 });
+                }
+            });
+            if (calcStops.length === 0) {
+                train.actualData = train.data;
+                return;
+            }
+            let calcOffset = 0;
+            let firstMatchOrig = originalStops.find(o => calcStops.some(c => c.x === o.x.split('_')[0]));
+            if (firstMatchOrig) {
+                let firstCalc = calcStops.find(c => c.x === firstMatchOrig.x.split('_')[0]);
+                calcOffset = Math.round((firstMatchOrig.arr - firstCalc.time) / 1440) * 1440;
+            }
+            let calc_prev_raw_y = -1;
+            let calc_current_offset = calcOffset;
+            calcStops.forEach(p => {
+                let raw_y = p.time;
+                if (calc_prev_raw_y !== -1 && raw_y < calc_prev_raw_y - 720) calc_current_offset += 1440;
+                else if (calc_prev_raw_y !== -1 && raw_y > calc_prev_raw_y + 720) calc_current_offset -= 1440;
+                calc_prev_raw_y = raw_y;
+                p.time = raw_y + calc_current_offset;
+            });
+            let mergedStops = [];
+            let origIdx = 0;
+            let calcIdx = 0;
+            while (origIdx < originalStops.length || calcIdx < calcStops.length) {
+                let orig = originalStops[origIdx];
+                let calc = calcStops[calcIdx];
+                if (orig && calc && orig.x.split('_')[0] === calc.x) {
+                    let duration = orig.dep - orig.arr;
+                    if (duration > 0 && duration < 1) duration = 1;
+                    mergedStops.push({ x: orig.x, arr: calc.time, dep: calc.time + duration, isSeam: orig.isSeam });
+                    origIdx++; calcIdx++;
+                } else if (orig && (!calc || !calcStops.slice(calcIdx).some(c => c.x === orig.x.split('_')[0]))) {
+                    mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
+                    origIdx++;
+                } else if (calc && (!orig || !originalStops.slice(origIdx).some(o => o.x.split('_')[0] === calc.x))) {
+                    mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time });
+                    calcIdx++;
+                } else {
+                    let origInCalc = calcStops.slice(calcIdx).findIndex(c => c.x === orig.x.split('_')[0]);
+                    let calcInOrig = originalStops.slice(origIdx).findIndex(o => o.x.split('_')[0] === calc.x);
+                    if (origInCalc !== -1 && (calcInOrig === -1 || origInCalc < calcInOrig)) {
+                        mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time });
+                        calcIdx++;
+                    } else {
+                        mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam });
+                        origIdx++;
+                    }
+                }
+            }
+            let newActualData = [];
+            mergedStops.forEach(stop => {
+                let p1 = { x: stop.x, y: stop.arr };
+                if (stop.isSeam) p1.isSeam = true;
+                let p2 = { x: stop.x, y: stop.dep };
+                newActualData.push(p1);
+                if (p2.y !== p1.y) newActualData.push(p2);
+                else newActualData.push({ x: stop.x, y: stop.arr });
+            });
+            train.actualData = newActualData;
+        });
+    }
+
+    function getTrainData(train) {
+        if (!train) return [];
+        if (actualDriving) {
+            if (!train.actualData) processActualDriving([train]);
+            return train.actualData || train.data;
+        }
+        return train.data;
+    }
+
     function renderDataLayers() {
         const currentVS = deckInstance.props.viewState || state.viewState || { target: [state.currentTimeMinutes * 3 + 180, state.initialY, 0], zoom: 0 };
         const container = document.getElementById('container');
@@ -1570,20 +1725,20 @@ async function initMap() {
         todaySegments = rawData
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
-                const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
-                const startingStation = (notime && state.focusedStation && onlystart) ? train.data[0].x === state.focusedStation : true;
+                const passesStation = state.focusedStation ? getTrainData(train).some(p => p.x === state.focusedStation) : true;
+                const startingStation = (notime && state.focusedStation && onlystart) ? getTrainData(train)[0].x === state.focusedStation : true;
                 return isEnabled && passesStation && startingStation;
             })
             .flatMap(train => {
                 let globalFirstY = null;
                 if (notime) {
-                    const firstValidPoint = train.data.find(p => p.y !== -1);
+                    const firstValidPoint = getTrainData(train).find(p => p.y !== -1);
                     if (!firstValidPoint) return [];
-                    const currentStation = state.focusedStation ? train.data.find(p => p.x.split('_')[0] === state.focusedStation) : null;
+                    const currentStation = state.focusedStation ? getTrainData(train).find(p => p.x.split('_')[0] === state.focusedStation) : null;
                     globalFirstY = currentStation ? currentStation.y : firstValidPoint.y;
                 }
 
-                const preprocessedSegments = preprocessTrainData(train.data);
+                const preprocessedSegments = preprocessTrainData(getTrainData(train));
                 return preprocessedSegments.flatMap(segment => {
                     const filteredData = segment.filter((p, index) =>
                         (index === 0 || p.x !== segment[index - 1].x) && state.stationList.has(p.x)
@@ -1697,11 +1852,11 @@ async function initMap() {
         yesterdaySegments = notime ? [] : yrawData
             .filter(train => {
                 const isEnabled = state.enabledTypes.has(train.train);
-                const passesStation = state.focusedStation ? train.data.some(p => p.x === state.focusedStation) : true;
+                const passesStation = state.focusedStation ? getTrainData(train).some(p => p.x === state.focusedStation) : true;
                 return isEnabled && passesStation;
             })
             .flatMap(train => {
-                const preprocessedSegments = preprocessTrainData(train.data);
+                const preprocessedSegments = preprocessTrainData(getTrainData(train));
                 return preprocessedSegments.flatMap(segment => {
                     const segments = [];
                     let currentSegment = [];
@@ -1791,7 +1946,7 @@ async function initMap() {
             const isYesterdayTrain = yesterdaySegments.some(t => t.number === selectedNum);
 
             const rawGrouped = {};
-            state.selectedLine.data.forEach(p => {
+            getTrainData(state.selectedLine).forEach(p => {
                 if (state.stationDistances[p.x] !== undefined) {
                     if (!rawGrouped[p.x]) rawGrouped[p.x] = [];
                     rawGrouped[p.x].push(p.y);
