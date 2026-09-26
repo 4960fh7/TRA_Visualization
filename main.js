@@ -874,23 +874,28 @@ async function initMap() {
     const yresponse = await fetch(realtime ? `data_new/${yesterday.replace(/-/g, '')}_realtime.json` : `data_new/${yesterday.replace(/-/g, '')}.json`);
     let yrawData = await yresponse.json();
     fixMonotonicY(yrawData);
+
+    try {
+        const stationsRes = await fetch('stations.json');
+        const stationsJson = await stationsRes.json();
+        stationsJson.forEach(s => {
+            let sName = s.stationName;
+            if (sName === '台北') sName = '臺北';
+            if (sName === '台中') sName = '臺中';
+            if (sName === '台南') sName = '臺南';
+            if (sName === '台东') sName = '臺東';
+            if (sName === '台東') sName = '臺東';
+            sName = sName.replace(/台/g, '臺');
+            stationCodeToName[s.stationCode] = sName;
+            stationInfoByName[sName] = s;
+        });
+    } catch (err) {
+        console.error("Failed to load stations data", err);
+    }
     
     async function loadCalcSchedule() {
         if (!calcScheduleData) {
             try {
-                const stationsRes = await fetch('stations.json');
-                const stationsJson = await stationsRes.json();
-                stationsJson.forEach(s => {
-                    let sName = s.stationName;
-                    if (sName === '台北') sName = '臺北';
-                    if (sName === '台中') sName = '臺中';
-                    if (sName === '台南') sName = '臺南';
-                    if (sName === '台东') sName = '臺東';
-                    if (sName === '台東') sName = '臺東';
-                    sName = sName.replace(/台/g, '臺');
-                    stationCodeToName[s.stationCode] = sName;
-                    stationInfoByName[sName] = s;
-                });
                 const calcRes = await fetch('CalcSchedule.json');
                 const calcJson = await calcRes.json();
                 calcScheduleData = {};
