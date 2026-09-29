@@ -1591,6 +1591,8 @@ async function initMap() {
                         let pDataList = [];
                         data.forEach(train => {
                             if (train.data) {
+                                let scheduledTrain = rawData.find(t => t.number == train.No) || yrawData.find(t => t.number == train.No);
+                                let mappedTrainType = scheduledTrain ? scheduledTrain.train : train.Name;
                                 train.data.forEach(p => {
                                     if (p.Update && p.StationID) {
                                         let stName = stationCodeToName[p.StationID];
@@ -1605,7 +1607,7 @@ async function initMap() {
                                                 pDataList.push({
                                                     x: stName,
                                                     y: timeMin,
-                                                    trainName: train.Name
+                                                    trainName: mappedTrainType
                                                 });
                                             }
                                         }
@@ -2182,7 +2184,7 @@ async function initMap() {
             ...(state.pData ? [
                 new deck.TextLayer({
                     id: `p-layer-${offset}`,
-                    data: state.pData.filter(d => state.stationDistances[d.x] !== undefined || state.stationDistances[d.x + '_bottom'] !== undefined || state.stationDistances[d.x + '_top'] !== undefined),
+                    data: state.pData.filter(d => state.enabledTypes.has(d.trainName) && (state.stationDistances[d.x] !== undefined || state.stationDistances[d.x + '_bottom'] !== undefined || state.stationDistances[d.x + '_top'] !== undefined)),
                     coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
                     getPosition: d => {
                         let dist = state.stationDistances[d.x];
