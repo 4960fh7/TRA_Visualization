@@ -2161,7 +2161,25 @@ async function initMap() {
                 getPath: d => [[(notime && state.focusedStation) ? -3960 : 270, d[1] + offset], [4770, d[1] + offset]],
                 getColor: isLight ? [189, 146, 8] : [232, 252, 13],
                 getWidth: 3, widthMaxPixels: 2, widthMinPixels: 0
-            })
+            }),
+            ...(state.selectedLine && state.pData ? [
+                new deck.TextLayer({
+                    id: `p-layer-highlight-${offset}`,
+                    data: state.pData.filter(d => d.number == state.selectedLine.number && (state.stationDistances[d.x] !== undefined || state.stationDistances[d.x + '_bottom'] !== undefined || state.stationDistances[d.x + '_top'] !== undefined)),
+                    coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                    getPosition: d => {
+                        let dist = state.stationDistances[d.x];
+                        if (dist === undefined) dist = state.stationDistances[d.x + '_bottom'];
+                        if (dist === undefined) dist = state.stationDistances[d.x + '_top'];
+                        return [d.y * 3, dist + offset, 0];
+                    },
+                    getText: d => 'X',
+                    getSize: 18,
+                    getColor: isLight ? [255, 214, 0] : [255, 196, 0],
+                    getAlignmentBaseline: 'center',
+                    getTextAnchor: 'middle'
+                })
+            ] : [])
         ]);
 
 
