@@ -1724,34 +1724,75 @@ async function initMap() {
                 originalStops.push({ x: p1.x, arr: p1.y, dep: p2.y, isSeam: p1.isSeam });
                 i += (p2 === p1) ? 1 : 2;
             }
-            let calcStops = [];
+            let tempCalcStops = [];
             calcDataRaw.forEach(p => {
                 let stName = stationCodeToName[p.StationID];
                 let timeStr = p.Update || p.Time;
                 if (stName && timeStr) {
                     let [h, m, s] = timeStr.split(':').map(Number);
-                    calcStops.push({ x: stName, time: h * 60 + m + s / 60 });
+                    tempCalcStops.push({ x: stName, time: h * 60 + m + s / 60 });
                 }
             });
-            if (calcStops.length === 0) {
+            if (tempCalcStops.length === 0) {
                 train.actualData = train.data;
                 return;
             }
             let calcOffset = 0;
-            let firstMatchOrig = originalStops.find(o => calcStops.some(c => c.x === o.x.split('_')[0]));
+            let firstMatchOrig = originalStops.find(o => tempCalcStops.some(c => c.x === o.x.split('_')[0]));
             if (firstMatchOrig) {
-                let firstCalc = calcStops.find(c => c.x === firstMatchOrig.x.split('_')[0]);
+                let firstCalc = tempCalcStops.find(c => c.x === firstMatchOrig.x.split('_')[0]);
                 calcOffset = Math.round((firstMatchOrig.dep - firstCalc.time) / 1440) * 1440;
             }
             let calc_prev_raw_y = -1;
             let calc_current_offset = calcOffset;
-            calcStops.forEach(p => {
+            tempCalcStops.forEach(p => {
                 let raw_y = p.time;
                 if (calc_prev_raw_y !== -1 && raw_y < calc_prev_raw_y - 720) calc_current_offset += 1440;
                 else if (calc_prev_raw_y !== -1 && raw_y > calc_prev_raw_y + 720) calc_current_offset -= 1440;
                 calc_prev_raw_y = raw_y;
                 p.time = raw_y + calc_current_offset;
             });
+
+            let groupedVisits = [];
+            let currentVisit = null;
+            tempCalcStops.forEach(p => {
+                if (!currentVisit || currentVisit.x !== p.x) {
+                    currentVisit = { x: p.x, times: [p.time] };
+                    groupedVisits.push(currentVisit);
+                } else {
+                    if (currentVisit.times[currentVisit.times.length - 1] !== p.time) {
+                        currentVisit.times.push(p.time);
+                    }
+                }
+            });
+
+            let calcStops = [];
+            groupedVisits.forEach(visit => {
+                let validTimes = [visit.times[0]];
+                for (let k = 1; k < visit.times.length; k++) {
+                    if (visit.times[k] - visit.times[k - 1] > 6) break;
+                    validTimes.push(visit.times[k]);
+                }
+                visit.times = validTimes;
+                
+                let firstTime = visit.times[0];
+                let lastTime = visit.times[visit.times.length - 1];
+                let dynamicSpan = lastTime - firstTime;
+                
+                let origStop = originalStops.find(o => o.x.split('_')[0] === visit.x);
+                if (!origStop) {
+                    calcStops.push({ x: visit.x, arr: firstTime, dep: lastTime, isVirtual: true, isMatched: false });
+                } else {
+                    let scheduledSpan = origStop.dep - origStop.arr;
+                    if (scheduledSpan < 1) scheduledSpan = 1;
+                    if (dynamicSpan < scheduledSpan) {
+                        calcStops.push({ x: visit.x, arr: lastTime - scheduledSpan, dep: lastTime, isMatched: true });
+                    } else {
+                        calcStops.push({ x: visit.x, arr: firstTime, dep: lastTime, isMatched: true });
+                    }
+                }
+            });
+
             let mergedStops = [];
             let origIdx = 0;
             let calcIdx = 0;
@@ -1759,9 +1800,7 @@ async function initMap() {
                 let orig = originalStops[origIdx];
                 let calc = calcStops[calcIdx];
                 if (orig && calc && orig.x.split('_')[0] === calc.x) {
-                    let duration = orig.dep - orig.arr;
-                    if (duration > 0 && duration < 1) duration = 1;
-                    mergedStops.push({ x: orig.x, arr: calc.time - duration, dep: calc.time, isSeam: orig.isSeam, isMatched: true, delay: calc.time - orig.dep });
+                    mergedStops.push({ x: orig.x, arr: calc.arr, dep: calc.dep, isSeam: orig.isSeam, isMatched: true, delay: calc.dep - orig.dep });
                     origIdx++; calcIdx++;
                 } else {
                     let origInCalc = orig ? calcStops.slice(calcIdx).findIndex(c => c.x === orig.x.split('_')[0]) : -1;
@@ -1771,17 +1810,17 @@ async function initMap() {
                         mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                         origIdx++;
                     } else if (!orig) {
-                        mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
+                        mergedStops.push({ x: calc.x, arr: calc.arr, dep: calc.dep, isVirtual: true });
                         calcIdx++;
                     } else if (calcInOrig === -1 && origInCalc !== -1) {
-                        mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
+                        mergedStops.push({ x: calc.x, arr: calc.arr, dep: calc.dep, isVirtual: true });
                         calcIdx++;
                     } else if (origInCalc === -1 && calcInOrig !== -1) {
                         mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                         origIdx++;
                     } else {
-                        if (calc.time < orig.arr) {
-                            mergedStops.push({ x: calc.x, arr: calc.time, dep: calc.time, isVirtual: true });
+                        if (calc.dep < orig.arr) {
+                            mergedStops.push({ x: calc.x, arr: calc.arr, dep: calc.dep, isVirtual: true });
                             calcIdx++;
                         } else {
                             mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
