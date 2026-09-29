@@ -1607,7 +1607,8 @@ async function initMap() {
                                                 pDataList.push({
                                                     x: stName,
                                                     y: timeMin,
-                                                    trainName: mappedTrainType
+                                                    trainName: mappedTrainType,
+                                                    number: train.No
                                                 });
                                             }
                                         }
