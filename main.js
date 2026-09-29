@@ -1766,19 +1766,60 @@ async function initMap() {
                 }
             });
 
-            let calcStops = [];
             groupedVisits.forEach(visit => {
                 let validTimes = [visit.times[0]];
                 for (let k = 1; k < visit.times.length; k++) {
-                    if (visit.times[k] - visit.times[k - 1] > 6) break;
+                    if (visit.times[k] - visit.times[k - 1] > 8) break;
                     validTimes.push(visit.times[k]);
                 }
                 visit.times = validTimes;
-                
+            });
+
+            if (originalStops.length > 0) {
+                let originStop = originalStops[0];
+                let destStop = originalStops[originalStops.length - 1];
+                let originName = originStop.x.split('_')[0];
+                let destName = destStop.x.split('_')[0];
+                let originDep = originStop.dep;
+
+                groupedVisits.forEach(visit => {
+                    if (visit.x !== originName) {
+                        visit.times = visit.times.filter(t => t >= originDep);
+                    }
+                });
+                groupedVisits = groupedVisits.filter(v => v.times.length > 0);
+
+                let destArrival = null;
+                for (let i = 0; i < groupedVisits.length; i++) {
+                    let v = groupedVisits[i];
+                    if (v.x === destName) {
+                        if (originName !== destName) {
+                            destArrival = v.times[0];
+                            break;
+                        } else {
+                            if (i > 0 && v.times[0] > originDep + 60) {
+                                destArrival = v.times[0];
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (destArrival !== null) {
+                    groupedVisits.forEach(visit => {
+                        if (visit.x !== destName) {
+                            visit.times = visit.times.filter(t => t <= destArrival);
+                        }
+                    });
+                    groupedVisits = groupedVisits.filter(v => v.times.length > 0);
+                }
+            }
+
+            let calcStops = [];
+            groupedVisits.forEach(visit => {
                 let firstTime = visit.times[0];
                 let lastTime = visit.times[visit.times.length - 1];
                 let dynamicSpan = lastTime - firstTime;
-                
+
                 let origStop = originalStops.find(o => o.x.split('_')[0] === visit.x);
                 if (!origStop) {
                     calcStops.push({ x: visit.x, arr: firstTime, dep: lastTime, isVirtual: true, isMatched: false });
