@@ -1883,12 +1883,26 @@ async function initMap() {
                         mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
                         origIdx++;
                     } else {
-                        if (calc.dep < orig.arr) {
+                        let anyMatchRemaining = false;
+                        for (let k = origIdx; k < originalStops.length; k++) {
+                            if (calcStops.slice(calcIdx).some(c => c.x === originalStops[k].x.split('_')[0])) {
+                                anyMatchRemaining = true;
+                                break;
+                            }
+                        }
+
+                        if (!anyMatchRemaining) {
                             mergedStops.push({ x: calc.x, arr: calc.arr, dep: calc.dep, isVirtual: true });
                             calcIdx++;
                         } else {
-                            mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
-                            origIdx++;
+                            let lastDelay = mergedStops.length > 0 && mergedStops[mergedStops.length - 1].delayDep !== undefined ? mergedStops[mergedStops.length - 1].delayDep : 0;
+                            if (calc.dep < orig.arr + lastDelay) {
+                                mergedStops.push({ x: calc.x, arr: calc.arr, dep: calc.dep, isVirtual: true });
+                                calcIdx++;
+                            } else {
+                                mergedStops.push({ x: orig.x, arr: orig.arr, dep: orig.dep, isSeam: orig.isSeam, isOrigOnly: true });
+                                origIdx++;
+                            }
                         }
                     }
                 }
@@ -1915,18 +1929,35 @@ async function initMap() {
 
                     mergedStops[j].arr += offset;
                     mergedStops[j].dep += offset;
+
+                    if (j > 0 && mergedStops[j].arr < mergedStops[j - 1].dep) {
+                        let diff = mergedStops[j - 1].dep - mergedStops[j].arr;
+                        mergedStops[j].arr += diff;
+                        mergedStops[j].dep += diff;
+                    }
                 }
             }
             let newActualData = [];
+            let currentY = -Infinity;
             mergedStops.forEach(stop => {
                 let p1 = { x: stop.x, y: stop.arr };
                 if (stop.isSeam) p1.isSeam = true;
                 if (stop.isVirtual) p1.isVirtual = true;
+                
                 let p2 = { x: stop.x, y: stop.dep };
                 if (stop.isVirtual) p2.isVirtual = true;
+
+                if (p1.y < currentY) p1.y = currentY;
+                currentY = p1.y;
                 newActualData.push(p1);
-                if (p2.y !== p1.y) newActualData.push(p2);
-                else newActualData.push({ x: stop.x, y: stop.arr, isVirtual: stop.isVirtual });
+
+                if (p2.y !== stop.arr) {
+                    if (p2.y < currentY) p2.y = currentY;
+                    currentY = p2.y;
+                    newActualData.push(p2);
+                } else {
+                    newActualData.push({ x: stop.x, y: p1.y, isVirtual: stop.isVirtual });
+                }
             });
             train.actualData = newActualData;
         });
