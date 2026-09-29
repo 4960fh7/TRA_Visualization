@@ -1579,42 +1579,48 @@ async function initMap() {
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
         if (key === 'p') {
-            const dateStr = dateSelector.value.replace(/-/g, '');
-            const mmdd = dateStr.slice(4, 8);
-            fetch(`https://raw.githubusercontent.com/4960fh7/TDX_Fetch/main/merged_train_data_${mmdd}.json`)
-                .then(res => res.json())
-                .then(data => {
-                    let pDataList = [];
-                    data.forEach(train => {
-                        if (train.data) {
-                            train.data.forEach(p => {
-                                if (p.Update && p.StationID) {
-                                    let stName = stationCodeToName[p.StationID];
-                                    if (stName) {
-                                        let parts = p.Update.split(':');
-                                        if (parts.length >= 3) {
-                                            let h = parseInt(parts[0], 10);
-                                            let m = parseInt(parts[1], 10);
-                                            let s = parseInt(parts[2], 10);
-                                            let timeMin = h * 60 + m + s / 60;
-                                            if (h < 4) timeMin += 1440;
-                                            pDataList.push({
-                                                x: stName,
-                                                y: timeMin
-                                            });
+            if (state.pData) {
+                state.pData = null;
+                renderDataLayers();
+            } else {
+                const dateStr = dateSelector.value.replace(/-/g, '');
+                const mmdd = dateStr.slice(4, 8);
+                fetch(`https://raw.githubusercontent.com/4960fh7/TDX_Fetch/main/merged_train_data_${mmdd}.json`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let pDataList = [];
+                        data.forEach(train => {
+                            if (train.data) {
+                                train.data.forEach(p => {
+                                    if (p.Update && p.StationID) {
+                                        let stName = stationCodeToName[p.StationID];
+                                        if (stName) {
+                                            let parts = p.Update.split(':');
+                                            if (parts.length >= 3) {
+                                                let h = parseInt(parts[0], 10);
+                                                let m = parseInt(parts[1], 10);
+                                                let s = parseInt(parts[2], 10);
+                                                let timeMin = h * 60 + m + s / 60;
+                                                if (h < 4) timeMin += 1440;
+                                                pDataList.push({
+                                                    x: stName,
+                                                    y: timeMin,
+                                                    trainName: train.Name
+                                                });
+                                            }
                                         }
                                     }
-                                }
-                            });
-                        }
+                                });
+                            }
+                        });
+                        state.pData = pDataList;
+                        renderDataLayers();
+                    })
+                    .catch(err => {
+                        console.error("Failed to fetch P data", err);
+                        alert("無法獲取" + mmdd + "的資料");
                     });
-                    state.pData = pDataList;
-                    renderDataLayers();
-                })
-                .catch(err => {
-                    console.error("Failed to fetch P data", err);
-                    alert("無法獲取" + mmdd + "的資料");
-                });
+            }
         }
         if (key === 'h' && state.selectedLine) {
             state.showSchedule = !state.showSchedule;
@@ -2186,7 +2192,16 @@ async function initMap() {
                     },
                     getText: d => 'X',
                     getSize: 12,
-                    getColor: isLight ? [255, 0, 0] : [255, 100, 100],
+                    getColor: d => {
+                        const hexcolor = colorPalette[d.trainName];
+                        if (hexcolor) {
+                            const r = parseInt(hexcolor.substring(1, 3), 16);
+                            const g = parseInt(hexcolor.substring(3, 5), 16);
+                            const b = parseInt(hexcolor.substring(5, 7), 16);
+                            return [r, g, b];
+                        }
+                        return isLight ? [255, 0, 0] : [255, 100, 100];
+                    },
                     getAlignmentBaseline: 'center',
                     getTextAnchor: 'middle'
                 })
