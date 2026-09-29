@@ -1804,14 +1804,19 @@ async function initMap() {
                         }
                     }
                 }
-                if (destArrival !== null) {
-                    groupedVisits.forEach(visit => {
-                        if (visit.x !== destName) {
-                            visit.times = visit.times.filter(t => t <= destArrival);
-                        }
-                    });
-                    groupedVisits = groupedVisits.filter(v => v.times.length > 0);
-                }
+                
+                groupedVisits.forEach(visit => {
+                    if (visit.x !== destName) {
+                        visit.times = visit.times.filter(t => {
+                            if (destArrival !== null && t > destArrival) return false;
+                            // 跨過午夜的資料算在抵達終點站之後的資料
+                            if (t >= 1440 && t > destStop.arr) return false; 
+                            // (保留 t > destStop.arr 判斷，避免誤刪表定就是跨夜的夜車正常紀錄，若只是一般白天車則 t >= 1440 必定大於 destStop.arr 而被剔除)
+                            return true;
+                        });
+                    }
+                });
+                groupedVisits = groupedVisits.filter(v => v.times.length > 0);
             }
 
             let calcStops = [];
