@@ -1766,15 +1766,6 @@ async function initMap() {
                 }
             });
 
-            groupedVisits.forEach(visit => {
-                let validTimes = [visit.times[0]];
-                for (let k = 1; k < visit.times.length; k++) {
-                    if (visit.times[k] - visit.times[k - 1] > 8) break;
-                    validTimes.push(visit.times[k]);
-                }
-                visit.times = validTimes;
-            });
-
             if (originalStops.length > 0) {
                 let originStop = originalStops[0];
                 let destStop = originalStops[originalStops.length - 1];
@@ -1785,6 +1776,9 @@ async function initMap() {
                 groupedVisits.forEach(visit => {
                     if (visit.x !== originName) {
                         visit.times = visit.times.filter(t => t >= originDep);
+                    } else {
+                        // 移除發車前過久的無效紀錄 (允許提早2小時進站準備)
+                        visit.times = visit.times.filter(t => t >= originDep - 120);
                     }
                 });
                 groupedVisits = groupedVisits.filter(v => v.times.length > 0);
@@ -1814,10 +1808,26 @@ async function initMap() {
                             // (保留 t > destStop.arr 判斷，避免誤刪表定就是跨夜的夜車正常紀錄，若只是一般白天車則 t >= 1440 必定大於 destStop.arr 而被剔除)
                             return true;
                         });
+                    } else {
+                        // 針對終點站，也移除跨過午夜且大於表定抵達時間過多的極端異常值 (避免終點站隔天清晨的雜訊)
+                        visit.times = visit.times.filter(t => {
+                            if (t >= 1440 && t > destStop.arr + 120) return false;
+                            return true;
+                        });
                     }
                 });
                 groupedVisits = groupedVisits.filter(v => v.times.length > 0);
             }
+
+            // 8分鐘間隔斷點規則 (移至最後執行，確保不因為前面的極端雜訊導致正常紀錄被截斷)
+            groupedVisits.forEach(visit => {
+                let validTimes = [visit.times[0]];
+                for (let k = 1; k < visit.times.length; k++) {
+                    if (visit.times[k] - visit.times[k - 1] > 8) break;
+                    validTimes.push(visit.times[k]);
+                }
+                visit.times = validTimes;
+            });
 
             let calcStops = [];
             groupedVisits.forEach(visit => {
