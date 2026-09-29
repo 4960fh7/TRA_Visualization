@@ -1819,14 +1819,17 @@ async function initMap() {
                 groupedVisits = groupedVisits.filter(v => v.times.length > 0);
             }
 
-            // 8分鐘間隔斷點規則 (移至最後執行，確保不因為前面的極端雜訊導致正常紀錄被截斷)
+            // 8分鐘間隔斷點規則：若最後一筆與前一筆間隔大於8分鐘則捨去結尾雜訊 (中間間隔大於8則保留)
             groupedVisits.forEach(visit => {
-                let validTimes = [visit.times[0]];
-                for (let k = 1; k < visit.times.length; k++) {
-                    if (visit.times[k] - visit.times[k - 1] > 8) break;
-                    validTimes.push(visit.times[k]);
+                while (visit.times.length >= 2) {
+                    let last = visit.times[visit.times.length - 1];
+                    let prev = visit.times[visit.times.length - 2];
+                    if (last - prev > 8) {
+                        visit.times.pop();
+                    } else {
+                        break;
+                    }
                 }
-                visit.times = validTimes;
             });
 
             let calcStops = [];
@@ -1856,7 +1859,12 @@ async function initMap() {
                 let orig = originalStops[origIdx];
                 let calc = calcStops[calcIdx];
                 if (orig && calc && orig.x.split('_')[0] === calc.x) {
-                    mergedStops.push({ x: orig.x, arr: calc.arr, dep: calc.dep, isSeam: orig.isSeam, isMatched: true, delay: calc.dep - orig.dep });
+                    mergedStops.push({ 
+                        x: orig.x, arr: calc.arr, dep: calc.dep, 
+                        isSeam: orig.isSeam, isMatched: true, 
+                        delayArr: calc.arr - orig.arr, 
+                        delayDep: calc.dep - orig.dep 
+                    });
                     origIdx++; calcIdx++;
                 } else {
                     let origInCalc = orig ? calcStops.slice(calcIdx).findIndex(c => c.x === orig.x.split('_')[0]) : -1;
@@ -1898,11 +1906,11 @@ async function initMap() {
 
                     let offset = 0;
                     if (prevMatchedIdx !== -1 && nextMatchedIdx !== -1) {
-                        offset = (mergedStops[prevMatchedIdx].delay + mergedStops[nextMatchedIdx].delay) / 2;
+                        offset = (mergedStops[prevMatchedIdx].delayDep + mergedStops[nextMatchedIdx].delayArr) / 2;
                     } else if (prevMatchedIdx !== -1) {
-                        offset = mergedStops[prevMatchedIdx].delay;
+                        offset = mergedStops[prevMatchedIdx].delayDep;
                     } else if (nextMatchedIdx !== -1) {
-                        offset = mergedStops[nextMatchedIdx].delay;
+                        offset = mergedStops[nextMatchedIdx].delayArr;
                     }
 
                     mergedStops[j].arr += offset;
