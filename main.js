@@ -906,15 +906,21 @@ async function initMap() {
         });
     }
 
+    let currentCalcMmdd = null;
     async function loadCalcSchedule() {
-        if (!calcScheduleData) {
+        const dateStr = dateSelector.value.replace(/-/g, '');
+        const mmdd = dateStr.slice(4, 8);
+        if (!calcScheduleData || currentCalcMmdd !== mmdd) {
             try {
-                const calcRes = await fetch('CalcSchedule.json');
+                const calcRes = await fetch(`https://raw.githubusercontent.com/4960fh7/TDX_Fetch/main/merged_train_data_${mmdd}.json`);
                 const calcJson = await calcRes.json();
                 calcScheduleData = {};
                 calcJson.forEach(t => {
-                    calcScheduleData[t.No] = t.data;
+                    if (t.data) {
+                        calcScheduleData[t.No] = t.data;
+                    }
                 });
+                currentCalcMmdd = mmdd;
             } catch (err) {
                 console.error("Failed to load CalcSchedule data", err);
             }
@@ -1711,8 +1717,9 @@ async function initMap() {
             let calcStops = [];
             calcDataRaw.forEach(p => {
                 let stName = stationCodeToName[p.StationID];
-                if (stName) {
-                    let [h, m, s] = p.Time.split(':').map(Number);
+                let timeStr = p.Update || p.Time;
+                if (stName && timeStr) {
+                    let [h, m, s] = timeStr.split(':').map(Number);
                     calcStops.push({ x: stName, time: h * 60 + m + s / 60 });
                 }
             });
