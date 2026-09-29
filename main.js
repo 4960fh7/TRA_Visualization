@@ -1777,8 +1777,8 @@ async function initMap() {
                     if (visit.x !== originName) {
                         visit.times = visit.times.filter(t => t >= originDep);
                     } else {
-                        // 移除發車前過久的無效紀錄 (允許提早2小時進站準備)
-                        visit.times = visit.times.filter(t => t >= originDep - 120);
+                        // 移除發車前過久的無效紀錄 (允許提早1小時進站準備)
+                        visit.times = visit.times.filter(t => t >= originDep - 60);
                     }
                 });
                 groupedVisits = groupedVisits.filter(v => v.times.length > 0);
@@ -1798,13 +1798,13 @@ async function initMap() {
                         }
                     }
                 }
-                
+
                 groupedVisits.forEach(visit => {
                     if (visit.x !== destName) {
                         visit.times = visit.times.filter(t => {
                             if (destArrival !== null && t > destArrival) return false;
                             // 跨過午夜的資料算在抵達終點站之後的資料
-                            if (t >= 1440 && t > destStop.arr) return false; 
+                            if (t >= 1440 && t > destStop.arr) return false;
                             // (保留 t > destStop.arr 判斷，避免誤刪表定就是跨夜的夜車正常紀錄，若只是一般白天車則 t >= 1440 必定大於 destStop.arr 而被剔除)
                             return true;
                         });
@@ -1819,12 +1819,12 @@ async function initMap() {
                 groupedVisits = groupedVisits.filter(v => v.times.length > 0);
             }
 
-            // 8分鐘間隔斷點規則：若最後一筆與前一筆間隔大於8分鐘則捨去結尾雜訊 (中間間隔大於8則保留)
+            // 6分鐘間隔斷點規則：若最後一筆與前一筆間隔大於6分鐘則捨去結尾雜訊 (中間間隔大於6則保留)
             groupedVisits.forEach(visit => {
                 while (visit.times.length >= 2) {
                     let last = visit.times[visit.times.length - 1];
                     let prev = visit.times[visit.times.length - 2];
-                    if (last - prev > 8) {
+                    if (last - prev > 6) {
                         visit.times.pop();
                     } else {
                         break;
@@ -1859,11 +1859,11 @@ async function initMap() {
                 let orig = originalStops[origIdx];
                 let calc = calcStops[calcIdx];
                 if (orig && calc && orig.x.split('_')[0] === calc.x) {
-                    mergedStops.push({ 
-                        x: orig.x, arr: calc.arr, dep: calc.dep, 
-                        isSeam: orig.isSeam, isMatched: true, 
-                        delayArr: calc.arr - orig.arr, 
-                        delayDep: calc.dep - orig.dep 
+                    mergedStops.push({
+                        x: orig.x, arr: calc.arr, dep: calc.dep,
+                        isSeam: orig.isSeam, isMatched: true,
+                        delayArr: calc.arr - orig.arr,
+                        delayDep: calc.dep - orig.dep
                     });
                     origIdx++; calcIdx++;
                 } else {
