@@ -28,7 +28,7 @@ let state = {
     enabledTypes: new Set(['普悠瑪', '太魯閣', '新自強', '柴聯自強', 'PP自強', '自強專列', '莒光', '莒光專列', '區間快', '區間', '普通專列']),
     stationList: mountStationList, stationDistances: mountStationDistances, focusedStation: null,
     activeBranches: new Set(),
-    period: 8759, initialY: 246, currentTimeMinutes: 0
+    period: 8759, initialY: 246, currentTimeMinutes: 0, pData: null
 };
 
 const branchConfigs = {
@@ -1578,6 +1578,44 @@ async function initMap() {
 
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
+        if (key === 'p') {
+            const dateStr = dateSelector.value.replace(/-/g, '');
+            const mmdd = dateStr.slice(4, 8);
+            fetch(`https://raw.githubusercontent.com/4960fh7/TDX_Fetch/main/merged_train_data_${mmdd}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    let pDataList = [];
+                    data.forEach(train => {
+                        if (train.data) {
+                            train.data.forEach(p => {
+                                if (p.Update && p.StationID) {
+                                    let stName = stationCodeToName[p.StationID];
+                                    if (stName) {
+                                        let parts = p.Update.split(':');
+                                        if (parts.length >= 3) {
+                                            let h = parseInt(parts[0], 10);
+                                            let m = parseInt(parts[1], 10);
+                                            let s = parseInt(parts[2], 10);
+                                            let timeMin = h * 60 + m + s / 60;
+                                            if (h < 4) timeMin += 1440;
+                                            pDataList.push({
+                                                x: stName,
+                                                y: timeMin
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    state.pData = pDataList;
+                    renderDataLayers();
+                })
+                .catch(err => {
+                    console.error("Failed to fetch P data", err);
+                    alert("無法獲取" + mmdd + "的資料");
+                });
+        }
         if (key === 'h' && state.selectedLine) {
             state.showSchedule = !state.showSchedule;
             renderDataLayers();
@@ -2134,7 +2172,25 @@ async function initMap() {
                     return [r, g, b];
                 },
                 getRadius: notime ? 5 : 0.0001, radiusMaxPixels: 7, radiusMinPixels: 0.00001
-            })
+            }),
+            ...(state.pData ? [
+                new deck.TextLayer({
+                    id: `p-layer-${offset}`,
+                    data: state.pData.filter(d => state.stationDistances[d.x] !== undefined || state.stationDistances[d.x + '_bottom'] !== undefined || state.stationDistances[d.x + '_top'] !== undefined),
+                    coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                    getPosition: d => {
+                        let dist = state.stationDistances[d.x];
+                        if (dist === undefined) dist = state.stationDistances[d.x + '_bottom'];
+                        if (dist === undefined) dist = state.stationDistances[d.x + '_top'];
+                        return [d.y * 3, dist + offset, 0];
+                    },
+                    getText: d => 'X',
+                    getSize: 12,
+                    getColor: isLight ? [255, 0, 0] : [255, 100, 100],
+                    getAlignmentBaseline: 'center',
+                    getTextAnchor: 'middle'
+                })
+            ] : [])
         ]);
 
         deckInstance.setProps({ layers: [...layers.baseLayers, ...layers.offsetLayers, ...layers.mainPlotLayers, ...layers.currentTimeLayers, ...layers.scatterLayers, ...layers.selectionLayers, ...layers.axisLabels, ...layers.axisLabelsHighlight] });
