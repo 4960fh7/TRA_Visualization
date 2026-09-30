@@ -1394,7 +1394,33 @@ async function initMap() {
         });
     });
 
-    dateSelector.addEventListener('change', () => { loadData(); });
+    dateSelector.addEventListener('change', async () => { 
+        if (actualDriving) {
+            const selectedDate = new Date(dateSelector.value);
+            const todayForCheck = new Date();
+            selectedDate.setHours(0, 0, 0, 0);
+            todayForCheck.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((todayForCheck.getTime() - selectedDate.getTime()) / (1000 * 3600 * 24));
+            
+            if (diffDays < 2 || isNaN(diffDays)) {
+                const twoDaysAgo = new Date(todayForCheck);
+                twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                alert(`實際行駛模式只能查看${twoDaysAgo.getMonth() + 1}/${twoDaysAgo.getDate()}前的資料`);
+                actualDriving = false;
+                notime = false;
+                updateAdvancedButtons();
+            } else {
+                await loadCalcSchedule();
+            }
+        }
+        await loadData(); 
+        if (actualDriving) {
+            updateStationGridData();
+            renderBaseLayers();
+            renderDataLayers();
+            updateInfoBox();
+        }
+    });
 
     DOM.btnSelectAll.addEventListener('click', () => {
         Object.keys(colorPalette).forEach(type => state.enabledTypes.add(type));
@@ -1551,6 +1577,19 @@ async function initMap() {
     if (btnModeActualDriving) {
         btnModeActualDriving.addEventListener('click', () => {
             if (!actualDriving) {
+                const selectedDate = new Date(dateSelector.value);
+                const todayForCheck = new Date();
+                selectedDate.setHours(0, 0, 0, 0);
+                todayForCheck.setHours(0, 0, 0, 0);
+                const diffDays = Math.round((todayForCheck.getTime() - selectedDate.getTime()) / (1000 * 3600 * 24));
+                
+                if (diffDays < 2 || isNaN(diffDays)) {
+                    const twoDaysAgo = new Date(todayForCheck);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    alert(`實際行駛模式只能查看${twoDaysAgo.getMonth() + 1}/${twoDaysAgo.getDate()}前的資料`);
+                    return;
+                }
+
                 notime = false;
                 onlystart = false;
                 trainConnection = false;
