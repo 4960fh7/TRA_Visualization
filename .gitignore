@@ -1,5 +1,4 @@
 data/
 data_fetch/
-fetch.py
 generate_guide.js
 URL_Generation_Guide.txt
