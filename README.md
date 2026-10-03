@@ -29,7 +29,7 @@ The website is automatically built by GitHub Pages based on the static files:
 To update the daily train schedule data, simply execute the python script below:
 
 ```bash
-python fetch_new.py
+python fetch.py
 ```
 
 ## Feedback & Contribution
@@ -38,7 +38,7 @@ This website will continuously be updated and tested for more applications.
 You are welcome to create pull requests or fork this project. 
 If you observe any issues, encounter bugs, or have feature requests, you are welcome to:
 * Report them in the [Issues](https://github.com/4960fh7/TRA_Visualization/issues) section.
-* [Send me an email](mailto:[EMAIL_ADDRESS]).
+* [Send me an email](mailto:roy0chu@gmail.com).
 
 ## License
 
